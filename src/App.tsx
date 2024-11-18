@@ -6,29 +6,36 @@
  */
 
 import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import {StyleSheet, Text} from 'react-native';
+import {PaperProvider} from 'react-native-paper';
+import {NavigationContainer} from '@react-navigation/native';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {darkTheme} from '@trackingPortal/themes/darkTheme';
+import AppNavigation from './navigation/AppNavigation';
 
 function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
   return (
-    <SafeAreaView>
-      <Text style={styles.sectionContainer}>Atik Mahbub</Text>
-    </SafeAreaView>
+    <PaperProvider theme={darkTheme}>
+      <NavigationContainer>
+        <SafeAreaView
+          style={[
+            styles.safeArea,
+            {backgroundColor: darkTheme.colors.background},
+          ]}>
+          <AppNavigation />
+        </SafeAreaView>
+      </NavigationContainer>
+    </PaperProvider>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
   sectionContainer: {
-    marginTop: 32,
     paddingHorizontal: 24,
+    color: darkTheme.colors.text,
   },
 });
 
