@@ -54,7 +54,6 @@ export default function ExpenseSummary() {
             </Button>
           </View>
 
-          {/* Animated Collapse/Expand */}
           {showLimitInput && (
             <Animated.View
               style={[styles.animatedContainer, {height: animatedHeight}]}>
@@ -103,6 +102,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   animatedContainer: {
-    overflow: 'hidden', // Ensures content stays within the animated height
+    overflow: 'hidden',
   },
 });
