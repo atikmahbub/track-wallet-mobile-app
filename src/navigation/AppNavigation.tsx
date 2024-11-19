@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 70,
     left: 0,
-    height: 3,
+    height: 1.5,
     width: TAB_WIDTH,
     backgroundColor: '#BB86FC',
     borderRadius: 2,
