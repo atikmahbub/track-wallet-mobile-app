@@ -1,9 +1,10 @@
+import {getGreeting} from '@trackingPortal/utils/utils';
 import React from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 import {Avatar} from 'react-native-paper';
 
 const CustomAppBar: React.FC = () => {
-  const greeting = 'Good Morning, Admin';
+  const greeting = getGreeting();
 
   return (
     <View style={styles.greetingContainer}>
@@ -13,7 +14,7 @@ const CustomAppBar: React.FC = () => {
           uri: 'https://example.com/avatar.jpg',
         }}
       />
-      <Text style={styles.greetingText}>{greeting}</Text>
+      <Text style={styles.greetingText}>{greeting}, Admin</Text>
     </View>
   );
 };
