@@ -1,5 +1,5 @@
-import {View, StyleSheet} from 'react-native';
-import React, {useState} from 'react';
+import {View, StyleSheet, Animated} from 'react-native';
+import React, {useState, useRef} from 'react';
 import {darkTheme} from '@trackingPortal/themes/darkTheme';
 import {Button, Card, TextInput} from 'react-native-paper';
 import {ValueWithLabel} from '@trackingPortal/components';
@@ -7,6 +7,25 @@ import dayjs from 'dayjs';
 
 export default function ExpenseSummary() {
   const [showLimitInput, setShowLimitInput] = useState<boolean>(false);
+  const animatedHeight = useRef(new Animated.Value(0)).current;
+
+  const toggleLimitInput = () => {
+    if (showLimitInput) {
+      Animated.timing(animatedHeight, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: false,
+      }).start(() => setShowLimitInput(false));
+    } else {
+      setShowLimitInput(true);
+      Animated.timing(animatedHeight, {
+        toValue: 110,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
+    }
+  };
+
   return (
     <View style={styles.mainContainer}>
       <Card style={styles.summaryCard} mode="elevated">
@@ -14,7 +33,7 @@ export default function ExpenseSummary() {
           title="Summary"
           titleStyle={{
             fontSize: 16,
-            fontWeight: 700,
+            fontWeight: '700',
           }}>
           Expense
         </Card.Title>
@@ -29,14 +48,16 @@ export default function ExpenseSummary() {
             <Button
               mode="text"
               onPress={() => {
-                setShowLimitInput(!showLimitInput);
+                toggleLimitInput();
               }}>
               Set Limit
             </Button>
           </View>
 
+          {/* Animated Collapse/Expand */}
           {showLimitInput && (
-            <View>
+            <Animated.View
+              style={[styles.animatedContainer, {height: animatedHeight}]}>
               <TextInput
                 mode="outlined"
                 label="Limit"
@@ -46,7 +67,7 @@ export default function ExpenseSummary() {
                 <Button
                   mode="text"
                   onPress={() => {
-                    setShowLimitInput(false);
+                    toggleLimitInput();
                   }}>
                   Cancel
                 </Button>
@@ -54,7 +75,7 @@ export default function ExpenseSummary() {
                   Save
                 </Button>
               </View>
-            </View>
+            </Animated.View>
           )}
         </Card.Content>
       </Card>
@@ -80,5 +101,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 5,
     justifyContent: 'flex-end',
+  },
+  animatedContainer: {
+    overflow: 'hidden', // Ensures content stays within the animated height
   },
 });
