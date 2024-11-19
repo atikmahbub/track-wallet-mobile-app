@@ -13,11 +13,10 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
-import {SafeAreaView} from 'react-native-safe-area-context';
 
 const Tab = createBottomTabNavigator();
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const TAB_WIDTH = SCREEN_WIDTH / 4; // Divide by 4 tabs
+const TAB_WIDTH = SCREEN_WIDTH / 4;
 
 const AnimatedIcon = ({name, focused}: {name: string; focused: boolean}) => {
   const scale = useSharedValue(focused ? 1.2 : 1); // Default scale values
@@ -52,13 +51,13 @@ const AnimatedTopBar = ({
 const ScreenWrapper = ({children}: {children: React.ReactNode}) => {
   const theme = useTheme();
   return (
-    <SafeAreaView
+    <View
       style={[
         styles.screenWrapper,
         {backgroundColor: theme.colors.background},
       ]}>
       {children}
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -138,7 +137,7 @@ export default function AppNavigation() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: darkTheme.colors.background, // Match the app background
+    backgroundColor: darkTheme.colors.background,
   },
   tabBar: {
     backgroundColor: darkTheme.colors.surface,

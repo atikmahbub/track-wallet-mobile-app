@@ -4,7 +4,7 @@ import React from 'react';
 export default function LoanScreen() {
   return (
     <View>
-      <Text>LoanScreen</Text>
+      <Text variant="bodyLarge">Date</Text>
     </View>
   );
 }
