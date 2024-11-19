@@ -10,19 +10,24 @@ interface LayoutProps {
 
 const AppLayout: React.FC<LayoutProps> = ({children}) => {
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <CustomAppBar />
-      <View style={styles.content}>{children}</View>
-    </SafeAreaView>
+    <View style={styles.container}>
+      <SafeAreaView style={styles.appBarContainer} edges={['top']}>
+        <CustomAppBar />
+      </SafeAreaView>
+      <View style={styles.navigationContent}>{children}</View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
     backgroundColor: darkTheme.colors.background,
   },
-  content: {
+  appBarContainer: {
+    backgroundColor: darkTheme.colors.background,
+  },
+  navigationContent: {
     flex: 1,
   },
 });
