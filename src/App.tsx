@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import {StyleSheet, Text} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import {PaperProvider} from 'react-native-paper';
 import {NavigationContainer} from '@react-navigation/native';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -17,13 +17,13 @@ function App(): React.JSX.Element {
   return (
     <PaperProvider theme={darkTheme}>
       <NavigationContainer>
-        <SafeAreaView
+        <View
           style={[
             styles.safeArea,
             {backgroundColor: darkTheme.colors.background},
           ]}>
           <AppNavigation />
-        </SafeAreaView>
+        </View>
       </NavigationContainer>
     </PaperProvider>
   );
