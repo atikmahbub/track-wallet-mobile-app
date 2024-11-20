@@ -4,12 +4,14 @@ import ExpenseSummary from '@trackingPortal/screens/ExpenseScreen/ExpenseSummary
 import {AnimatedFAB} from 'react-native-paper';
 import {ScrollView, StyleSheet} from 'react-native';
 import {darkTheme} from '@trackingPortal/themes/darkTheme';
+import ExpenseList from './ExpenseList';
 
 export default function ExpenseScreen() {
   return (
     <Fragment>
       <ScrollView>
         <ExpenseSummary />
+        <ExpenseList />
       </ScrollView>
       <AnimatedFAB
         extended={false}

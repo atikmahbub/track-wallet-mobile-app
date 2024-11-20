@@ -128,7 +128,6 @@ export default function AppNavigation() {
           )}
         </Tab.Screen>
       </Tab.Navigator>
-      {/* Place Animated Bar on top of the bottom navigation */}
       <AnimatedTopBar translateX={translateX} />
     </View>
   );
