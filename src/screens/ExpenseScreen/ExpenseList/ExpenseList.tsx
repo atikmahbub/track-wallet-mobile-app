@@ -5,10 +5,19 @@ import {darkTheme} from '@trackingPortal/themes/darkTheme';
 import dayjs from 'dayjs';
 
 import MonthPicker, {EventTypes} from 'react-native-month-year-picker';
+import DataTable from '@trackingPortal/components/DataTable';
 
-interface IExpenseList {}
+interface IExpenseList {
+  notifyRowOpen: (value: boolean) => void;
+}
 
-const ExpenseList: FC<IExpenseList> = () => {
+const headers = ['Date', 'Purpose', 'Amount'];
+const data = [
+  {id: 1, Date: 'John Doe', Purpose: 'john@.com', Amount: '30'},
+  {id: 2, Date: 'Jane Smith', Purpose: 'jane@.com', Amount: '25'},
+];
+
+const ExpenseList: FC<IExpenseList> = ({notifyRowOpen}) => {
   const [date, setDate] = useState(new Date());
   const [openPicker, setOpenPicker] = useState<boolean>(false);
 
@@ -44,6 +53,15 @@ const ExpenseList: FC<IExpenseList> = () => {
             />
           )}
         </Card.Actions>
+        <Card.Content>
+          <DataTable
+            headers={headers}
+            data={data}
+            onDelete={() => {}}
+            onEdit={() => {}}
+            isAnyRowOpen={notifyRowOpen}
+          />
+        </Card.Content>
       </Card>
     </View>
   );

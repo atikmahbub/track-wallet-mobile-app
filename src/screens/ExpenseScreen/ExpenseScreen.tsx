@@ -1,29 +1,39 @@
-import React, {Fragment} from 'react';
+import React, {Fragment, useState} from 'react';
 
 import ExpenseSummary from '@trackingPortal/screens/ExpenseScreen/ExpenseSummary';
 import {AnimatedFAB} from 'react-native-paper';
 import {ScrollView, StyleSheet} from 'react-native';
 import {darkTheme} from '@trackingPortal/themes/darkTheme';
-import ExpenseList from './ExpenseList';
+import ExpenseList from '@trackingPortal/screens/ExpenseScreen/ExpenseList';
+import ExpenseCreation from '@trackingPortal/screens/ExpenseScreen/ExpenseCreation';
 
 export default function ExpenseScreen() {
+  const [hideFabIcon, setHideFabIcon] = useState<boolean>(false);
+  const [openCreationForm, setOpenCreationModal] = useState<boolean>(false);
+
   return (
     <Fragment>
       <ScrollView>
         <ExpenseSummary />
-        <ExpenseList />
+        <ExpenseList notifyRowOpen={value => setHideFabIcon(value)} />
+        <ExpenseCreation
+          openCreationModal={openCreationForm}
+          setOpenCreationModal={setOpenCreationModal}
+        />
       </ScrollView>
-      <AnimatedFAB
-        extended={false}
-        icon={'plus'}
-        animateFrom={'right'}
-        iconMode={'static'}
-        label="Add New"
-        style={styles.fabStyle}
-        onPress={() => {
-          console.log('Pressed');
-        }}
-      />
+      {!hideFabIcon && (
+        <AnimatedFAB
+          extended={false}
+          icon={'plus'}
+          animateFrom={'right'}
+          iconMode={'static'}
+          label="Add New"
+          style={styles.fabStyle}
+          onPress={() => {
+            setOpenCreationModal(true);
+          }}
+        />
+      )}
     </Fragment>
   );
 }
