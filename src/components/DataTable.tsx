@@ -1,10 +1,9 @@
-import React, {useState, useRef, useEffect} from 'react';
+import React, {useRef, useEffect} from 'react';
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
-  TextInput,
   TouchableOpacity,
   Alert,
 } from 'react-native';
@@ -16,26 +15,27 @@ import {colors} from '@trackingPortal/themes/colors';
 interface DataTableProps {
   headers: string[];
   data: Array<{[key: string]: any}>;
-  onEdit: (id: string | number, updatedData: any) => void;
   onDelete: (id: string | number) => void;
   isAnyRowOpen: (value: boolean) => void;
+  expandedRowId: number | null;
+  setExpandedRowId: React.Dispatch<React.SetStateAction<number | null>>;
+  renderCollapsibleContent: (item: any) => React.ReactNode;
 }
 
 const DataTable: React.FC<DataTableProps> = ({
   headers,
   data,
-  onEdit,
   onDelete,
   isAnyRowOpen,
+  expandedRowId,
+  setExpandedRowId,
+  renderCollapsibleContent,
 }) => {
-  const [openRow, setOpenRow] = useState<number | null>(null);
-  const [editedRow, setEditedRow] = useState<any>(null);
   const swipeableRefs = useRef<{[key: string]: any}>({});
 
-  const handleEdit = (id: number) => {
+  const handleEditToggle = (id: number) => {
     swipeableRefs.current[id]?.close();
-    setOpenRow(openRow === id ? null : id);
-    setEditedRow(data.find(row => row.id === id));
+    setExpandedRowId(expandedRowId === id ? null : id);
   };
 
   const handleDelete = (id: number) => {
@@ -46,22 +46,15 @@ const DataTable: React.FC<DataTableProps> = ({
     ]);
   };
 
-  const handleSave = (id: number) => {
-    if (editedRow) {
-      onEdit(id, editedRow);
-      setOpenRow(null); // Close collapse
-    }
-  };
-
   useEffect(() => {
-    isAnyRowOpen(openRow !== null);
-  }, [isAnyRowOpen, openRow]);
+    isAnyRowOpen(expandedRowId !== null);
+  }, [isAnyRowOpen, expandedRowId]);
 
   const renderSwipeActions = (id: number) => (
     <View style={styles.swipeActions}>
       <TouchableOpacity
         style={styles.editAction}
-        onPress={() => handleEdit(id)}>
+        onPress={() => handleEditToggle(id)}>
         <Icon name="edit" size={24} color="#FFF" />
       </TouchableOpacity>
       <TouchableOpacity
@@ -73,14 +66,14 @@ const DataTable: React.FC<DataTableProps> = ({
   );
 
   const renderRow = ({item}: {item: any}) => {
-    const isRowOpen = openRow === item.id;
+    const isRowOpen = expandedRowId === item.id;
 
     return (
       <Swipeable
         ref={ref => (swipeableRefs.current[item.id] = ref)}
         renderRightActions={
           !isRowOpen ? () => renderSwipeActions(item.id) : undefined
-        } // Hide swipe actions if row is open
+        }
         enabled={!isRowOpen}>
         <View style={styles.row}>
           {headers.map(header => (
@@ -89,38 +82,10 @@ const DataTable: React.FC<DataTableProps> = ({
             </Text>
           ))}
         </View>
-        <Collapsible collapsed={openRow !== item.id}>
+        <Collapsible collapsed={!isRowOpen}>
           <View style={styles.collapsibleContent}>
-            {headers.map(header => (
-              <View key={header} style={styles.editField}>
-                <Text style={styles.label}>{header}</Text>
-                <TextInput
-                  style={styles.input}
-                  value={editedRow?.[header] || ''}
-                  onChangeText={text =>
-                    setEditedRow((prev: any) => ({...prev, [header]: text}))
-                  }
-                  placeholderTextColor={colors.placeholder}
-                />
-              </View>
-            ))}
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'flex-end',
-                marginTop: 5,
-              }}>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => setOpenRow(null)}>
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.saveButton}
-                onPress={() => handleSave(item.id)}>
-                <Text style={styles.saveButtonText}>Save</Text>
-              </TouchableOpacity>
-            </View>
+            {renderCollapsibleContent(item)}{' '}
+            {/* Pass row data to renderCollapsibleContent */}
           </View>
         </Collapsible>
       </Swipeable>
@@ -141,7 +106,6 @@ const DataTable: React.FC<DataTableProps> = ({
         keyExtractor={item => item.id.toString()}
         renderItem={renderRow}
         contentContainerStyle={styles.table}
-        scrollEnabled={false}
       />
     </View>
   );
@@ -153,7 +117,7 @@ const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
     backgroundColor: colors.background,
-    marginTop: 20, // Only marginTop applied
+    marginTop: 20,
   },
   header: {
     flexDirection: 'row',
@@ -209,30 +173,5 @@ const styles = StyleSheet.create({
   label: {
     color: colors.text,
     marginBottom: 5,
-  },
-  input: {
-    backgroundColor: colors.background,
-    color: colors.text,
-    padding: 10,
-    borderRadius: 5,
-  },
-  saveButton: {
-    backgroundColor: colors.accent,
-    padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    color: colors.text,
-    fontWeight: 'bold',
-  },
-  cancelButton: {
-    padding: 10,
-    borderRadius: 5,
-    marginRight: 10,
-  },
-  cancelButtonText: {
-    color: colors.text,
-    fontWeight: 'bold',
   },
 });

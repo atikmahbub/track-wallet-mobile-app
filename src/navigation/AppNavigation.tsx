@@ -1,28 +1,56 @@
 import React from 'react';
 import {View, StyleSheet, Dimensions} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {createStackNavigator} from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import ExpenseScreen from '@trackingPortal/screens/ExpenseScreen';
-import LoanScreen from '@trackingPortal/screens/LoanScreen';
-import InvestScreen from '@trackingPortal/screens/InvestScreen';
-import ProfileScreen from '@trackingPortal/screens/ProfileScreen';
-import {darkTheme} from '@trackingPortal/themes/darkTheme';
-import {useTheme} from 'react-native-paper';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
+import {useTheme} from 'react-native-paper';
 
-const Tab = createBottomTabNavigator();
+import ExpenseScreen from '@trackingPortal/screens/ExpenseScreen';
+import LoanScreen from '@trackingPortal/screens/LoanScreen';
+import InvestScreen from '@trackingPortal/screens/InvestScreen';
+import ProfileScreen from '@trackingPortal/screens/ProfileScreen';
+import LoginScreen from '@trackingPortal/screens/LoginScreen';
+import {darkTheme} from '@trackingPortal/themes/darkTheme';
+
+import {
+  RootTabParamList,
+  RootStackParamList,
+  ENavigationTab,
+  ENavigationStack,
+} from '@trackingPortal/navigation/ERoutes';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {CustomAppBar} from '@trackingPortal/components';
+
+const Tab = createBottomTabNavigator<RootTabParamList>();
+const Stack = createStackNavigator<RootStackParamList>();
+
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const TAB_WIDTH = SCREEN_WIDTH / 4;
 
+const useTabAnimation = () => {
+  const translateX = useSharedValue(0);
+
+  const onTabChange = (tabIndex: number) => {
+    translateX.value = TAB_WIDTH * tabIndex;
+  };
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{translateX: withTiming(translateX.value, {duration: 300})}],
+  }));
+
+  return {translateX, animatedStyle, onTabChange};
+};
+
 const AnimatedIcon = ({name, focused}: {name: string; focused: boolean}) => {
-  const scale = useSharedValue(focused ? 1.2 : 1); // Default scale values
+  const scale = useSharedValue(focused ? 1.2 : 1);
 
   React.useEffect(() => {
-    scale.value = withTiming(focused ? 1.2 : 1, {duration: 300}); // Animate on focus change
+    scale.value = withTiming(focused ? 1.2 : 1, {duration: 300});
   }, [focused, scale]);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -36,36 +64,36 @@ const AnimatedIcon = ({name, focused}: {name: string; focused: boolean}) => {
   );
 };
 
-const AnimatedTopBar = ({
-  translateX,
-}: {
-  translateX: Animated.SharedValue<number>;
-}) => {
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{translateX: withTiming(translateX.value, {duration: 300})}],
-  }));
-
+const AnimatedTopBar = ({animatedStyle}: {animatedStyle: any}) => {
   return <Animated.View style={[styles.animatedBar, animatedStyle]} />;
 };
 
 const ScreenWrapper = ({children}: {children: React.ReactNode}) => {
   const theme = useTheme();
   return (
-    <View
-      style={[
-        styles.screenWrapper,
-        {backgroundColor: theme.colors.background},
-      ]}>
-      {children}
-    </View>
+    <SafeAreaView
+      edges={['top']}
+      style={{backgroundColor: darkTheme.colors.background, flex: 1}}>
+      <CustomAppBar />
+      <View
+        style={[
+          styles.screenWrapper,
+          {backgroundColor: theme.colors.background},
+        ]}>
+        {children}
+      </View>
+    </SafeAreaView>
   );
 };
 
-export default function AppNavigation() {
-  const translateX = useSharedValue(0);
+function TabNavigator() {
+  const {animatedStyle, onTabChange} = useTabAnimation();
 
-  const onTabChange = (tabIndex: number) => {
-    translateX.value = TAB_WIDTH * tabIndex;
+  const iconMap: Record<string, string> = {
+    Expense: 'currency-usd',
+    Loan: 'hand-coin',
+    Investment: 'chart-line',
+    Profile: 'account-circle',
   };
 
   return (
@@ -76,18 +104,9 @@ export default function AppNavigation() {
           tabBarStyle: styles.tabBar,
           tabBarActiveTintColor: '#FFFFFF',
           tabBarInactiveTintColor: 'gray',
-          tabBarIcon: ({focused}) => {
-            const iconMap: Record<string, string> = {
-              Expense: 'currency-usd',
-              Loan: 'hand-coin',
-              Investment: 'chart-line',
-              Profile: 'account-circle',
-            };
-
-            return (
-              <AnimatedIcon name={iconMap[route.name]} focused={focused} />
-            );
-          },
+          tabBarIcon: ({focused}) => (
+            <AnimatedIcon name={iconMap[route.name]} focused={focused} />
+          ),
           tabBarLabelStyle: {
             fontSize: 12,
             fontWeight: 'bold',
@@ -99,28 +118,28 @@ export default function AppNavigation() {
             onTabChange(tabIndex);
           },
         }}>
-        <Tab.Screen name="Expense">
+        <Tab.Screen name={ENavigationTab.Expense}>
           {() => (
             <ScreenWrapper>
               <ExpenseScreen />
             </ScreenWrapper>
           )}
         </Tab.Screen>
-        <Tab.Screen name="Loan">
+        <Tab.Screen name={ENavigationTab.Loan}>
           {() => (
             <ScreenWrapper>
               <LoanScreen />
             </ScreenWrapper>
           )}
         </Tab.Screen>
-        <Tab.Screen name="Investment">
+        <Tab.Screen name={ENavigationTab.Investment}>
           {() => (
             <ScreenWrapper>
               <InvestScreen />
             </ScreenWrapper>
           )}
         </Tab.Screen>
-        <Tab.Screen name="Profile">
+        <Tab.Screen name={ENavigationTab.Profile}>
           {() => (
             <ScreenWrapper>
               <ProfileScreen />
@@ -128,8 +147,17 @@ export default function AppNavigation() {
           )}
         </Tab.Screen>
       </Tab.Navigator>
-      <AnimatedTopBar translateX={translateX} />
+      <AnimatedTopBar animatedStyle={animatedStyle} />
     </View>
+  );
+}
+
+export default function AppNavigation() {
+  return (
+    <Stack.Navigator screenOptions={{headerShown: false}}>
+      <Stack.Screen name={ENavigationStack.Login} component={LoginScreen} />
+      <Stack.Screen name="Tabs" component={TabNavigator} />
+    </Stack.Navigator>
   );
 }
 

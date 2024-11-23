@@ -1,10 +1,11 @@
 import {View, Text} from 'react-native';
 import React from 'react';
+import {darkTheme} from '@trackingPortal/themes/darkTheme';
 
 export default function ProfileScreen() {
   return (
     <View>
-      <Text>ProfileScreen</Text>
+      <Text style={[{color: darkTheme.colors.text}]}>InvestScreen</Text>
     </View>
   );
 }
