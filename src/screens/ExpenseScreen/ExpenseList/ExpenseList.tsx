@@ -1,18 +1,18 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  NativeSyntheticEvent,
-  TouchableOpacity,
-} from 'react-native';
-import React, {FC, useCallback, useState} from 'react';
-import {Button, Card, TextInput} from 'react-native-paper';
+import {View, Text, StyleSheet, TouchableOpacity, Animated} from 'react-native';
+import React, {FC, Fragment, useCallback, useRef, useState} from 'react';
+import {Button, Card} from 'react-native-paper';
 import {darkTheme} from '@trackingPortal/themes/darkTheme';
 import dayjs from 'dayjs';
 
-import MonthPicker, {EventTypes} from 'react-native-month-year-picker';
+import MonthPicker from 'react-native-month-year-picker';
 import DataTable from '@trackingPortal/components/DataTable';
 import {colors} from '@trackingPortal/themes/colors';
+import {Formik} from 'formik';
+import {
+  CreateExpenseSchema,
+  EAddExpenseFields,
+} from '@trackingPortal/screens/ExpenseScreen/ExpenseCreation/ExpenseCreation.constants';
+import ExpenseForm from '@trackingPortal/screens/ExpenseScreen/ExpenseForm';
 
 interface IExpenseList {
   notifyRowOpen: (value: boolean) => void;
@@ -29,6 +29,25 @@ const ExpenseList: FC<IExpenseList> = ({notifyRowOpen}) => {
   const [date, setDate] = useState(new Date());
   const [openPicker, setOpenPicker] = useState<boolean>(false);
   const [editedRow, setEditedRow] = useState<any>(null);
+  const [pickerVisible, setPickerVisible] = useState(false);
+  const animatedHeight = useRef(new Animated.Value(0)).current;
+
+  const animatePicker = () => {
+    if (pickerVisible) {
+      Animated.timing(animatedHeight, {
+        toValue: 0,
+        duration: 320,
+        useNativeDriver: false,
+      }).start(() => setPickerVisible(false));
+    } else {
+      setPickerVisible(true);
+      Animated.timing(animatedHeight, {
+        toValue: 300,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
+    }
+  };
 
   const onValueChange = useCallback(
     (event: any, newDate: any) => {
@@ -49,42 +68,35 @@ const ExpenseList: FC<IExpenseList> = ({notifyRowOpen}) => {
 
   const renderCollapsibleContent = (item: any) => {
     return (
-      <View>
-        <TextInput
-          style={styles.input}
-          value={editedRow?.name || item.name}
-          onChangeText={text => setEditedRow({...item, name: text})}
-          placeholder="Edit Name"
-          placeholderTextColor={colors.placeholder}
-        />
-        {/* <TextInput
-          style={styles.input}
-          value={editedRow?.age?.toString() || item.age.toString()}
-          onChangeText={text => setEditedRow({...item, age: Number(text)})}
-          placeholder="Edit Age"
-          placeholderTextColor={colors.placeholder}
-          keyboardType="numeric"
-        /> */}
-        <View style={styles.actionRow}>
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={() => setExpandedRowId(null)}>
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.saveButton}
-            onPress={() => handleEditSave(item.id)}>
-            <Text style={styles.saveButtonText}>Save</Text>
-          </TouchableOpacity>
-        </View>
-        <TextInput
-          style={styles.input}
-          value={editedRow?.name || item.name}
-          onChangeText={text => setEditedRow({...item, name: text})}
-          placeholder="Edit Name"
-          placeholderTextColor={colors.placeholder}
-        />
-      </View>
+      <Formik
+        i
+        initialValues={{
+          [EAddExpenseFields.DATE]: new Date(),
+          [EAddExpenseFields.DESCRIPTION]: '',
+          [EAddExpenseFields.AMOUNT]: '',
+        }}
+        onSubmit={() => {}}
+        validationSchema={CreateExpenseSchema}>
+        {() => {
+          return (
+            <Fragment>
+              <ExpenseForm />
+              <View style={styles.actionRow}>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => setExpandedRowId(null)}>
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.saveButton}
+                  onPress={() => handleEditSave(item.id)}>
+                  <Text style={styles.saveButtonText}>Save</Text>
+                </TouchableOpacity>
+              </View>
+            </Fragment>
+          );
+        }}
+      </Formik>
     );
   };
 
@@ -153,6 +165,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     marginTop: 10,
+    paddingBottom: 20,
   },
   saveButton: {
     backgroundColor: colors.accent,

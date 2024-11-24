@@ -1,4 +1,4 @@
-import React, {useRef, useEffect} from 'react';
+import React, {useRef, useEffect, useCallback} from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,7 @@ interface DataTableProps {
   expandedRowId: number | null;
   setExpandedRowId: React.Dispatch<React.SetStateAction<number | null>>;
   renderCollapsibleContent: (item: any) => React.ReactNode;
+  renderSwipeActions?: (id: number, close: () => void) => React.ReactNode;
 }
 
 const DataTable: React.FC<DataTableProps> = ({
@@ -30,49 +31,73 @@ const DataTable: React.FC<DataTableProps> = ({
   expandedRowId,
   setExpandedRowId,
   renderCollapsibleContent,
+  renderSwipeActions,
 }) => {
   const swipeableRefs = useRef<{[key: string]: any}>({});
 
-  const handleEditToggle = (id: number) => {
-    swipeableRefs.current[id]?.close();
-    setExpandedRowId(expandedRowId === id ? null : id);
-  };
+  const handleEditToggle = useCallback(
+    (id: number) => {
+      swipeableRefs.current[id]?.close();
+      setExpandedRowId(expandedRowId === id ? null : id);
+    },
+    [expandedRowId, setExpandedRowId],
+  );
 
-  const handleDelete = (id: number) => {
-    swipeableRefs.current[id]?.close();
-    Alert.alert('Delete Row', 'Are you sure?', [
-      {text: 'Cancel', style: 'cancel'},
-      {text: 'Delete', onPress: () => onDelete(id)},
-    ]);
-  };
+  const handleDelete = useCallback(
+    (id: number) => {
+      swipeableRefs.current[id]?.close();
+      Alert.alert('Delete Row', 'Are you sure?', [
+        {text: 'Cancel', style: 'cancel'},
+        {text: 'Delete', onPress: () => onDelete(id)},
+      ]);
+    },
+    [onDelete],
+  );
 
   useEffect(() => {
     isAnyRowOpen(expandedRowId !== null);
   }, [isAnyRowOpen, expandedRowId]);
 
-  const renderSwipeActions = (id: number) => (
-    <View style={styles.swipeActions}>
-      <TouchableOpacity
-        style={styles.editAction}
-        onPress={() => handleEditToggle(id)}>
-        <Icon name="edit" size={24} color="#FFF" />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.deleteAction}
-        onPress={() => handleDelete(id)}>
-        <Icon name="delete" size={24} color="#FFF" />
-      </TouchableOpacity>
-    </View>
+  const defaultSwipeActions = useCallback(
+    (id: number, close: () => void) => (
+      <View style={styles.swipeActions}>
+        <TouchableOpacity
+          style={styles.editAction}
+          onPress={() => {
+            close();
+            handleEditToggle(id);
+          }}>
+          <Icon name="edit" size={24} color="#FFF" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.deleteAction}
+          onPress={() => {
+            close();
+            handleDelete(id);
+          }}>
+          <Icon name="delete" size={24} color="#FFF" />
+        </TouchableOpacity>
+      </View>
+    ),
+    [handleEditToggle, handleDelete],
   );
 
   const renderRow = ({item}: {item: any}) => {
     const isRowOpen = expandedRowId === item.id;
-
     return (
       <Swipeable
         ref={ref => (swipeableRefs.current[item.id] = ref)}
         renderRightActions={
-          !isRowOpen ? () => renderSwipeActions(item.id) : undefined
+          !isRowOpen
+            ? () =>
+                renderSwipeActions
+                  ? renderSwipeActions(item.id, () =>
+                      swipeableRefs.current[item.id]?.close(),
+                    )
+                  : defaultSwipeActions(item.id, () =>
+                      swipeableRefs.current[item.id]?.close(),
+                    )
+            : undefined
         }
         enabled={!isRowOpen}>
         <View style={styles.row}>
@@ -84,13 +109,18 @@ const DataTable: React.FC<DataTableProps> = ({
         </View>
         <Collapsible collapsed={!isRowOpen}>
           <View style={styles.collapsibleContent}>
-            {renderCollapsibleContent(item)}{' '}
-            {/* Pass row data to renderCollapsibleContent */}
+            {renderCollapsibleContent(item)}
           </View>
         </Collapsible>
       </Swipeable>
     );
   };
+
+  const renderEmptyComponent = () => (
+    <View style={styles.emptyContainer}>
+      <Text style={styles.emptyText}>No data available</Text>
+    </View>
+  );
 
   return (
     <View style={styles.mainContainer}>
@@ -106,6 +136,8 @@ const DataTable: React.FC<DataTableProps> = ({
         keyExtractor={item => item.id.toString()}
         renderItem={renderRow}
         contentContainerStyle={styles.table}
+        nestedScrollEnabled={true}
+        ListEmptyComponent={renderEmptyComponent}
       />
     </View>
   );
@@ -167,11 +199,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     padding: 10,
   },
-  editField: {
-    marginBottom: 10,
+  emptyContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
   },
-  label: {
+  emptyText: {
     color: colors.text,
-    marginBottom: 5,
+    fontSize: 16,
+    textAlign: 'center',
   },
 });
