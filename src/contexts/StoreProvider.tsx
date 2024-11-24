@@ -1,51 +1,33 @@
 import React, {createContext, useContext, useEffect, useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useAuth} from '@trackingPortal/auth/Auth0ProviderWithHistory';
-// import {addUserToDb} from '@trackingPortal/api/userService'; // Hypothetical service for adding users
-import {Alert} from 'react-native';
+import {ApiGateway} from '@trackingPortal/api/implementations';
+import {IApiGateWay} from '@trackingPortal/api/interfaces';
+import {useAuth0} from 'react-native-auth0';
+import {IAddUserParams} from '@trackingPortal/api/params';
+import {URLString, UserId} from '@trackingPortal/api/primitives';
+import Toast from 'react-native-toast-message';
 
 type StoreContextType = {
-  saveUserToDb: () => Promise<void>;
-  getToken: () => Promise<string | null>;
+  appLoading: boolean;
+  apiGateway: IApiGateWay;
 };
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
+const apiGateway = new ApiGateway();
 
 export const StoreProvider = ({children}: {children: React.ReactNode}) => {
   const {token, user} = useAuth();
-  const [storedToken, setStoredToken] = useState<string | null>(null);
+  const {user: auth0User} = useAuth0();
+  const [hasToken, setHasToken] = useState<boolean>(false);
+  const [appLoading, setAppLoading] = useState<boolean>(false);
 
-  // Save token to AsyncStorage for persistence
+  // navigation.navigate(ENavigationStack.Login); //* for logout
+
   const saveToken = async () => {
     if (token) {
-      await AsyncStorage.setItem('authToken', token);
-      setStoredToken(token);
-    }
-  };
-
-  const getToken = async () => {
-    if (!storedToken) {
-      const tokenFromStorage = await AsyncStorage.getItem('authToken');
-      setStoredToken(tokenFromStorage);
-      return tokenFromStorage;
-    }
-    return storedToken;
-  };
-
-  const saveUserToDb = async () => {
-    try {
-      if (user) {
-        // await addUserToDb({
-        //   userId: user.sub,
-        //   name: user.name,
-        //   email: user.email,
-        //   profilePicture: user.picture,
-        // });
-        Alert.alert('Success', 'User added to database');
-      }
-    } catch (error) {
-      console.error('Error saving user to database:', error);
-      Alert.alert('Error', 'Failed to save user to database');
+      apiGateway.ajaxUtils.setAccessToken(token);
+      setHasToken(true);
     }
   };
 
@@ -53,9 +35,40 @@ export const StoreProvider = ({children}: {children: React.ReactNode}) => {
     saveToken();
   }, [token]);
 
+  useEffect(() => {
+    hasToken && addUserToDb();
+  }, [auth0User, hasToken]);
+
+  const addUserToDb = async () => {
+    try {
+      setAppLoading(true);
+      if (
+        !auth0User?.name ||
+        !auth0User?.email ||
+        !auth0User.picture ||
+        !auth0User.sub
+      )
+        return;
+
+      const params: IAddUserParams = {
+        userId: UserId(auth0User.sub),
+        name: auth0User.name,
+        profilePicture: URLString(auth0User.picture),
+        email: auth0User.email,
+      };
+      await apiGateway.userService.addUser(params);
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Something went wrong!',
+        position: 'bottom',
+      });
+    }
+  };
+
   const contextValues: StoreContextType = {
-    saveUserToDb,
-    getToken,
+    appLoading,
+    apiGateway,
   };
 
   return (

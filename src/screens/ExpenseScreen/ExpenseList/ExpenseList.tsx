@@ -39,32 +39,32 @@ const ExpenseList: FC<IExpenseList> = ({notifyRowOpen}) => {
     [date, setOpenPicker],
   );
 
-  // const handleEditSave = (id: number) => {
-  //   setData(prevData =>
-  //     prevData.map(row => (row.id === id ? {...row, ...editedRow} : row)),
-  //   );
-  //   setExpandedRowId(null); // Collapse the row after saving
-  //   setEditedRow(null); // Clear edited row
-  // };
+  const handleEditSave = (id: number) => {
+    // setData(prevData =>
+    //   prevData.map(row => (row.id === id ? {...row, ...editedRow} : row)),
+    // );
+    setExpandedRowId(null);
+    setEditedRow(null);
+  };
 
   const renderCollapsibleContent = (item: any) => {
     return (
       <View>
-        {/* <TextInput
+        <TextInput
           style={styles.input}
           value={editedRow?.name || item.name}
           onChangeText={text => setEditedRow({...item, name: text})}
           placeholder="Edit Name"
           placeholderTextColor={colors.placeholder}
         />
-        <TextInput
+        {/* <TextInput
           style={styles.input}
           value={editedRow?.age?.toString() || item.age.toString()}
           onChangeText={text => setEditedRow({...item, age: Number(text)})}
           placeholder="Edit Age"
           placeholderTextColor={colors.placeholder}
           keyboardType="numeric"
-        />
+        /> */}
         <View style={styles.actionRow}>
           <TouchableOpacity
             style={styles.cancelButton}
@@ -76,7 +76,7 @@ const ExpenseList: FC<IExpenseList> = ({notifyRowOpen}) => {
             onPress={() => handleEditSave(item.id)}>
             <Text style={styles.saveButtonText}>Save</Text>
           </TouchableOpacity>
-        </View> */}
+        </View>
         <TextInput
           style={styles.input}
           value={editedRow?.name || item.name}
@@ -113,7 +113,7 @@ const ExpenseList: FC<IExpenseList> = ({notifyRowOpen}) => {
         </Card.Actions>
         <Card.Content>
           <DataTable
-            headers={['id', 'name', 'age']}
+            headers={headers}
             data={data}
             onDelete={() => {}}
             isAnyRowOpen={notifyRowOpen}

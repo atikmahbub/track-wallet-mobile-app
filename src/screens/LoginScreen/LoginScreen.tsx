@@ -3,9 +3,15 @@ import React from 'react';
 import {darkTheme} from '@trackingPortal/themes/darkTheme';
 import {Button, Text} from 'react-native-paper';
 import {useAuth} from '@trackingPortal/auth/Auth0ProviderWithHistory';
+import {AppLoader} from '@trackingPortal/components';
 
 export default function LoginScreen() {
-  const {login} = useAuth();
+  const {login, loading} = useAuth();
+
+  if (loading) {
+    return <AppLoader />;
+  }
+
   return (
     <View style={styles.container}>
       <Image

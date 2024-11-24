@@ -20,5 +20,5 @@ export type RootTabParamList = {
 
 export type RootStackParamList = {
   [ENavigationStack.Login]: undefined;
-  Tabs: NavigatorScreenParams<RootTabParamList>;
+  Tabs: undefined;
 };

@@ -9,6 +9,7 @@ import {TrackingWalletConfig} from '@trackingPortal/api/TrackingWalletConfig';
 import {AxiosAjaxUtils} from '@trackingPortal/api/utils/AxiosAjaxUtils';
 import {IApiGateWay} from '@trackingPortal/api/interfaces';
 import {URLString} from '@trackingPortal/api/primitives';
+import {REST_API_BASE_URL} from '@env';
 
 export class ApiGateway implements IApiGateWay {
   public config: TrackingWalletConfig;
@@ -21,7 +22,7 @@ export class ApiGateway implements IApiGateWay {
 
   constructor() {
     this.config = new TrackingWalletConfig(
-      URLString(process.env.REST_API_BASE_URL as URLString),
+      URLString(REST_API_BASE_URL as URLString),
     );
     this.ajaxUtils = new AxiosAjaxUtils();
 

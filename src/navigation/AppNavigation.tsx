@@ -24,7 +24,8 @@ import {
   ENavigationStack,
 } from '@trackingPortal/navigation/ERoutes';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {CustomAppBar} from '@trackingPortal/components';
+import {AppLoader, CustomAppBar} from '@trackingPortal/components';
+import {useAuth} from '@trackingPortal/auth/Auth0ProviderWithHistory';
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
@@ -153,10 +154,19 @@ function TabNavigator() {
 }
 
 export default function AppNavigation() {
+  const {token, loading} = useAuth();
+
+  if (loading) {
+    return <AppLoader />;
+  }
+
   return (
     <Stack.Navigator screenOptions={{headerShown: false}}>
-      <Stack.Screen name={ENavigationStack.Login} component={LoginScreen} />
-      <Stack.Screen name="Tabs" component={TabNavigator} />
+      {token ? (
+        <Stack.Screen name="Tabs" component={TabNavigator} />
+      ) : (
+        <Stack.Screen name={ENavigationStack.Login} component={LoginScreen} />
+      )}
     </Stack.Navigator>
   );
 }

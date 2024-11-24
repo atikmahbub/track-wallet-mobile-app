@@ -1,4 +1,4 @@
-import React, {Fragment, useState} from 'react';
+import React, {Fragment, useEffect, useState} from 'react';
 
 import ExpenseSummary from '@trackingPortal/screens/ExpenseScreen/ExpenseSummary';
 import {AnimatedFAB} from 'react-native-paper';
@@ -6,10 +6,22 @@ import {ScrollView, StyleSheet} from 'react-native';
 import {darkTheme} from '@trackingPortal/themes/darkTheme';
 import ExpenseList from '@trackingPortal/screens/ExpenseScreen/ExpenseList';
 import ExpenseCreation from '@trackingPortal/screens/ExpenseScreen/ExpenseCreation';
+import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
 
 export default function ExpenseScreen() {
   const [hideFabIcon, setHideFabIcon] = useState<boolean>(false);
   const [openCreationForm, setOpenCreationModal] = useState<boolean>(false);
+  const {apiGateway} = useStoreContext();
+
+  // useEffect(() => {
+  //   getExpenses();
+  // }, []);
+
+  // const getExpenses = async () => {
+  //   try {
+  //     const response = apiGateway.expenseService.getExpenseByUser();
+  //   } catch (error) {}
+  // };
 
   return (
     <Fragment>
