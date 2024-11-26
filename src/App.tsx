@@ -36,7 +36,7 @@ function App(): React.JSX.Element {
           </PaperProvider>
         </GestureHandlerRootView>
       </SafeAreaProvider>
-      <Toast />
+      <Toast topOffset={70} position="top" />
     </Fragment>
   );
 }

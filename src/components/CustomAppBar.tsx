@@ -1,3 +1,4 @@
+import {useAuth} from '@trackingPortal/auth/Auth0ProviderWithHistory';
 import {getGreeting} from '@trackingPortal/utils/utils';
 import React from 'react';
 import {View, StyleSheet, Text} from 'react-native';
@@ -5,16 +6,19 @@ import {Avatar} from 'react-native-paper';
 
 const CustomAppBar: React.FC = () => {
   const greeting = getGreeting();
+  const {user} = useAuth();
 
   return (
     <View style={styles.greetingContainer}>
       <Avatar.Image
         size={50}
         source={{
-          uri: 'https://example.com/avatar.jpg',
+          uri: user?.picture ?? '',
         }}
       />
-      <Text style={styles.greetingText}>{greeting}, Admin</Text>
+      <Text style={styles.greetingText}>
+        {greeting}, {user?.name ? user.name.split(' ')[0] : 'Admin'}
+      </Text>
     </View>
   );
 };

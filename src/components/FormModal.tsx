@@ -5,6 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  ActivityIndicator,
 } from 'react-native';
 import Modal from 'react-native-modal';
 
@@ -13,6 +14,7 @@ interface IFormModal {
   title: string;
   onClose: () => void;
   onSave: () => void;
+  loading?: boolean;
   children: React.ReactNode;
 }
 
@@ -21,6 +23,7 @@ const FormModal: React.FC<IFormModal> = ({
   title,
   onClose,
   onSave,
+  loading,
   children,
 }) => {
   return (
@@ -38,6 +41,13 @@ const FormModal: React.FC<IFormModal> = ({
           </TouchableOpacity>
           <TouchableOpacity style={styles.saveButton} onPress={onSave}>
             <Text style={styles.buttonText}>Save</Text>
+            {loading && (
+              <ActivityIndicator
+                size="small"
+                color="#FFF"
+                style={styles.loader}
+              />
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -87,9 +97,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#9C27B0',
     padding: 10,
     borderRadius: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   buttonText: {
     color: '#E1BEE7',
     fontWeight: 'bold',
+  },
+  loader: {
+    marginLeft: 10,
   },
 });

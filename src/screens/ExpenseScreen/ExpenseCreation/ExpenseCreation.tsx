@@ -1,5 +1,5 @@
-import {View, Animated} from 'react-native';
-import React, {SetStateAction, useRef, useState} from 'react';
+import {View} from 'react-native';
+import React, {SetStateAction, useState} from 'react';
 import FormModal from '@trackingPortal/components/FormModal';
 import {Formik} from 'formik';
 
@@ -8,6 +8,12 @@ import {
   CreateExpenseSchema,
 } from '@trackingPortal/screens/ExpenseScreen/ExpenseCreation/ExpenseCreation.constants';
 import ExpenseForm from '@trackingPortal/screens/ExpenseScreen/ExpenseForm';
+import {INewExpense} from './ExpenseCreation.interfaces';
+import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
+import {IAddExpenseParams} from '@trackingPortal/api/params';
+import {useAuth} from '@trackingPortal/auth/Auth0ProviderWithHistory';
+import {makeUnixTimestampString} from '@trackingPortal/api/primitives';
+import Toast from 'react-native-toast-message';
 
 interface IExpenseCreation {
   openCreationModal: boolean;
@@ -18,28 +24,28 @@ const ExpenseCreation: React.FC<IExpenseCreation> = ({
   openCreationModal,
   setOpenCreationModal,
 }) => {
-  const [pickerVisible, setPickerVisible] = useState(false);
-  const animatedHeight = useRef(new Animated.Value(0)).current;
+  const {apiGateway} = useStoreContext();
+  const {user} = useAuth();
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const animatePicker = () => {
-    if (pickerVisible) {
-      Animated.timing(animatedHeight, {
-        toValue: 0,
-        duration: 320,
-        useNativeDriver: false,
-      }).start(() => setPickerVisible(false));
-    } else {
-      setPickerVisible(true);
-      Animated.timing(animatedHeight, {
-        toValue: 300,
-        duration: 300,
-        useNativeDriver: false,
-      }).start();
+  const handleAddExpense = (values: INewExpense) => {
+    try {
+      setLoading(true);
+      const params: IAddExpenseParams = {
+        userId: user.sub,
+        amount: Number(values.amount),
+        date: makeUnixTimestampString(Number(new Date(values.date))),
+        description: values.description,
+      };
+      apiGateway.expenseService.addExpense(params);
+    } catch (error) {
+      Toast.show({
+        text1: 'Something went wrong!',
+      });
+    } finally {
+      setLoading(false);
+      setOpenCreationModal(false);
     }
-  };
-
-  const handleAddExpense = (values: any) => {
-    console.log('Expense Added:', values);
   };
 
   return (
@@ -63,6 +69,7 @@ const ExpenseCreation: React.FC<IExpenseCreation> = ({
               }}
               onSave={handleSubmit}
               children={<ExpenseForm />}
+              loading={loading}
             />
           </View>
         );

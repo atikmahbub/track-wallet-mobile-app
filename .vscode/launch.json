@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Attach to React Native",
+      "type": "reactnative",
+      "request": "attach",
+      "platform": "iOS",
+      "port": 8081
+    }
+  ]
+}

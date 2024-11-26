@@ -4,7 +4,7 @@ import {Text} from 'react-native-paper';
 
 interface IValueWithLabel {
   label: string;
-  value: string;
+  value: string | number;
 }
 
 const ValueWithLabel: React.FC<IValueWithLabel> = ({label, value}) => {

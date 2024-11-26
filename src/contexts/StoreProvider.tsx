@@ -1,43 +1,50 @@
 import React, {createContext, useContext, useEffect, useState} from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useAuth} from '@trackingPortal/auth/Auth0ProviderWithHistory';
 import {ApiGateway} from '@trackingPortal/api/implementations';
 import {IApiGateWay} from '@trackingPortal/api/interfaces';
-import {useAuth0} from 'react-native-auth0';
 import {IAddUserParams} from '@trackingPortal/api/params';
-import {URLString, UserId} from '@trackingPortal/api/primitives';
+import {
+  makeUnixTimestampString,
+  URLString,
+  UserId,
+} from '@trackingPortal/api/primitives';
 import Toast from 'react-native-toast-message';
+import {UserModel} from '@trackingPortal/api/models';
 
 type StoreContextType = {
   appLoading: boolean;
   apiGateway: IApiGateWay;
+  currentUser: NewUserModel;
 };
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 const apiGateway = new ApiGateway();
 
+interface NewUserModel extends UserModel {
+  default: boolean;
+}
+
+const defaultUser: NewUserModel = {
+  name: 'Admin',
+  email: 'admin@gmail.com',
+  userId: 'admin' as UserId,
+  profilePicture: 'link' as URLString,
+  created: makeUnixTimestampString(Number(new Date())),
+  updated: makeUnixTimestampString(Number(new Date())),
+  default: true,
+};
+
 export const StoreProvider = ({children}: {children: React.ReactNode}) => {
-  const {token, user} = useAuth();
-  const {user: auth0User} = useAuth0();
-  const [hasToken, setHasToken] = useState<boolean>(false);
+  const {token, user: auth0User} = useAuth();
   const [appLoading, setAppLoading] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<NewUserModel>(defaultUser);
 
-  // navigation.navigate(ENavigationStack.Login); //* for logout
-
-  const saveToken = async () => {
+  useEffect(() => {
     if (token) {
       apiGateway.ajaxUtils.setAccessToken(token);
-      setHasToken(true);
+      addUserToDb();
     }
-  };
-
-  useEffect(() => {
-    saveToken();
-  }, [token]);
-
-  useEffect(() => {
-    hasToken && addUserToDb();
-  }, [auth0User, hasToken]);
+  }, [auth0User, token]);
 
   const addUserToDb = async () => {
     try {
@@ -56,17 +63,21 @@ export const StoreProvider = ({children}: {children: React.ReactNode}) => {
         profilePicture: URLString(auth0User.picture),
         email: auth0User.email,
       };
-      await apiGateway.userService.addUser(params);
+      const user = await apiGateway.userService.addUser(params);
+      setCurrentUser({
+        ...user,
+        default: false,
+      });
     } catch (error) {
       Toast.show({
         type: 'error',
         text1: 'Something went wrong!',
-        position: 'bottom',
       });
     }
   };
 
   const contextValues: StoreContextType = {
+    currentUser,
     appLoading,
     apiGateway,
   };
