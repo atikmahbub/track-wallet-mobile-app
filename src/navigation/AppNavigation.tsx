@@ -24,7 +24,7 @@ import {
   ENavigationStack,
 } from '@trackingPortal/navigation/ERoutes';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {AppLoader, CustomAppBar} from '@trackingPortal/components';
+import {AnimatedLoader, CustomAppBar} from '@trackingPortal/components';
 import {useAuth} from '@trackingPortal/auth/Auth0ProviderWithHistory';
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
@@ -157,7 +157,7 @@ export default function AppNavigation() {
   const {token, loading} = useAuth();
 
   if (loading) {
-    return <AppLoader />;
+    return <AnimatedLoader />;
   }
 
   return (

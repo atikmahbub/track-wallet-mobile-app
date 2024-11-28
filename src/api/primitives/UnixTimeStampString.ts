@@ -1,6 +1,6 @@
-import { make, Brand } from "ts-brand";
+import {make, Brand} from 'ts-brand';
 
-export type UnixTimeStampString = Brand<string, "UnixTimeStampString">;
+export type UnixTimeStampString = Brand<string, 'UnixTimeStampString'>;
 
 export const BrandUnixTimeStamp = make<UnixTimeStampString>();
 
@@ -10,7 +10,12 @@ export function makeUnixTimestampToISOString(unixTimestamp: number): string {
 }
 
 export const makeUnixTimestampString = (
-  timestamp: number
+  timestamp: number,
 ): UnixTimeStampString => {
   return BrandUnixTimeStamp(String(Math.floor(timestamp / 1000)));
 };
+
+export function makeUnixTimestampToNumber(unixTimestamp: number): number {
+  const date = unixTimestamp * 1000;
+  return date;
+}

@@ -20,23 +20,25 @@ import {
   EAddExpenseFields,
 } from '@trackingPortal/screens/ExpenseScreen/ExpenseCreation/ExpenseCreation.constants';
 import ExpenseForm from '@trackingPortal/screens/ExpenseScreen/ExpenseForm';
+import {ExpenseModel} from '@trackingPortal/api/models';
+import {makeUnixTimestampToNumber} from '@trackingPortal/api/primitives';
 
 interface IExpenseList {
   notifyRowOpen: (value: boolean) => void;
   setFilteredMonth: React.Dispatch<SetStateAction<Dayjs>>;
   filteredMonth: Dayjs;
+  expenses: ExpenseModel[];
+  getUserExpenses: () => void;
 }
 
 const headers = ['Date', 'Purpose', 'Amount'];
-const data = [
-  {id: 1, Date: 'John Doe', Purpose: 'john@.com', Amount: '30'},
-  {id: 2, Date: 'Jane Smith', Purpose: 'jane@.com', Amount: '25'},
-];
 
 const ExpenseList: FC<IExpenseList> = ({
   notifyRowOpen,
   setFilteredMonth,
   filteredMonth,
+  expenses,
+  getUserExpenses,
 }) => {
   const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
   const [openPicker, setOpenPicker] = useState<boolean>(false);
@@ -83,7 +85,6 @@ const ExpenseList: FC<IExpenseList> = ({
   const renderCollapsibleContent = (item: any) => {
     return (
       <Formik
-        i
         initialValues={{
           [EAddExpenseFields.DATE]: new Date(),
           [EAddExpenseFields.DESCRIPTION]: '',
@@ -140,7 +141,16 @@ const ExpenseList: FC<IExpenseList> = ({
         <Card.Content>
           <DataTable
             headers={headers}
-            data={data}
+            data={expenses.map(item => {
+              return {
+                id: item.id,
+                Date: dayjs(
+                  makeUnixTimestampToNumber(Number(item.date)),
+                ).format('MMM D, YYYY'),
+                Purpose: item.description,
+                Amount: item.amount,
+              };
+            })}
             onDelete={() => {}}
             isAnyRowOpen={notifyRowOpen}
             expandedRowId={expandedRowId}

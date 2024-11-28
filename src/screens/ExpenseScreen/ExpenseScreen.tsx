@@ -3,15 +3,14 @@ import React, {Fragment, useEffect, useState} from 'react';
 import ExpenseSummary from '@trackingPortal/screens/ExpenseScreen/ExpenseSummary';
 import {AnimatedFAB} from 'react-native-paper';
 import {ScrollView, StyleSheet} from 'react-native';
-import {darkTheme} from '@trackingPortal/themes/darkTheme';
 import ExpenseList from '@trackingPortal/screens/ExpenseScreen/ExpenseList';
 import ExpenseCreation from '@trackingPortal/screens/ExpenseScreen/ExpenseCreation';
 import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
 import {ExpenseModel, MonthlyLimitModel} from '@trackingPortal/api/models';
-import {useAuth} from '@trackingPortal/auth/Auth0ProviderWithHistory';
 import dayjs, {Dayjs} from 'dayjs';
 import {Month, UnixTimeStampString, Year} from '@trackingPortal/api/primitives';
 import Toast from 'react-native-toast-message';
+import {AnimatedLoader} from '@trackingPortal/components';
 
 export default function ExpenseScreen() {
   const {currentUser: user} = useStoreContext();
@@ -20,10 +19,11 @@ export default function ExpenseScreen() {
   const {apiGateway} = useStoreContext();
   const [expenses, setExpenses] = useState<ExpenseModel[]>([]);
   const [filterMonth, setFilterMonth] = useState(dayjs(new Date()));
-  const [limitLoading, setLimitLoading] = useState<boolean>(false);
   const [monthLimit, setMonthLimit] = useState<MonthlyLimitModel>(
     {} as MonthlyLimitModel,
   );
+  const [loading, setLoading] = useState<boolean>(false);
+  const [limitLoading, setLimitLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (user.userId && !user.default) {
@@ -34,6 +34,7 @@ export default function ExpenseScreen() {
 
   const getExpenses = async () => {
     try {
+      setLoading(true);
       const response = await apiGateway.expenseService.getExpenseByUser({
         userId: user.userId,
         date: dayjs(filterMonth).unix() as unknown as UnixTimeStampString,
@@ -45,6 +46,8 @@ export default function ExpenseScreen() {
         text1: 'Something went wrong',
       });
       console.log('error', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -70,6 +73,10 @@ export default function ExpenseScreen() {
     return acc;
   }, 0);
 
+  if (loading || limitLoading) {
+    return <AnimatedLoader />;
+  }
+
   return (
     <Fragment>
       <ScrollView>
@@ -83,6 +90,8 @@ export default function ExpenseScreen() {
           notifyRowOpen={value => setHideFabIcon(value)}
           filteredMonth={filterMonth}
           setFilteredMonth={setFilterMonth}
+          expenses={expenses}
+          getUserExpenses={getExpenses}
         />
         <ExpenseCreation
           openCreationModal={openCreationForm}

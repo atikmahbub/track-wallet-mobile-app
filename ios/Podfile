@@ -23,6 +23,9 @@ target 'TrackWalletApp' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
+  # Add Lottie dependencies
+  pod 'lottie-react-native', :path => '../node_modules/lottie-react-native'
+
   target 'TrackWalletAppTests' do
     inherit! :complete
     # Pods for testing
