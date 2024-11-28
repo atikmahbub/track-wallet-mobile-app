@@ -96,6 +96,7 @@ export default function ExpenseScreen() {
         <ExpenseCreation
           openCreationModal={openCreationForm}
           setOpenCreationModal={setOpenCreationModal}
+          getUserExpenses={getExpenses}
         />
       </ScrollView>
       {!hideFabIcon && (

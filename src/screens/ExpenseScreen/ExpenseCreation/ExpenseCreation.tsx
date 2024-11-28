@@ -18,17 +18,19 @@ import Toast from 'react-native-toast-message';
 interface IExpenseCreation {
   openCreationModal: boolean;
   setOpenCreationModal: React.Dispatch<SetStateAction<boolean>>;
+  getUserExpenses: () => void;
 }
 
 const ExpenseCreation: React.FC<IExpenseCreation> = ({
   openCreationModal,
   setOpenCreationModal,
+  getUserExpenses,
 }) => {
   const {apiGateway} = useStoreContext();
   const {user} = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
 
-  const handleAddExpense = (values: INewExpense) => {
+  const handleAddExpense = async (values: INewExpense) => {
     try {
       setLoading(true);
       const params: IAddExpenseParams = {
@@ -37,9 +39,15 @@ const ExpenseCreation: React.FC<IExpenseCreation> = ({
         date: makeUnixTimestampString(Number(new Date(values.date))),
         description: values.description,
       };
-      apiGateway.expenseService.addExpense(params);
+      await apiGateway.expenseService.addExpense(params);
+      await getUserExpenses();
+      Toast.show({
+        type: 'success',
+        text1: 'Expense added successfully',
+      });
     } catch (error) {
       Toast.show({
+        type: 'error',
         text1: 'Something went wrong!',
       });
     } finally {
