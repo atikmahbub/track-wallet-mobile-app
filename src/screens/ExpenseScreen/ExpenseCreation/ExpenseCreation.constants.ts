@@ -8,6 +8,10 @@ export enum EAddExpenseFields {
   EXPENSE_LIST = 'expense_list',
 }
 
+export enum EMonthlyLimitFields {
+  LIMIT = 'limit',
+}
+
 export const defaultQuestion: INewExpense = {
   [EAddExpenseFields.AMOUNT]: '',
   [EAddExpenseFields.DESCRIPTION]: '',

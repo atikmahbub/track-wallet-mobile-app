@@ -19,7 +19,7 @@ export default function ExpenseScreen() {
   const [openCreationForm, setOpenCreationModal] = useState<boolean>(false);
   const {apiGateway} = useStoreContext();
   const [expenses, setExpenses] = useState<ExpenseModel[]>([]);
-  const [filterMonth, setFilterMonth] = useState<Dayjs>(dayjs());
+  const [filterMonth, setFilterMonth] = useState(dayjs(new Date()));
   const [limitLoading, setLimitLoading] = useState<boolean>(false);
   const [monthLimit, setMonthLimit] = useState<MonthlyLimitModel>(
     {} as MonthlyLimitModel,
@@ -79,7 +79,11 @@ export default function ExpenseScreen() {
           monthLimit={monthLimit}
           getMonthlyLimit={getMonthlyLimit}
         />
-        <ExpenseList notifyRowOpen={value => setHideFabIcon(value)} />
+        <ExpenseList
+          notifyRowOpen={value => setHideFabIcon(value)}
+          filteredMonth={filterMonth}
+          setFilteredMonth={setFilterMonth}
+        />
         <ExpenseCreation
           openCreationModal={openCreationForm}
           setOpenCreationModal={setOpenCreationModal}

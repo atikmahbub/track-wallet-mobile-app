@@ -1,8 +1,15 @@
 import {View, Text, StyleSheet, TouchableOpacity, Animated} from 'react-native';
-import React, {FC, Fragment, useCallback, useRef, useState} from 'react';
+import React, {
+  FC,
+  Fragment,
+  SetStateAction,
+  useCallback,
+  useRef,
+  useState,
+} from 'react';
 import {Button, Card} from 'react-native-paper';
 import {darkTheme} from '@trackingPortal/themes/darkTheme';
-import dayjs from 'dayjs';
+import dayjs, {Dayjs} from 'dayjs';
 
 import MonthPicker from 'react-native-month-year-picker';
 import DataTable from '@trackingPortal/components/DataTable';
@@ -16,6 +23,8 @@ import ExpenseForm from '@trackingPortal/screens/ExpenseScreen/ExpenseForm';
 
 interface IExpenseList {
   notifyRowOpen: (value: boolean) => void;
+  setFilteredMonth: React.Dispatch<SetStateAction<Dayjs>>;
+  filteredMonth: Dayjs;
 }
 
 const headers = ['Date', 'Purpose', 'Amount'];
@@ -24,9 +33,12 @@ const data = [
   {id: 2, Date: 'Jane Smith', Purpose: 'jane@.com', Amount: '25'},
 ];
 
-const ExpenseList: FC<IExpenseList> = ({notifyRowOpen}) => {
+const ExpenseList: FC<IExpenseList> = ({
+  notifyRowOpen,
+  setFilteredMonth,
+  filteredMonth,
+}) => {
   const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
-  const [date, setDate] = useState(new Date());
   const [openPicker, setOpenPicker] = useState<boolean>(false);
   const [editedRow, setEditedRow] = useState<any>(null);
   const [pickerVisible, setPickerVisible] = useState(false);
@@ -51,11 +63,13 @@ const ExpenseList: FC<IExpenseList> = ({notifyRowOpen}) => {
 
   const onValueChange = useCallback(
     (event: any, newDate: any) => {
-      const selectedDate = newDate || date;
+      const selectedDate = newDate || filteredMonth;
       setOpenPicker(false);
-      setDate(selectedDate);
+      if (selectedDate) {
+        setFilteredMonth(dayjs(selectedDate));
+      }
     },
-    [date, setOpenPicker],
+    [filteredMonth, setOpenPicker],
   );
 
   const handleEditSave = (id: number) => {
@@ -112,12 +126,12 @@ const ExpenseList: FC<IExpenseList> = ({notifyRowOpen}) => {
         />
         <Card.Actions style={styles.cardActions}>
           <Button mode="outlined" onPress={() => setOpenPicker(!openPicker)}>
-            {dayjs(date).format('MMMM YYYY')}
+            {dayjs(filteredMonth).format('MMMM YYYY')}
           </Button>
           {openPicker && (
             <MonthPicker
               onChange={onValueChange}
-              value={date}
+              value={filteredMonth.toDate()}
               locale="en"
               autoTheme={true}
             />
