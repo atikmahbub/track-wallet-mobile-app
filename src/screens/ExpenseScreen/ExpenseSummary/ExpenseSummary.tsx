@@ -103,7 +103,7 @@ const ExpenseSummary: React.FC<ISummary> = ({
         <Card.Content>
           <ValueWithLabel
             label="Month"
-            value={dayjs(new Date()).format('MMMM, YYYY')}
+            value={dayjs(filterMonth).format('MMMM, YYYY')}
           />
           <ValueWithLabel
             label="Total Spend"
