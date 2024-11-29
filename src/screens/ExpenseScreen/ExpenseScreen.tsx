@@ -1,13 +1,12 @@
 import React, {Fragment, useEffect, useState} from 'react';
-
 import ExpenseSummary from '@trackingPortal/screens/ExpenseScreen/ExpenseSummary';
 import {AnimatedFAB} from 'react-native-paper';
-import {ScrollView, StyleSheet} from 'react-native';
+import {ScrollView, StyleSheet, RefreshControl} from 'react-native';
 import ExpenseList from '@trackingPortal/screens/ExpenseScreen/ExpenseList';
 import ExpenseCreation from '@trackingPortal/screens/ExpenseScreen/ExpenseCreation';
 import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
 import {ExpenseModel, MonthlyLimitModel} from '@trackingPortal/api/models';
-import dayjs, {Dayjs} from 'dayjs';
+import dayjs from 'dayjs';
 import {Month, UnixTimeStampString, Year} from '@trackingPortal/api/primitives';
 import Toast from 'react-native-toast-message';
 import {AnimatedLoader} from '@trackingPortal/components';
@@ -24,6 +23,7 @@ export default function ExpenseScreen() {
   );
   const [loading, setLoading] = useState<boolean>(false);
   const [limitLoading, setLimitLoading] = useState<boolean>(false);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
   useEffect(() => {
     if (user.userId && !user.default) {
@@ -73,13 +73,22 @@ export default function ExpenseScreen() {
     return acc;
   }, 0);
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([getExpenses(), getMonthlyLimit()]);
+    setRefreshing(false);
+  };
+
   if (loading || limitLoading) {
     return <AnimatedLoader />;
   }
 
   return (
     <Fragment>
-      <ScrollView>
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
         <ExpenseSummary
           totalExpense={totalExpense}
           filterMonth={filterMonth}

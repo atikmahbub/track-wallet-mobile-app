@@ -29,6 +29,7 @@ export default function ExpenseForm() {
       }).start();
     }
   };
+
   return (
     <View style={{gap: 16}}>
       <View style={styles.inputWrapper}>

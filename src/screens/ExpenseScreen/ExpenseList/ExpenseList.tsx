@@ -1,10 +1,9 @@
-import {View, Text, StyleSheet, TouchableOpacity, Animated} from 'react-native';
+import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import React, {
   FC,
   Fragment,
   SetStateAction,
   useCallback,
-  useRef,
   useState,
 } from 'react';
 import {Button, Card} from 'react-native-paper';
@@ -21,7 +20,15 @@ import {
 } from '@trackingPortal/screens/ExpenseScreen/ExpenseCreation/ExpenseCreation.constants';
 import ExpenseForm from '@trackingPortal/screens/ExpenseScreen/ExpenseForm';
 import {ExpenseModel} from '@trackingPortal/api/models';
-import {makeUnixTimestampToNumber} from '@trackingPortal/api/primitives';
+import {
+  ExpenseId,
+  makeUnixTimestampString,
+  makeUnixTimestampToNumber,
+} from '@trackingPortal/api/primitives';
+import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
+import {IUpdateExpenseParams} from '@trackingPortal/api/params';
+import Toast from 'react-native-toast-message';
+import {LoadingButton} from '@trackingPortal/components';
 
 interface IExpenseList {
   notifyRowOpen: (value: boolean) => void;
@@ -42,26 +49,8 @@ const ExpenseList: FC<IExpenseList> = ({
 }) => {
   const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
   const [openPicker, setOpenPicker] = useState<boolean>(false);
-  const [editedRow, setEditedRow] = useState<any>(null);
-  const [pickerVisible, setPickerVisible] = useState(false);
-  const animatedHeight = useRef(new Animated.Value(0)).current;
-
-  const animatePicker = () => {
-    if (pickerVisible) {
-      Animated.timing(animatedHeight, {
-        toValue: 0,
-        duration: 320,
-        useNativeDriver: false,
-      }).start(() => setPickerVisible(false));
-    } else {
-      setPickerVisible(true);
-      Animated.timing(animatedHeight, {
-        toValue: 300,
-        duration: 300,
-        useNativeDriver: false,
-      }).start();
-    }
-  };
+  const {currentUser: user, apiGateway} = useStoreContext();
+  const [loading, setLoading] = useState<boolean>(false);
 
   const onValueChange = useCallback(
     (event: any, newDate: any) => {
@@ -74,46 +63,83 @@ const ExpenseList: FC<IExpenseList> = ({
     [filteredMonth, setOpenPicker],
   );
 
-  const handleEditSave = (id: number) => {
-    // setData(prevData =>
-    //   prevData.map(row => (row.id === id ? {...row, ...editedRow} : row)),
-    // );
-    setExpandedRowId(null);
-    setEditedRow(null);
+  const onExpenseEdit = async (
+    values: any,
+    {resetForm}: any,
+    id: ExpenseId,
+  ) => {
+    if (user.default) return;
+
+    try {
+      setLoading(true);
+      const params: IUpdateExpenseParams = {
+        id: id,
+        amount: Number(values.amount),
+        date: makeUnixTimestampString(Number(new Date(values.date))),
+        description: values.description,
+      };
+      await apiGateway.expenseService.updateExpense(params);
+      await getUserExpenses();
+      Toast.show({
+        type: 'success',
+        text1: 'Expense updated successfully!',
+      });
+    } catch (error) {
+      console.log('error', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Something went wrong!',
+      });
+    } finally {
+      resetForm();
+      setExpandedRowId(null);
+      setLoading(false);
+    }
   };
 
-  const renderCollapsibleContent = (item: any) => {
-    return (
-      <Formik
-        initialValues={{
-          [EAddExpenseFields.DATE]: new Date(),
-          [EAddExpenseFields.DESCRIPTION]: '',
-          [EAddExpenseFields.AMOUNT]: '',
-        }}
-        onSubmit={() => {}}
-        validationSchema={CreateExpenseSchema}>
-        {() => {
-          return (
+  const renderCollapsibleContent = useCallback(
+    (item: ExpenseModel) => {
+      const selectedItem = expenses.find(expense => expense.id === item.id);
+      if (!selectedItem) return null;
+      const currentRowId = selectedItem.id;
+
+      return (
+        <Formik
+          enableReinitialize
+          initialValues={{
+            id: selectedItem.id,
+            [EAddExpenseFields.DATE]: new Date(
+              Number(selectedItem.date) * 1000,
+            ),
+            [EAddExpenseFields.DESCRIPTION]: selectedItem.description || '',
+            [EAddExpenseFields.AMOUNT]: selectedItem.amount.toString(),
+          }}
+          onSubmit={(values, formikHelpers) =>
+            onExpenseEdit(values, formikHelpers, currentRowId)
+          }
+          validationSchema={CreateExpenseSchema}>
+          {({handleSubmit}) => (
             <Fragment>
               <ExpenseForm />
               <View style={styles.actionRow}>
                 <TouchableOpacity
                   style={styles.cancelButton}
-                  onPress={() => setExpandedRowId(null)}>
+                  onPress={() => !loading && setExpandedRowId(null)}>
                   <Text style={styles.cancelButtonText}>Cancel</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.saveButton}
-                  onPress={() => handleEditSave(item.id)}>
-                  <Text style={styles.saveButtonText}>Save</Text>
-                </TouchableOpacity>
+                <LoadingButton
+                  label="Save"
+                  loading={loading}
+                  onPress={() => handleSubmit()}
+                />
               </View>
             </Fragment>
-          );
-        }}
-      </Formik>
-    );
-  };
+          )}
+        </Formik>
+      );
+    },
+    [expenses, setExpandedRowId],
+  );
 
   return (
     <View style={styles.mainContainer}>
@@ -190,16 +216,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     marginTop: 10,
     paddingBottom: 20,
-  },
-  saveButton: {
-    backgroundColor: colors.accent,
-    padding: 10,
-    borderRadius: 5,
-    marginLeft: 10,
-  },
-  saveButtonText: {
-    color: colors.text,
-    fontWeight: 'bold',
+    gap: 10,
   },
   cancelButton: {
     backgroundColor: colors.disabled,

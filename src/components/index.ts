@@ -4,6 +4,7 @@ import DataTable from '@trackingPortal/components/DataTable';
 import FormikTextInput from '@trackingPortal/components/FormikTextInput';
 import AppLoader from '@trackingPortal/components/AppLoader';
 import AnimatedLoader from '@trackingPortal/components/AnimatedLoader';
+import LoadingButton from '@trackingPortal/components/LoadingButton';
 
 export {
   CustomAppBar,
@@ -12,4 +13,5 @@ export {
   FormikTextInput,
   AppLoader,
   AnimatedLoader,
+  LoadingButton,
 };

@@ -1,13 +1,7 @@
-import React, {useState} from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-} from 'react-native';
+import React from 'react';
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import Modal from 'react-native-modal';
+import LoadingButton from './LoadingButton';
 
 interface IFormModal {
   isVisible: boolean;
@@ -39,16 +33,7 @@ const FormModal: React.FC<IFormModal> = ({
           <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
             <Text style={styles.buttonText}>Cancel</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.saveButton} onPress={onSave}>
-            <Text style={styles.buttonText}>Save</Text>
-            {loading && (
-              <ActivityIndicator
-                size="small"
-                color="#FFF"
-                style={styles.loader}
-              />
-            )}
-          </TouchableOpacity>
+          <LoadingButton label="Save" loading={!!loading} onPress={onSave} />
         </View>
       </View>
     </Modal>
@@ -93,18 +78,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginRight: 10,
   },
-  saveButton: {
-    backgroundColor: '#9C27B0',
-    padding: 10,
-    borderRadius: 5,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   buttonText: {
     color: '#E1BEE7',
     fontWeight: 'bold',
-  },
-  loader: {
-    marginLeft: 10,
   },
 });
