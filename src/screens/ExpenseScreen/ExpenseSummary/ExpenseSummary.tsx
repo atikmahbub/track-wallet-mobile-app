@@ -34,14 +34,14 @@ const ExpenseSummary: React.FC<ISummary> = ({
     if (showLimitInput) {
       Animated.timing(animatedHeight, {
         toValue: 0,
-        duration: 300,
+        duration: 100,
         useNativeDriver: false,
       }).start(() => setShowLimitInput(false));
     } else {
       setShowLimitInput(true);
       Animated.timing(animatedHeight, {
         toValue: 140,
-        duration: 300,
+        duration: 100,
         useNativeDriver: false,
       }).start();
     }
@@ -109,7 +109,9 @@ const ExpenseSummary: React.FC<ISummary> = ({
             label="Total Spend"
             value={
               monthLimit?.limit
-                ? `${totalExpense} BDT (${expensePercentage.toFixed(2)}%)`
+                ? `${convertToKilo(
+                    totalExpense,
+                  )} BDT (${expensePercentage.toFixed(2)}%)`
                 : '0'
             }
           />
@@ -126,49 +128,42 @@ const ExpenseSummary: React.FC<ISummary> = ({
               Set Limit
             </Button>
           </View>
-
-          {showLimitInput && (
-            <Formik
-              enableReinitialize={true}
-              initialValues={{
-                [EMonthlyLimitFields.LIMIT]:
-                  monthLimit?.limit?.toString() || '',
-              }}
-              onSubmit={handleSaveMonthlyLimit}>
-              {({handleSubmit, values}) => {
-                return (
-                  <Animated.View
-                    style={[
-                      styles.animatedContainer,
-                      {height: animatedHeight},
-                    ]}>
-                    <FormikTextInput
-                      name={EMonthlyLimitFields.LIMIT}
-                      mode="outlined"
-                      label="Limit"
-                      value={values[EMonthlyLimitFields.LIMIT].toString()}
-                    />
-                    <View style={styles.saveButtonContainer}>
-                      <Button
-                        mode="text"
-                        onPress={() => {
-                          toggleLimitInput();
-                        }}>
-                        Cancel
-                      </Button>
-                      <Button
-                        loading={loading}
-                        mode="contained"
-                        textColor="white"
-                        onPress={() => handleSubmit()}>
-                        Save
-                      </Button>
-                    </View>
-                  </Animated.View>
-                );
-              }}
-            </Formik>
-          )}
+          <Formik
+            enableReinitialize={true}
+            initialValues={{
+              [EMonthlyLimitFields.LIMIT]: monthLimit?.limit?.toString() || '',
+            }}
+            onSubmit={handleSaveMonthlyLimit}>
+            {({handleSubmit, values}) => {
+              return (
+                <Animated.View
+                  style={[styles.animatedContainer, {height: animatedHeight}]}>
+                  <FormikTextInput
+                    name={EMonthlyLimitFields.LIMIT}
+                    mode="outlined"
+                    label="Limit"
+                    value={values[EMonthlyLimitFields.LIMIT].toString()}
+                  />
+                  <View style={styles.saveButtonContainer}>
+                    <Button
+                      mode="text"
+                      onPress={() => {
+                        toggleLimitInput();
+                      }}>
+                      Cancel
+                    </Button>
+                    <Button
+                      loading={loading}
+                      mode="contained"
+                      textColor="white"
+                      onPress={() => handleSubmit()}>
+                      Save
+                    </Button>
+                  </View>
+                </Animated.View>
+              );
+            }}
+          </Formik>
         </Card.Content>
       </Card>
     </View>

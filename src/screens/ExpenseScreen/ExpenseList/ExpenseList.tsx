@@ -28,7 +28,7 @@ import {
 import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
 import {IUpdateExpenseParams} from '@trackingPortal/api/params';
 import Toast from 'react-native-toast-message';
-import {LoadingButton} from '@trackingPortal/components';
+import {AnimatedLoader, LoadingButton} from '@trackingPortal/components';
 
 interface IExpenseList {
   notifyRowOpen: (value: boolean) => void;
@@ -51,6 +51,7 @@ const ExpenseList: FC<IExpenseList> = ({
   const [openPicker, setOpenPicker] = useState<boolean>(false);
   const {currentUser: user, apiGateway} = useStoreContext();
   const [loading, setLoading] = useState<boolean>(false);
+  const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
 
   const onValueChange = useCallback(
     (event: any, newDate: any) => {
@@ -94,6 +95,28 @@ const ExpenseList: FC<IExpenseList> = ({
       resetForm();
       setExpandedRowId(null);
       setLoading(false);
+    }
+  };
+
+  const handleDeleteExpense = async (rowId: any) => {
+    if (!rowId) return;
+    try {
+      setDeleteLoading(true);
+      await apiGateway.expenseService.deleteExpense(rowId);
+      await getUserExpenses();
+      Toast.show({
+        type: 'success',
+        text1: 'Deleted Successfully!',
+      });
+    } catch (error) {
+      console.log('error', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Something went wrong!',
+      });
+    } finally {
+      setDeleteLoading(false);
+      setExpandedRowId(null);
     }
   };
 
@@ -141,6 +164,10 @@ const ExpenseList: FC<IExpenseList> = ({
     [expenses, setExpandedRowId],
   );
 
+  if (deleteLoading) {
+    return <AnimatedLoader />;
+  }
+
   return (
     <View style={styles.mainContainer}>
       <Card style={styles.listCard}>
@@ -177,7 +204,7 @@ const ExpenseList: FC<IExpenseList> = ({
                 Amount: item.amount,
               };
             })}
-            onDelete={() => {}}
+            onDelete={handleDeleteExpense}
             isAnyRowOpen={notifyRowOpen}
             expandedRowId={expandedRowId}
             setExpandedRowId={setExpandedRowId}
