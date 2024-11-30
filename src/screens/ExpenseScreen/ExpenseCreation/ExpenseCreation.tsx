@@ -8,7 +8,7 @@ import {
   CreateExpenseSchema,
 } from '@trackingPortal/screens/ExpenseScreen/ExpenseCreation/ExpenseCreation.constants';
 import ExpenseForm from '@trackingPortal/screens/ExpenseScreen/ExpenseForm';
-import {INewExpense} from './ExpenseCreation.interfaces';
+import {INewExpense} from '@trackingPortal/screens/ExpenseScreen/ExpenseCreation/ExpenseCreation.interfaces';
 import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
 import {IAddExpenseParams} from '@trackingPortal/api/params';
 import {useAuth} from '@trackingPortal/auth/Auth0ProviderWithHistory';

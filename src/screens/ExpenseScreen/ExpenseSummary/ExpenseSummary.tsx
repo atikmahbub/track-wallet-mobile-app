@@ -76,8 +76,8 @@ const ExpenseSummary: React.FC<ISummary> = ({
           text1: 'Limit added successfully',
         });
       }
-      await getMonthlyLimit();
       setShowLimitInput(false);
+      await getMonthlyLimit();
     } catch (error) {
       console.log(error);
       Toast.show({

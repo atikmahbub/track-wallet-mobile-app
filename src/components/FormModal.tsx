@@ -52,13 +52,13 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
-    paddingBottom: 50,
+    paddingBottom: 40,
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#E1BEE7',
-    marginBottom: 10,
+    paddingBottom: 25,
   },
   input: {
     backgroundColor: '#3E206D',

@@ -8,6 +8,7 @@ import {AnimatedFAB} from 'react-native-paper';
 import {LoanModel} from '@trackingPortal/api/models';
 import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
 import Toast from 'react-native-toast-message';
+import LoanCreation from '@trackingPortal/screens/LoanScreen/LoanCreation';
 
 export default function LoanScreen() {
   const [openCreationModal, setOpenCreationModal] = useState<boolean>(false);
@@ -44,6 +45,11 @@ export default function LoanScreen() {
           notifyRowOpen={value => setHideFabIcon(value)}
           loans={loans}
           getUserLoan={getUserLoans}
+        />
+        <LoanCreation
+          getUserLoans={getUserLoans}
+          openCreationModal={openCreationModal}
+          setOpenCreationModal={setOpenCreationModal}
         />
       </ScrollView>
       {!hideFabIcon && (
