@@ -1,5 +1,5 @@
-import {View, StyleSheet} from 'react-native';
-import React, {FC, useCallback, useState} from 'react';
+import {View, StyleSheet, TouchableOpacity, Text} from 'react-native';
+import React, {FC, Fragment, useCallback, useState} from 'react';
 import {Card} from 'react-native-paper';
 import {darkTheme} from '@trackingPortal/themes/darkTheme';
 
@@ -10,7 +10,20 @@ import {LoanModel} from '@trackingPortal/api/models';
 import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
 import {IUpdateLoanParams} from '@trackingPortal/api/params';
 import Toast from 'react-native-toast-message';
-import {LoadingButton} from '@trackingPortal/components';
+import {AnimatedLoader, LoadingButton} from '@trackingPortal/components';
+import {LoanType} from '@trackingPortal/api/enums';
+import dayjs from 'dayjs';
+import {
+  LoanId,
+  makeUnixTimestampString,
+  makeUnixTimestampToNumber,
+} from '@trackingPortal/api/primitives';
+import {
+  AddLoanSchema,
+  EAddLoanFields,
+} from '@trackingPortal/screens/LoanScreen/LoanScreen.constants';
+import {Formik} from 'formik';
+import LoanForm from '@trackingPortal/screens/LoanScreen/LoanForm';
 
 interface ILoanList {
   notifyRowOpen: (value: boolean) => void;
@@ -18,43 +31,67 @@ interface ILoanList {
   getUserLoan: () => void;
 }
 
-const headers = ['Name', 'Type', 'Date', 'Amount'];
+const headers = ['Name', 'Type', 'Deadline', 'Amount'];
 
 const LoanList: FC<ILoanList> = ({notifyRowOpen, loans, getUserLoan}) => {
   const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
-  const [openPicker, setOpenPicker] = useState<boolean>(false);
   const {currentUser: user, apiGateway} = useStoreContext();
   const [loading, setLoading] = useState<boolean>(false);
+  const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
 
-  // const onLoanEdit = async (values: any, {resetForm}: any, id: LoanId) => {
-  //   if (user.default) return;
+  const onLoanEdit = async (values: any, {resetForm}: any, id: LoanId) => {
+    if (user.default) return;
 
-  //   try {
-  //     setLoading(true);
-  //     const params: IUpdateLoanParams = {
-  //       // id: id,
-  //       // amount: Number(values.amount),
-  //       // date: makeUnixTimestampString(Number(new Date(values.date))),
-  //       // description: values.description,
-  //     };
-  //     await apiGateway.expenseService.updateExpense(params);
-  //     await getUserLoan();
-  //     Toast.show({
-  //       type: 'success',
-  //       text1: 'Expense updated successfully!',
-  //     });
-  //   } catch (error) {
-  //     console.log('error', error);
-  //     Toast.show({
-  //       type: 'error',
-  //       text1: 'Something went wrong!',
-  //     });
-  //   } finally {
-  //     resetForm();
-  //     setExpandedRowId(null);
-  //     setLoading(false);
-  //   }
-  // };
+    try {
+      setLoading(true);
+      const params: IUpdateLoanParams = {
+        id: id,
+        amount: Number(values.amount),
+        deadLine: makeUnixTimestampString(Number(new Date(values.deadLine))),
+        note: values.note,
+        name: values.name,
+      };
+
+      await apiGateway.loanServices.updateLoan(params);
+      await getUserLoan();
+      Toast.show({
+        type: 'success',
+        text1: 'Loan updated successfully!',
+      });
+    } catch (error) {
+      console.log('error', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Something went wrong!',
+      });
+    } finally {
+      resetForm();
+      setExpandedRowId(null);
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteLoan = async (rowId: any) => {
+    if (!rowId) return;
+    try {
+      setDeleteLoading(true);
+      await apiGateway.loanServices.deleteLoan(rowId);
+      await getUserLoan();
+      Toast.show({
+        type: 'success',
+        text1: 'Deleted Successfully!',
+      });
+    } catch (error) {
+      console.log('error', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Something went wrong!',
+      });
+    } finally {
+      setDeleteLoading(false);
+      setExpandedRowId(null);
+    }
+  };
 
   const renderCollapsibleContent = useCallback(
     (item: LoanModel) => {
@@ -63,43 +100,47 @@ const LoanList: FC<ILoanList> = ({notifyRowOpen, loans, getUserLoan}) => {
       const currentRowId = selectedItem.id;
 
       return (
-        <></>
-        // <Formik
-        //   enableReinitialize
-        //   initialValues={{
-        //     id: selectedItem.id,
-        //     [EAddExpenseFields.DATE]: new Date(
-        //       Number(selectedItem.date) * 1000,
-        //     ),
-        //     [EAddExpenseFields.DESCRIPTION]: selectedItem.description || '',
-        //     [EAddExpenseFields.AMOUNT]: selectedItem.amount.toString(),
-        //   }}
-        //   onSubmit={(values, formikHelpers) =>
-        //     onExpenseEdit(values, formikHelpers, currentRowId)
-        //   }
-        //   validationSchema={CreateExpenseSchema}>
-        //   {({handleSubmit}) => (
-        //     <Fragment>
-        //       <ExpenseForm />
-        //       <View style={styles.actionRow}>
-        //         <TouchableOpacity
-        //           style={styles.cancelButton}
-        //           onPress={() => !loading && setExpandedRowId(null)}>
-        //           <Text style={styles.cancelButtonText}>Cancel</Text>
-        //         </TouchableOpacity>
-        //         <LoadingButton
-        //           label="Save"
-        //           loading={loading}
-        //           onPress={() => handleSubmit()}
-        //         />
-        //       </View>
-        //     </Fragment>
-        //   )}
-        // </Formik>
+        <Formik
+          enableReinitialize
+          initialValues={{
+            id: selectedItem.id,
+            [EAddLoanFields.DEADLINE]: new Date(
+              Number(selectedItem.deadLine) * 1000,
+            ),
+            [EAddLoanFields.NOTE]: selectedItem.note || '',
+            [EAddLoanFields.AMOUNT]: selectedItem.amount.toString(),
+            [EAddLoanFields.NAME]: selectedItem.name,
+          }}
+          onSubmit={(values, formikHelpers) =>
+            onLoanEdit(values, formikHelpers, currentRowId)
+          }
+          validationSchema={AddLoanSchema}>
+          {({handleSubmit}) => (
+            <Fragment>
+              <LoanForm />
+              <View style={styles.actionRow}>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => !loading && setExpandedRowId(null)}>
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <LoadingButton
+                  label="Save"
+                  loading={loading}
+                  onPress={() => handleSubmit()}
+                />
+              </View>
+            </Fragment>
+          )}
+        </Formik>
       );
     },
     [loans, setExpandedRowId],
   );
+
+  if (deleteLoading) {
+    return <AnimatedLoader />;
+  }
 
   return (
     <View style={styles.mainContainer}>
@@ -112,15 +153,23 @@ const LoanList: FC<ILoanList> = ({notifyRowOpen, loans, getUserLoan}) => {
           }}
         />
         <Card.Content>
-          {/* <DataTable
+          <DataTable
             headers={headers}
-            data={[]}
-            onDelete={() => {}}
+            data={loans.map(loan => ({
+              id: loan.id,
+              Type: loan.loanType === LoanType.GIVEN ? 'Given' : 'Taken',
+              Name: loan.name,
+              Deadline: dayjs(
+                makeUnixTimestampToNumber(Number(loan.deadLine)),
+              ).format('MMM D, YYYY'),
+              Amount: loan.amount,
+            }))}
+            onDelete={handleDeleteLoan}
             isAnyRowOpen={notifyRowOpen}
             expandedRowId={expandedRowId}
             setExpandedRowId={setExpandedRowId}
             renderCollapsibleContent={renderCollapsibleContent}
-          /> */}
+          />
         </Card.Content>
       </Card>
     </View>

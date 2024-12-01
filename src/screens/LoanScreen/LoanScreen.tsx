@@ -1,7 +1,6 @@
-import {View, Text, StyleSheet} from 'react-native';
+import {StyleSheet} from 'react-native';
 import React, {Fragment, useEffect, useState} from 'react';
-import {darkTheme} from '@trackingPortal/themes/darkTheme';
-import {ScrollView} from 'react-native-gesture-handler';
+import {RefreshControl, ScrollView} from 'react-native-gesture-handler';
 import LoanSummary from '@trackingPortal/screens/LoanScreen/LoanSummary';
 import LoanList from '@trackingPortal/screens/LoanScreen/LoanList';
 import {AnimatedFAB} from 'react-native-paper';
@@ -9,12 +8,16 @@ import {LoanModel} from '@trackingPortal/api/models';
 import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
 import Toast from 'react-native-toast-message';
 import LoanCreation from '@trackingPortal/screens/LoanScreen/LoanCreation';
+import {LoanType} from '@trackingPortal/api/enums';
+import {AnimatedLoader} from '@trackingPortal/components';
 
 export default function LoanScreen() {
   const [openCreationModal, setOpenCreationModal] = useState<boolean>(false);
   const [hideFabIcon, setHideFabIcon] = useState<boolean>(false);
   const [loans, setLoans] = useState<LoanModel[]>([]);
   const {currentUser: user, apiGateway} = useStoreContext();
+  const [loading, setLoading] = useState<boolean>(false);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
   useEffect(() => {
     if (!user.default) {
@@ -24,6 +27,7 @@ export default function LoanScreen() {
 
   const getUserLoans = async () => {
     try {
+      setLoading(true);
       const response = await apiGateway.loanServices.getLoanByUserId(
         user.userId,
       );
@@ -34,13 +38,42 @@ export default function LoanScreen() {
         type: 'error',
         text1: 'Something went wrong!',
       });
+    } finally {
+      setLoading(false);
     }
   };
 
+  const totalGiven = loans?.reduce((acc, crr): number => {
+    if (crr.loanType === LoanType.GIVEN) {
+      acc += crr.amount;
+    }
+    return acc;
+  }, 0);
+
+  const totalBorrowed = loans?.reduce((acc, crr): number => {
+    if (crr.loanType === LoanType.TAKEN) {
+      acc += crr.amount;
+    }
+    return acc;
+  }, 0);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await getUserLoans();
+    setRefreshing(false);
+  };
+
+  if (loading) {
+    return <AnimatedLoader />;
+  }
+
   return (
     <Fragment>
-      <ScrollView>
-        <LoanSummary totalGiven={12} totalBorrowed={23} />
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }>
+        <LoanSummary totalGiven={totalGiven} totalBorrowed={totalBorrowed} />
         <LoanList
           notifyRowOpen={value => setHideFabIcon(value)}
           loans={loans}

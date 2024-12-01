@@ -28,11 +28,11 @@ const LoanSummary: React.FC<ISummary> = ({
         <Card.Content>
           <ValueWithLabel
             label="Total Given"
-            value={convertToKilo(totalGiven)}
+            value={convertToKilo(totalGiven) + ' ' + 'BDT'}
           />
           <ValueWithLabel
             label="Total Borrowed"
-            value={convertToKilo(totalBorrowed)}
+            value={convertToKilo(totalBorrowed) + ' ' + 'BDT'}
           />
         </Card.Content>
       </Card>
