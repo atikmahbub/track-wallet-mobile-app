@@ -11,6 +11,7 @@ import {Month, UnixTimeStampString, Year} from '@trackingPortal/api/primitives';
 import Toast from 'react-native-toast-message';
 import {AnimatedLoader} from '@trackingPortal/components';
 import {darkTheme} from '@trackingPortal/themes/darkTheme';
+import notifee from '@notifee/react-native';
 
 export default function ExpenseScreen() {
   const {currentUser: user} = useStoreContext();
@@ -69,6 +70,25 @@ export default function ExpenseScreen() {
     }
   };
 
+  const getExceedExpenseNotification = async () => {
+    if (!user.userId) return;
+    try {
+      const response =
+        await apiGateway.expenseService.exceedExpenseNotification(user.userId);
+      if (response) {
+        await notifee.displayNotification({
+          title: 'Expense Alert',
+          body: 'You have exceeded your monthly expense limit!.',
+          android: {
+            channelId: 'default',
+          },
+        });
+      }
+    } catch (error) {
+      console.log('error', error);
+    }
+  };
+
   const totalExpense = expenses.reduce((acc, crr): number => {
     acc += crr.amount;
     return acc;
@@ -116,6 +136,7 @@ export default function ExpenseScreen() {
         openCreationModal={openCreationForm}
         setOpenCreationModal={setOpenCreationModal}
         getUserExpenses={getExpenses}
+        getExceedExpenseNotification={getExceedExpenseNotification}
       />
       {!hideFabIcon && (
         <AnimatedFAB

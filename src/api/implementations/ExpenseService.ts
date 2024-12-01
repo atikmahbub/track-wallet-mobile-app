@@ -8,7 +8,7 @@ import {
   IUpdateExpenseParams,
 } from '@trackingPortal/api/params';
 import {urlJoin} from 'url-join-ts';
-import {ExpenseId} from '@trackingPortal/api/primitives';
+import {ExpenseId, UserId} from '@trackingPortal/api/primitives';
 
 export class ExpenseService implements IExpenseService {
   constructor(
@@ -56,6 +56,25 @@ export class ExpenseService implements IExpenseService {
 
     if (response.isOk()) {
       return response.value as void;
+    }
+    throw new Error(response.error);
+  }
+
+  async exceedExpenseNotification(userId: UserId): Promise<boolean> {
+    const url = new URL(
+      urlJoin(
+        this.config.baseUrl,
+        'v0',
+        'expense',
+        'notifications',
+        userId,
+        'exceed-limit',
+      ),
+    );
+    const response = await this.ajaxUtils.get(url);
+
+    if (response.isOk()) {
+      return response.value as boolean;
     }
     throw new Error(response.error);
   }

@@ -76,7 +76,6 @@ const ExpenseSummary: React.FC<ISummary> = ({
           text1: 'Limit added successfully',
         });
       }
-      setShowLimitInput(false);
       await getMonthlyLimit();
     } catch (error) {
       console.log(error);
@@ -86,6 +85,7 @@ const ExpenseSummary: React.FC<ISummary> = ({
       });
     } finally {
       setLoading(false);
+      setShowLimitInput(false);
     }
   };
 

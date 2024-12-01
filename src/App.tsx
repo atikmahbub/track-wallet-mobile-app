@@ -10,10 +10,24 @@ import {Auth0ProviderWithHistory} from './auth/Auth0ProviderWithHistory';
 
 import Toast from 'react-native-toast-message';
 import {StoreProvider} from '@trackingPortal/contexts/StoreProvider';
+import notifee from '@notifee/react-native';
 
 function App(): React.JSX.Element {
   const navigationRef = useRef(null);
   const isReadyRef = useRef(false);
+
+  useEffect(() => {
+    const requestPermissions = async () => {
+      const settings = await notifee.requestPermission();
+
+      if (settings.authorizationStatus === 1) {
+        console.log('Permission granted!');
+      } else {
+        console.log('Permission denied!');
+      }
+    };
+    requestPermissions();
+  }, []);
 
   return (
     <Fragment>

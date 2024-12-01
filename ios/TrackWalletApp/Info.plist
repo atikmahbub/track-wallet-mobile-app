@@ -67,5 +67,11 @@
             </array>
         </dict>
     </array>
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>remote-notification</string>
+    </array>
+    <key>NSUserNotificationUsageDescription</key>
+    <string>Notification permission is required for alerts.</string>
 </dict>
 </plist>

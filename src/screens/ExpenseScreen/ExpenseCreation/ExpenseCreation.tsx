@@ -19,12 +19,14 @@ interface IExpenseCreation {
   openCreationModal: boolean;
   setOpenCreationModal: React.Dispatch<SetStateAction<boolean>>;
   getUserExpenses: () => void;
+  getExceedExpenseNotification: () => void;
 }
 
 const ExpenseCreation: React.FC<IExpenseCreation> = ({
   openCreationModal,
   setOpenCreationModal,
   getUserExpenses,
+  getExceedExpenseNotification,
 }) => {
   const {apiGateway} = useStoreContext();
   const {user} = useAuth();
@@ -53,6 +55,7 @@ const ExpenseCreation: React.FC<IExpenseCreation> = ({
     } finally {
       setLoading(false);
       setOpenCreationModal(false);
+      await getExceedExpenseNotification();
     }
   };
 
