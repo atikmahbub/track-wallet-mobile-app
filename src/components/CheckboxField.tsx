@@ -2,6 +2,7 @@ import React from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 import {Checkbox} from 'react-native-paper';
 import {useField} from 'formik';
+import {darkTheme} from '@trackingPortal/themes/darkTheme';
 
 interface FormikCheckboxFieldProps {
   name: string;
@@ -40,13 +41,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   label: {
-    color: '#FFFFFF', // Text color for dark mode
+    color: '#FFFFFF',
   },
   checkbox: {
-    backgroundColor: '#1E1E2F', // Matches dark mode theme
+    backgroundColor: darkTheme.colors.background,
   },
   errorText: {
-    color: '#FF4081', // Error text color
+    color: '#FF4081',
     fontSize: 12,
     marginTop: 4,
   },

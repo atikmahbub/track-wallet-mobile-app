@@ -7,6 +7,7 @@ import AnimatedLoader from '@trackingPortal/components/AnimatedLoader';
 import LoadingButton from '@trackingPortal/components/LoadingButton';
 import FormikSelectField from '@trackingPortal/components/FormikSelectField';
 import FormikCheckboxField from '@trackingPortal/components/CheckboxField';
+import TwMenu from '@trackingPortal/components/TwMenu';
 
 export {
   CustomAppBar,
@@ -18,4 +19,5 @@ export {
   LoadingButton,
   FormikSelectField,
   FormikCheckboxField,
+  TwMenu,
 };

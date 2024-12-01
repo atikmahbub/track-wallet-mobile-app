@@ -5,6 +5,8 @@ import {View, Text, StyleSheet} from 'react-native';
 
 interface FormikTextInputProps extends TextInputProps {
   name: string;
+  multiline?: boolean;
+  minRows?: number;
 }
 
 const FormikTextInput: React.FC<FormikTextInputProps> = ({
@@ -12,6 +14,9 @@ const FormikTextInput: React.FC<FormikTextInputProps> = ({
   label,
   keyboardType = 'default',
   mode = 'outlined',
+  multiline = false,
+  minRows = 3,
+  ...props
 }) => {
   const [field, meta] = useField(name);
 
@@ -24,6 +29,10 @@ const FormikTextInput: React.FC<FormikTextInputProps> = ({
         onChangeText={field.onChange(name)}
         onBlur={field.onBlur(name)}
         keyboardType={keyboardType as any}
+        multiline={multiline}
+        numberOfLines={multiline ? minRows : undefined}
+        style={[styles.input, multiline && {height: minRows * 20}]}
+        {...props}
       />
       {meta.touched && meta.error && (
         <Text style={styles.errorText}>{meta.error}</Text>
@@ -35,6 +44,9 @@ const FormikTextInput: React.FC<FormikTextInputProps> = ({
 const styles = StyleSheet.create({
   container: {
     marginBottom: 16,
+  },
+  input: {
+    fontSize: 16,
   },
   errorText: {
     color: 'red',

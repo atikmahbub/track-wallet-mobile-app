@@ -221,6 +221,7 @@ export default ExpenseList;
 const styles = StyleSheet.create({
   mainContainer: {
     padding: 10,
+    flex: 1,
   },
   listCard: {
     backgroundColor: darkTheme.colors.surface,

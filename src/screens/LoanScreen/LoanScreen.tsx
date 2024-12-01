@@ -1,4 +1,4 @@
-import {StyleSheet} from 'react-native';
+import {FlatList, StyleSheet, View} from 'react-native';
 import React, {Fragment, useEffect, useState} from 'react';
 import {RefreshControl, ScrollView} from 'react-native-gesture-handler';
 import LoanSummary from '@trackingPortal/screens/LoanScreen/LoanSummary';
@@ -10,6 +10,7 @@ import Toast from 'react-native-toast-message';
 import LoanCreation from '@trackingPortal/screens/LoanScreen/LoanCreation';
 import {LoanType} from '@trackingPortal/api/enums';
 import {AnimatedLoader} from '@trackingPortal/components';
+import {darkTheme} from '@trackingPortal/themes/darkTheme';
 
 export default function LoanScreen() {
   const [openCreationModal, setOpenCreationModal] = useState<boolean>(false);
@@ -68,23 +69,31 @@ export default function LoanScreen() {
   }
 
   return (
-    <Fragment>
-      <ScrollView
+    <View style={styles.container}>
+      <FlatList
+        data={loans}
+        keyExtractor={(item, index) => `${item.id || index}`}
+        ListHeaderComponent={
+          <LoanSummary totalGiven={totalGiven} totalBorrowed={totalBorrowed} />
+        }
+        ListFooterComponent={
+          <LoanList
+            notifyRowOpen={value => setHideFabIcon(value)}
+            loans={loans}
+            getUserLoan={getUserLoans}
+          />
+        }
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-        }>
-        <LoanSummary totalGiven={totalGiven} totalBorrowed={totalBorrowed} />
-        <LoanList
-          notifyRowOpen={value => setHideFabIcon(value)}
-          loans={loans}
-          getUserLoan={getUserLoans}
-        />
-        <LoanCreation
-          getUserLoans={getUserLoans}
-          openCreationModal={openCreationModal}
-          setOpenCreationModal={setOpenCreationModal}
-        />
-      </ScrollView>
+        }
+        renderItem={null}
+        contentContainerStyle={styles.listContent}
+      />
+      <LoanCreation
+        getUserLoans={getUserLoans}
+        openCreationModal={openCreationModal}
+        setOpenCreationModal={setOpenCreationModal}
+      />
       {!hideFabIcon && (
         <AnimatedFAB
           extended={false}
@@ -93,19 +102,24 @@ export default function LoanScreen() {
           iconMode={'static'}
           label="Add New"
           style={styles.fabStyle}
-          onPress={() => {
-            setOpenCreationModal(true);
-          }}
+          onPress={() => setOpenCreationModal(true)}
         />
       )}
-    </Fragment>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: darkTheme.colors.background,
+  },
   fabStyle: {
     bottom: 25,
     right: 25,
     position: 'absolute',
+  },
+  listContent: {
+    paddingBottom: 80,
   },
 });

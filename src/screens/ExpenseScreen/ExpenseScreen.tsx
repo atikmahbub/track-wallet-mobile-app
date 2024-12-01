@@ -1,7 +1,7 @@
 import React, {Fragment, useEffect, useState} from 'react';
 import ExpenseSummary from '@trackingPortal/screens/ExpenseScreen/ExpenseSummary';
 import {AnimatedFAB} from 'react-native-paper';
-import {ScrollView, StyleSheet, RefreshControl} from 'react-native';
+import {FlatList, StyleSheet, RefreshControl, View} from 'react-native';
 import ExpenseList from '@trackingPortal/screens/ExpenseScreen/ExpenseList';
 import ExpenseCreation from '@trackingPortal/screens/ExpenseScreen/ExpenseCreation';
 import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
@@ -10,6 +10,7 @@ import dayjs from 'dayjs';
 import {Month, UnixTimeStampString, Year} from '@trackingPortal/api/primitives';
 import Toast from 'react-native-toast-message';
 import {AnimatedLoader} from '@trackingPortal/components';
+import {darkTheme} from '@trackingPortal/themes/darkTheme';
 
 export default function ExpenseScreen() {
   const {currentUser: user} = useStoreContext();
@@ -84,30 +85,38 @@ export default function ExpenseScreen() {
   }
 
   return (
-    <Fragment>
-      <ScrollView
+    <View style={styles.container}>
+      <FlatList
+        data={expenses}
+        keyExtractor={(item, index) => `${item.id || index}`}
+        ListHeaderComponent={
+          <ExpenseSummary
+            totalExpense={totalExpense}
+            filterMonth={filterMonth}
+            monthLimit={monthLimit}
+            getMonthlyLimit={getMonthlyLimit}
+          />
+        }
+        ListFooterComponent={
+          <ExpenseList
+            notifyRowOpen={value => setHideFabIcon(value)}
+            filteredMonth={filterMonth}
+            setFilteredMonth={setFilterMonth}
+            expenses={expenses}
+            getUserExpenses={getExpenses}
+          />
+        }
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }>
-        <ExpenseSummary
-          totalExpense={totalExpense}
-          filterMonth={filterMonth}
-          monthLimit={monthLimit}
-          getMonthlyLimit={getMonthlyLimit}
-        />
-        <ExpenseList
-          notifyRowOpen={value => setHideFabIcon(value)}
-          filteredMonth={filterMonth}
-          setFilteredMonth={setFilterMonth}
-          expenses={expenses}
-          getUserExpenses={getExpenses}
-        />
-        <ExpenseCreation
-          openCreationModal={openCreationForm}
-          setOpenCreationModal={setOpenCreationModal}
-          getUserExpenses={getExpenses}
-        />
-      </ScrollView>
+        }
+        renderItem={null}
+        contentContainerStyle={styles.listContent}
+      />
+      <ExpenseCreation
+        openCreationModal={openCreationForm}
+        setOpenCreationModal={setOpenCreationModal}
+        getUserExpenses={getExpenses}
+      />
       {!hideFabIcon && (
         <AnimatedFAB
           extended={false}
@@ -116,19 +125,24 @@ export default function ExpenseScreen() {
           iconMode={'static'}
           label="Add New"
           style={styles.fabStyle}
-          onPress={() => {
-            setOpenCreationModal(true);
-          }}
+          onPress={() => setOpenCreationModal(true)}
         />
       )}
-    </Fragment>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: darkTheme.colors.background,
+  },
   fabStyle: {
     bottom: 25,
     right: 25,
     position: 'absolute',
+  },
+  listContent: {
+    paddingBottom: 80,
   },
 });
