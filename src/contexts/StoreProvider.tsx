@@ -73,6 +73,8 @@ export const StoreProvider = ({children}: {children: React.ReactNode}) => {
         type: 'error',
         text1: 'Something went wrong!',
       });
+    } finally {
+      setAppLoading(false);
     }
   };
 

@@ -20,6 +20,7 @@
                                 <rect key="frame" x="91" y="260" width="193.5" height="41"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="34"/>
                                 <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <lineBreakStrategy key="lineBreakStrategy" pushOut="YES"/>
                             </label>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" ambiguous="YES" text="Your Finances, Simplified" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" translatesAutoresizingMaskIntoConstraints="NO" id="tagline-label">
                                 <rect key="frame" x="87" y="311" width="201" height="21.5"/>

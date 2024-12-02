@@ -26,6 +26,7 @@ import {
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {AnimatedLoader, CustomAppBar} from '@trackingPortal/components';
 import {useAuth} from '@trackingPortal/auth/Auth0ProviderWithHistory';
+import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
@@ -155,8 +156,9 @@ function TabNavigator() {
 
 export default function AppNavigation() {
   const {token, loading} = useAuth();
+  const {appLoading} = useStoreContext();
 
-  if (loading) {
+  if (loading || appLoading) {
     return <AnimatedLoader />;
   }
 
