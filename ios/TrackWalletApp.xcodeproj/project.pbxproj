@@ -41,6 +41,7 @@
 		20C59959E4E5ECA1800FB2B5 /* libPods-TrackWalletApp-TrackWalletAppTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TrackWalletApp-TrackWalletAppTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		296F68550F323F8778D7DAED /* libPods-TrackWalletApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TrackWalletApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		33C5A64744AEC4198185705C /* Pods-TrackWalletApp-TrackWalletAppTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TrackWalletApp-TrackWalletAppTests.debug.xcconfig"; path = "Target Support Files/Pods-TrackWalletApp-TrackWalletAppTests/Pods-TrackWalletApp-TrackWalletAppTests.debug.xcconfig"; sourceTree = "<group>"; };
+		7A785EA12CFDA92C0006FF4B /* TrackWalletApp copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "TrackWalletApp copy-Info.plist"; path = "/Users/atikmahbub/Documents/TrackWalletApp/ios/TrackWalletApp copy-Info.plist"; sourceTree = "<absolute>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = TrackWalletApp/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		A9F3C56A19CBFD4F357F0776 /* Pods-TrackWalletApp-TrackWalletAppTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TrackWalletApp-TrackWalletAppTests.release.xcconfig"; path = "Target Support Files/Pods-TrackWalletApp-TrackWalletAppTests/Pods-TrackWalletApp-TrackWalletAppTests.release.xcconfig"; sourceTree = "<group>"; };
 		CB9B5DFBBA9881B3A1625163 /* Pods-TrackWalletApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TrackWalletApp.debug.xcconfig"; path = "Target Support Files/Pods-TrackWalletApp/Pods-TrackWalletApp.debug.xcconfig"; sourceTree = "<group>"; };
@@ -125,6 +126,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				7A785EA12CFDA92C0006FF4B /* TrackWalletApp copy-Info.plist */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -468,10 +470,14 @@
 			baseConfigurationReference = CB9B5DFBBA9881B3A1625163 /* Pods-TrackWalletApp.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8FLSMX9K7S;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = TrackWalletApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Track Wallet";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -496,9 +502,13 @@
 			baseConfigurationReference = D311B24D763E3304D0DEEF04 /* Pods-TrackWalletApp.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8FLSMX9K7S;
 				INFOPLIST_FILE = TrackWalletApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Track Wallet";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -586,10 +596,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -658,10 +665,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;

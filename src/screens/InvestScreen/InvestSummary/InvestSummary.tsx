@@ -29,7 +29,7 @@ const InvestSummary: React.FC<ISummary> = ({investList, status}) => {
 
   const totalProfit = !isActive
     ? investList.reduce(
-        (acc, crr) => acc + ((crr.earned ?? 0 - crr.amount) / crr.amount) * 100,
+        (acc, crr) => acc + ((crr.earned - crr.amount) / crr.amount) * 100,
         0,
       )
     : 0;
