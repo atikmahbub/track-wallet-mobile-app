@@ -156,9 +156,8 @@ function TabNavigator() {
 
 export default function AppNavigation() {
   const {token, loading} = useAuth();
-  const {appLoading} = useStoreContext();
 
-  if (loading || appLoading) {
+  if (loading) {
     return <AnimatedLoader />;
   }
 

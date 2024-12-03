@@ -1,4 +1,4 @@
-import React, {Fragment, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import ExpenseSummary from '@trackingPortal/screens/ExpenseScreen/ExpenseSummary';
 import {AnimatedFAB} from 'react-native-paper';
 import {FlatList, StyleSheet, RefreshControl, View} from 'react-native';
@@ -23,20 +23,27 @@ export default function ExpenseScreen() {
   const [monthLimit, setMonthLimit] = useState<MonthlyLimitModel>(
     {} as MonthlyLimitModel,
   );
-  const [loading, setLoading] = useState<boolean>(false);
-  const [limitLoading, setLimitLoading] = useState<boolean>(false);
+  const [combinedLoading, setCombinedLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
   useEffect(() => {
     if (user.userId && !user.default) {
-      getMonthlyLimit();
-      getExpenses();
+      loadData();
     }
   }, [user, filterMonth]);
 
+  const loadData = async () => {
+    try {
+      await Promise.all([getExpenses(), getMonthlyLimit()]);
+    } catch (error) {
+      console.error('Error loading data', error);
+    } finally {
+      setCombinedLoading(false);
+    }
+  };
+
   const getExpenses = async () => {
     try {
-      setLoading(true);
       const response = await apiGateway.expenseService.getExpenseByUser({
         userId: user.userId,
         date: dayjs(filterMonth).unix() as unknown as UnixTimeStampString,
@@ -48,14 +55,11 @@ export default function ExpenseScreen() {
         text1: 'Something went wrong',
       });
       console.log('error', error);
-    } finally {
-      setLoading(false);
     }
   };
 
   const getMonthlyLimit = async () => {
     try {
-      setLimitLoading(true);
       const monthlyLimit =
         await apiGateway.monthlyLimitService.getMonthlyLimitByUserId({
           userId: user.userId,
@@ -65,8 +69,6 @@ export default function ExpenseScreen() {
       setMonthLimit(monthlyLimit);
     } catch (error) {
       console.log(error);
-    } finally {
-      setLimitLoading(false);
     }
   };
 
@@ -96,11 +98,12 @@ export default function ExpenseScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([getExpenses(), getMonthlyLimit()]);
+    setCombinedLoading(true);
+    await loadData();
     setRefreshing(false);
   };
 
-  if (loading || limitLoading) {
+  if (combinedLoading) {
     return <AnimatedLoader />;
   }
 

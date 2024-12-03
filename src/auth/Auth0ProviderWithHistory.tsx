@@ -1,4 +1,10 @@
-import React, {createContext, useContext, useEffect, useState} from 'react';
+import React, {
+  createContext,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import Auth0 from 'react-native-auth0';
 import {AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_AUDIENCE} from '@env';
 import {
@@ -65,7 +71,7 @@ export const Auth0ProviderWithHistory = ({
           navigate(ENavigationStack.Login);
         }
       } finally {
-        setLoading(false); // End loading
+        setLoading(false);
       }
     };
 

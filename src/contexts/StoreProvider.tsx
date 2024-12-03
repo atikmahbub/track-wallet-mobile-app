@@ -12,7 +12,6 @@ import Toast from 'react-native-toast-message';
 import {UserModel} from '@trackingPortal/api/models';
 
 type StoreContextType = {
-  appLoading: boolean;
   apiGateway: IApiGateWay;
   currentUser: NewUserModel;
 };
@@ -36,7 +35,6 @@ const defaultUser: NewUserModel = {
 
 export const StoreProvider = ({children}: {children: React.ReactNode}) => {
   const {token, user: auth0User} = useAuth();
-  const [appLoading, setAppLoading] = useState<boolean>(false);
   const [currentUser, setCurrentUser] = useState<NewUserModel>(defaultUser);
 
   useEffect(() => {
@@ -48,7 +46,6 @@ export const StoreProvider = ({children}: {children: React.ReactNode}) => {
 
   const addUserToDb = async () => {
     try {
-      setAppLoading(true);
       if (
         !auth0User?.name ||
         !auth0User?.email ||
@@ -73,14 +70,11 @@ export const StoreProvider = ({children}: {children: React.ReactNode}) => {
         type: 'error',
         text1: 'Something went wrong!',
       });
-    } finally {
-      setAppLoading(false);
     }
   };
 
   const contextValues: StoreContextType = {
     currentUser,
-    appLoading,
     apiGateway,
   };
 
