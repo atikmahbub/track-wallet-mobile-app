@@ -32,7 +32,7 @@ const ExpenseCreation: React.FC<IExpenseCreation> = ({
   const {user} = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
 
-  const handleAddExpense = async (values: INewExpense) => {
+  const handleAddExpense = async (values: INewExpense, {resetForm}: any) => {
     try {
       setLoading(true);
       const params: IAddExpenseParams = {
@@ -42,6 +42,7 @@ const ExpenseCreation: React.FC<IExpenseCreation> = ({
         description: values.description,
       };
       await apiGateway.expenseService.addExpense(params);
+      await resetForm();
       await getUserExpenses();
       Toast.show({
         type: 'success',

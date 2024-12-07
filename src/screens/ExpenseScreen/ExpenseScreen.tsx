@@ -25,6 +25,8 @@ export default function ExpenseScreen() {
   );
   const [combinedLoading, setCombinedLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [limitLoading, setLimitLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (user.userId && !user.default) {
@@ -44,6 +46,7 @@ export default function ExpenseScreen() {
 
   const getExpenses = async () => {
     try {
+      setLoading(true);
       const response = await apiGateway.expenseService.getExpenseByUser({
         userId: user.userId,
         date: dayjs(filterMonth).unix() as unknown as UnixTimeStampString,
@@ -55,11 +58,14 @@ export default function ExpenseScreen() {
         text1: 'Something went wrong',
       });
       console.log('error', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const getMonthlyLimit = async () => {
     try {
+      setLimitLoading(true);
       const monthlyLimit =
         await apiGateway.monthlyLimitService.getMonthlyLimitByUserId({
           userId: user.userId,
@@ -69,6 +75,8 @@ export default function ExpenseScreen() {
       setMonthLimit(monthlyLimit);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLimitLoading(false);
     }
   };
 
@@ -103,7 +111,7 @@ export default function ExpenseScreen() {
     setRefreshing(false);
   };
 
-  if (combinedLoading) {
+  if (combinedLoading || loading || limitLoading) {
     return <AnimatedLoader />;
   }
 
