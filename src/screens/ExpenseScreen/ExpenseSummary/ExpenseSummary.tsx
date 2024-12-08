@@ -11,6 +11,7 @@ import {Formik} from 'formik';
 import {EMonthlyLimitFields} from '@trackingPortal/screens/ExpenseScreen/ExpenseCreation/ExpenseCreation.constants';
 import Toast from 'react-native-toast-message';
 import {Month, Year} from '@trackingPortal/api/primitives';
+import {withHaptic} from '@trackingPortal/utils/haptic';
 
 interface ISummary {
   totalExpense: number;
@@ -123,7 +124,7 @@ const ExpenseSummary: React.FC<ISummary> = ({
             <Button
               mode="text"
               onPress={() => {
-                toggleLimitInput();
+                withHaptic(toggleLimitInput);
               }}>
               Set Limit
             </Button>

@@ -11,6 +11,7 @@ import LoanCreation from '@trackingPortal/screens/LoanScreen/LoanCreation';
 import {LoanType} from '@trackingPortal/api/enums';
 import {AnimatedLoader} from '@trackingPortal/components';
 import {darkTheme} from '@trackingPortal/themes/darkTheme';
+import {withHaptic} from '@trackingPortal/utils/haptic';
 
 export default function LoanScreen() {
   const [openCreationModal, setOpenCreationModal] = useState<boolean>(false);
@@ -102,7 +103,11 @@ export default function LoanScreen() {
           iconMode={'static'}
           label="Add New"
           style={styles.fabStyle}
-          onPress={() => setOpenCreationModal(true)}
+          onPress={() =>
+            withHaptic(() => {
+              setOpenCreationModal(true);
+            })
+          }
         />
       )}
     </View>

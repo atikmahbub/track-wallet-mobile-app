@@ -11,6 +11,7 @@ import InvestCreation from '@trackingPortal/screens/InvestScreen/InvestCreation'
 import {EInvestStatus} from '@trackingPortal/api/enums';
 import {AnimatedLoader} from '@trackingPortal/components';
 import {darkTheme} from '@trackingPortal/themes/darkTheme';
+import {withHaptic} from '@trackingPortal/utils/haptic';
 
 export default function InvestScreen() {
   const [openCreationModal, setOpenCreationModal] = useState<boolean>(false);
@@ -94,7 +95,11 @@ export default function InvestScreen() {
           iconMode={'static'}
           label="Add New"
           style={styles.fabStyle}
-          onPress={() => setOpenCreationModal(true)}
+          onPress={() =>
+            withHaptic(() => {
+              setOpenCreationModal(true);
+            })
+          }
         />
       )}
     </View>

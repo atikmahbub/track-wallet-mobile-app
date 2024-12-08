@@ -1,12 +1,14 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {View, StyleSheet, Dimensions} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createStackNavigator} from '@react-navigation/stack';
+import {enableScreens} from 'react-native-screens';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
+  Easing,
 } from 'react-native-reanimated';
 import {useTheme} from 'react-native-paper';
 
@@ -16,61 +18,61 @@ import InvestScreen from '@trackingPortal/screens/InvestScreen';
 import ProfileScreen from '@trackingPortal/screens/ProfileScreen';
 import LoginScreen from '@trackingPortal/screens/LoginScreen';
 import {darkTheme} from '@trackingPortal/themes/darkTheme';
-
-import {
-  RootTabParamList,
-  RootStackParamList,
-  ENavigationTab,
-  ENavigationStack,
-} from '@trackingPortal/navigation/ERoutes';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {AnimatedLoader, CustomAppBar} from '@trackingPortal/components';
+import {CustomAppBar, AnimatedLoader} from '@trackingPortal/components';
 import {useAuth} from '@trackingPortal/auth/Auth0ProviderWithHistory';
-import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
-
-const Tab = createBottomTabNavigator<RootTabParamList>();
-const Stack = createStackNavigator<RootStackParamList>();
+import {ENavigationTab} from '@trackingPortal/navigation/ERoutes';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const TAB_WIDTH = SCREEN_WIDTH / 4;
+
+enableScreens();
+
+const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
 const useTabAnimation = () => {
   const translateX = useSharedValue(0);
 
   const onTabChange = (tabIndex: number) => {
-    translateX.value = TAB_WIDTH * tabIndex;
+    translateX.value = withTiming(TAB_WIDTH * tabIndex, {
+      duration: 150,
+      easing: Easing.out(Easing.ease),
+    });
   };
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{translateX: withTiming(translateX.value, {duration: 300})}],
+    transform: [{translateX: translateX.value}],
   }));
 
-  return {translateX, animatedStyle, onTabChange};
+  return {animatedStyle, onTabChange};
 };
 
-const AnimatedIcon = ({name, focused}: {name: string; focused: boolean}) => {
-  const scale = useSharedValue(focused ? 1.2 : 1);
+const AnimatedIcon = React.memo(
+  ({name, focused}: {name: string; focused: boolean}) => {
+    const scale = useSharedValue(focused ? 1.2 : 1);
 
-  React.useEffect(() => {
-    scale.value = withTiming(focused ? 1.2 : 1, {duration: 300});
-  }, [focused, scale]);
+    useEffect(() => {
+      scale.value = withTiming(focused ? 1.2 : 1, {duration: 150});
+    }, [focused, scale]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{scale: scale.value}],
-  }));
+    const animatedStyle = useAnimatedStyle(() => ({
+      transform: [{scale: scale.value}],
+    }));
 
-  return (
-    <Animated.View style={animatedStyle}>
-      <Icon name={name} size={24} color={focused ? '#BB86FC' : 'gray'} />
-    </Animated.View>
-  );
-};
+    return (
+      <Animated.View style={animatedStyle}>
+        <Icon name={name} size={24} color={focused ? '#BB86FC' : 'gray'} />
+      </Animated.View>
+    );
+  },
+);
 
-const AnimatedTopBar = ({animatedStyle}: {animatedStyle: any}) => {
+const AnimatedTopBar = React.memo(({animatedStyle}: {animatedStyle: any}) => {
   return <Animated.View style={[styles.animatedBar, animatedStyle]} />;
-};
+});
 
-const ScreenWrapper = ({children}: {children: React.ReactNode}) => {
+const ScreenWrapper = React.memo(({children}: {children: React.ReactNode}) => {
   const theme = useTheme();
   return (
     <SafeAreaView
@@ -86,7 +88,7 @@ const ScreenWrapper = ({children}: {children: React.ReactNode}) => {
       </View>
     </SafeAreaView>
   );
-};
+});
 
 function TabNavigator() {
   const {animatedStyle, onTabChange} = useTabAnimation();
@@ -166,7 +168,7 @@ export default function AppNavigation() {
       {token ? (
         <Stack.Screen name="Tabs" component={TabNavigator} />
       ) : (
-        <Stack.Screen name={ENavigationStack.Login} component={LoginScreen} />
+        <Stack.Screen name="Login" component={LoginScreen} />
       )}
     </Stack.Navigator>
   );

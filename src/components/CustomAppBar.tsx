@@ -5,19 +5,25 @@ import {View, StyleSheet, Text} from 'react-native';
 import {Avatar} from 'react-native-paper';
 
 const CustomAppBar: React.FC = () => {
-  const greeting = getGreeting();
   const {user} = useAuth();
+
+  const greeting = React.useMemo(() => getGreeting(), []);
+  const userName = React.useMemo(
+    () => user?.name?.split(' ')[0] ?? 'Admin',
+    [user],
+  );
+  const userPicture = React.useMemo(() => user?.picture ?? '', [user]);
 
   return (
     <View style={styles.greetingContainer}>
       <Avatar.Image
         size={50}
         source={{
-          uri: user?.picture ?? '',
+          uri: userPicture,
         }}
       />
       <Text style={styles.greetingText}>
-        {greeting}, {user?.name ? user.name.split(' ')[0] : 'Admin'}
+        {greeting}, {userName}
       </Text>
     </View>
   );
@@ -37,4 +43,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CustomAppBar;
+export default React.memo(CustomAppBar);

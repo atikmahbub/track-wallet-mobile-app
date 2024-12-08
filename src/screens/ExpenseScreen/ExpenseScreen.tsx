@@ -13,6 +13,9 @@ import {AnimatedLoader} from '@trackingPortal/components';
 import {darkTheme} from '@trackingPortal/themes/darkTheme';
 import notifee from '@notifee/react-native';
 
+import HapticFeedback from 'react-native-haptic-feedback';
+import {withHaptic} from '@trackingPortal/utils/haptic';
+
 export default function ExpenseScreen() {
   const {currentUser: user} = useStoreContext();
   const [hideFabIcon, setHideFabIcon] = useState<boolean>(false);
@@ -157,7 +160,11 @@ export default function ExpenseScreen() {
           iconMode={'static'}
           label="Add New"
           style={styles.fabStyle}
-          onPress={() => setOpenCreationModal(true)}
+          onPress={() =>
+            withHaptic(() => {
+              setOpenCreationModal(true);
+            })
+          }
         />
       )}
     </View>
