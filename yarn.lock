@@ -3174,6 +3174,11 @@ cosmiconfig@^9.0.0:
     js-yaml "^4.1.0"
     parse-json "^5.2.0"
 
+country-currency-utils@^2.1.2:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/country-currency-utils/-/country-currency-utils-2.1.2.tgz#a71c463ca70bdb7203d1aabd2461b70b6f0191ad"
+  integrity sha512-czM567znND3j3HAb8IIU/zvf4guufFWHrpFLT+4OY7zvRH0RScMeyUL9JZdkAbC+tnKQ9TcolixofgJoQSW/wA==
+
 create-jest@^29.7.0:
   version "29.7.0"
   resolved "https://registry.yarnpkg.com/create-jest/-/create-jest-29.7.0.tgz#a355c5b3cb1e1af02ba177fe7afd7feee49a5320"

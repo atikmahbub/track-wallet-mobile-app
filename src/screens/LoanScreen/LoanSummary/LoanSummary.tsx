@@ -3,7 +3,8 @@ import React from 'react';
 import {darkTheme} from '@trackingPortal/themes/darkTheme';
 import {Card} from 'react-native-paper';
 import {ValueWithLabel} from '@trackingPortal/components';
-import {convertToKilo} from '@trackingPortal/utils/utils';
+import {convertToKilo, getCurrencyAmount} from '@trackingPortal/utils/utils';
+import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
 
 interface ISummary {
   totalGiven: number;
@@ -14,6 +15,7 @@ const LoanSummary: React.FC<ISummary> = ({
   totalGiven = 0,
   totalBorrowed = 0,
 }) => {
+  const {currency} = useStoreContext();
   return (
     <View style={styles.mainContainer}>
       <Card style={styles.summaryCard} mode="elevated">
@@ -28,11 +30,11 @@ const LoanSummary: React.FC<ISummary> = ({
         <Card.Content>
           <ValueWithLabel
             label="Total Given"
-            value={convertToKilo(totalGiven) + ' ' + 'BDT'}
+            value={getCurrencyAmount(totalGiven, currency)}
           />
           <ValueWithLabel
             label="Total Borrowed"
-            value={convertToKilo(totalBorrowed) + ' ' + 'BDT'}
+            value={getCurrencyAmount(totalBorrowed, currency)}
           />
         </Card.Content>
       </Card>

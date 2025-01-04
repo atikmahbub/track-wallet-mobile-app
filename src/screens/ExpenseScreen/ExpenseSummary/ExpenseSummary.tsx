@@ -6,7 +6,7 @@ import {FormikTextInput, ValueWithLabel} from '@trackingPortal/components';
 import dayjs, {Dayjs} from 'dayjs';
 import {MonthlyLimitModel} from '@trackingPortal/api/models';
 import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
-import {convertToKilo} from '@trackingPortal/utils/utils';
+import {getCurrencyAmount} from '@trackingPortal/utils/utils';
 import {Formik} from 'formik';
 import {EMonthlyLimitFields} from '@trackingPortal/screens/ExpenseScreen/ExpenseCreation/ExpenseCreation.constants';
 import Toast from 'react-native-toast-message';
@@ -30,6 +30,7 @@ const ExpenseSummary: React.FC<ISummary> = ({
   const animatedHeight = useRef(new Animated.Value(0)).current;
   const {apiGateway, currentUser: user} = useStoreContext();
   const [loading, setLoading] = useState<boolean>(false);
+  const {currency} = useStoreContext();
 
   const toggleLimitInput = () => {
     if (showLimitInput) {
@@ -110,15 +111,23 @@ const ExpenseSummary: React.FC<ISummary> = ({
             label="Total Spend"
             value={
               monthLimit?.limit
-                ? `${convertToKilo(
+                ? `${getCurrencyAmount(
                     totalExpense,
-                  )} BDT (${expensePercentage.toFixed(2)}%)`
+                    currency,
+                  )}  (${expensePercentage.toFixed(2)}%)`
                 : '0'
             }
           />
           <ValueWithLabel
             label="Limit"
-            value={convertToKilo(monthLimit?.limit || 0) ?? 'N/A'}
+            value={
+              monthLimit?.limit
+                ? getCurrencyAmount(
+                    Number(monthLimit.limit.toFixed(2)),
+                    currency,
+                  )
+                : 'N/A'
+            }
           />
           <View style={styles.buttonContainer}>
             <Button

@@ -3,9 +3,10 @@ import React from 'react';
 import {darkTheme} from '@trackingPortal/themes/darkTheme';
 import {Card} from 'react-native-paper';
 import {ValueWithLabel} from '@trackingPortal/components';
-import {convertToKilo} from '@trackingPortal/utils/utils';
+import {getCurrencyAmount} from '@trackingPortal/utils/utils';
 import {InvestModel} from '@trackingPortal/api/models';
 import {EInvestStatus} from '@trackingPortal/api/enums';
+import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
 
 interface ISummary {
   investList: InvestModel[];
@@ -14,6 +15,7 @@ interface ISummary {
 
 const InvestSummary: React.FC<ISummary> = ({investList, status}) => {
   const isActive = status === EInvestStatus.Active;
+  const {currency} = useStoreContext();
 
   const totalItems = investList.length;
   const totalAmountInvested = investList.reduce(
@@ -29,7 +31,7 @@ const InvestSummary: React.FC<ISummary> = ({investList, status}) => {
 
   const totalProfit = !isActive
     ? investList.reduce(
-        (acc, crr) => acc + ((crr.earned - crr.amount) / crr.amount) * 100,
+        (acc, crr) => acc + ((crr.earned! - crr.amount) / crr.amount) * 100,
         0,
       )
     : 0;
@@ -48,19 +50,17 @@ const InvestSummary: React.FC<ISummary> = ({investList, status}) => {
         <Card.Content>
           <ValueWithLabel
             label={`Total ${isActive ? 'Active' : 'Completed'} Investment`}
-            value={convertToKilo(
+            value={getCurrencyAmount(
               isActive ? totalActiveItem : totalCompletedItem,
+              currency,
             )}
           />
           <ValueWithLabel
             label="Total Amount Invested"
-            value={
-              convertToKilo(
-                isActive ? totalActiveAmount : totalCompletedAmount,
-              ) +
-              ' ' +
-              'BDT'
-            }
+            value={getCurrencyAmount(
+              isActive ? totalActiveAmount : totalCompletedAmount,
+              currency,
+            )}
           />
           {!isActive && (
             <ValueWithLabel

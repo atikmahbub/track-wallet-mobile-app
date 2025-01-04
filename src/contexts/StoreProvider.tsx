@@ -10,10 +10,17 @@ import {
 } from '@trackingPortal/api/primitives';
 import Toast from 'react-native-toast-message';
 import {UserModel} from '@trackingPortal/api/models';
+import {IPINFO_TOKEN} from '@env';
+import {
+  getCountryData,
+  getCurrencyData,
+  TCurrencyData,
+} from 'country-currency-utils';
 
 type StoreContextType = {
   apiGateway: IApiGateWay;
   currentUser: NewUserModel;
+  currency: TCurrencyData;
 };
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -36,6 +43,7 @@ const defaultUser: NewUserModel = {
 export const StoreProvider = ({children}: {children: React.ReactNode}) => {
   const {token, user: auth0User} = useAuth();
   const [currentUser, setCurrentUser] = useState<NewUserModel>(defaultUser);
+  const [currency, setCurrency] = useState<TCurrencyData>(undefined!);
 
   useEffect(() => {
     if (token) {
@@ -43,6 +51,25 @@ export const StoreProvider = ({children}: {children: React.ReactNode}) => {
       addUserToDb();
     }
   }, [auth0User, token]);
+
+  useEffect(() => {
+    getCountryCode();
+  }, []);
+
+  const getCountryCode = async () => {
+    try {
+      const response = await fetch(`https://ipinfo.io?token=${IPINFO_TOKEN}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      const countryData = await getCountryData(data.country);
+      const currency = await getCurrencyData(countryData?.currencyCode!);
+      currency && setCurrency(currency);
+    } catch (error) {
+      console.error('Error fetching country code:', error);
+    }
+  };
 
   const addUserToDb = async () => {
     try {
@@ -76,6 +103,7 @@ export const StoreProvider = ({children}: {children: React.ReactNode}) => {
   const contextValues: StoreContextType = {
     currentUser,
     apiGateway,
+    currency,
   };
 
   return (

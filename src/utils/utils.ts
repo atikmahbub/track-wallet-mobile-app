@@ -1,3 +1,7 @@
+import {
+  getDisplayAmountOnCurrency,
+  TCurrencyData,
+} from 'country-currency-utils';
 import dayjs from 'dayjs';
 
 export const getGreeting = (): string => {
@@ -30,4 +34,14 @@ export const convertKiloToNumber = (number: string | number): number => {
   }
 
   return Number(_number);
+};
+
+export const getCurrencyAmount = (value: number, currency: TCurrencyData) => {
+  const amount = getDisplayAmountOnCurrency(value, currency, {
+    isSymbolStandard: true,
+    avoidFixedDecimals: true,
+    avoidRound: true,
+  });
+
+  return amount;
 };
