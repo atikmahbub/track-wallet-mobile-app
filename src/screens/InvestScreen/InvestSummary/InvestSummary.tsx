@@ -50,10 +50,7 @@ const InvestSummary: React.FC<ISummary> = ({investList, status}) => {
         <Card.Content>
           <ValueWithLabel
             label={`Total ${isActive ? 'Active' : 'Completed'} Investment`}
-            value={getCurrencyAmount(
-              isActive ? totalActiveItem : totalCompletedItem,
-              currency,
-            )}
+            value={isActive ? totalActiveItem : totalCompletedItem}
           />
           <ValueWithLabel
             label="Total Amount Invested"

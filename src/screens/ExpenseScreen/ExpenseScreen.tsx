@@ -124,12 +124,14 @@ export default function ExpenseScreen() {
         data={expenses}
         keyExtractor={(item, index) => `${item.id || index}`}
         ListHeaderComponent={
-          <ExpenseSummary
-            totalExpense={totalExpense}
-            filterMonth={filterMonth}
-            monthLimit={monthLimit}
-            getMonthlyLimit={getMonthlyLimit}
-          />
+          <View>
+            <ExpenseSummary
+              totalExpense={totalExpense}
+              filterMonth={filterMonth}
+              monthLimit={monthLimit}
+              getMonthlyLimit={getMonthlyLimit}
+            />
+          </View>
         }
         ListFooterComponent={
           <ExpenseList

@@ -1,22 +1,16 @@
-import React, {
-  createContext,
-  SetStateAction,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import React, {createContext, useContext, useEffect, useState} from 'react';
 import Auth0 from 'react-native-auth0';
 import {AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_AUDIENCE} from '@env';
-import {
-  ENavigationTab,
-  ENavigationStack,
-} from '@trackingPortal/navigation/ERoutes';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {
   navigationRef,
   navigate,
 } from '@trackingPortal/navigation/navigationRef';
+import {
+  ENavigationTab,
+  ENavigationStack,
+} from '@trackingPortal/navigation/ERoutes';
 
 const TOKEN_KEY = 'auth_token';
 
@@ -51,14 +45,27 @@ export const Auth0ProviderWithHistory = ({
       try {
         setLoading(true);
         const storedToken = await AsyncStorage.getItem(TOKEN_KEY);
+
         if (storedToken) {
           setToken(storedToken);
-          const userInfo = await auth0.auth.userInfo({token: storedToken});
-          setUser(userInfo);
-          if (navigationRef.isReady()) {
-            navigate('Tabs', {
-              screen: ENavigationTab.Expense,
-            } as any);
+
+          try {
+            const userInfo = await auth0.auth.userInfo({token: storedToken});
+            setUser(userInfo);
+            if (navigationRef.isReady()) {
+              navigate('Tabs', {
+                screen: ENavigationTab.Expense,
+              } as any);
+            }
+          } catch (error) {
+            console.error('Token expired or invalid:', error);
+            // Clear stored token and navigate to login
+            await AsyncStorage.removeItem(TOKEN_KEY);
+            setToken(null);
+            setUser(null);
+            if (navigationRef.isReady()) {
+              navigate(ENavigationStack.Login);
+            }
           }
         } else {
           if (navigationRef.isReady()) {
@@ -85,13 +92,16 @@ export const Auth0ProviderWithHistory = ({
         scope: 'openid profile email',
         audience: AUTH0_AUDIENCE,
         redirectUrl: redirectUrl,
+        connection: 'google-oauth2',
       });
       setToken(credentials.accessToken);
       await AsyncStorage.setItem(TOKEN_KEY, credentials.accessToken);
+
       const userInfo = await auth0.auth.userInfo({
         token: credentials.accessToken,
       });
       setUser(userInfo);
+
       if (navigationRef.isReady()) {
         navigate('Tabs', {
           screen: ENavigationTab.Expense,
@@ -110,6 +120,12 @@ export const Auth0ProviderWithHistory = ({
       await AsyncStorage.removeItem(TOKEN_KEY);
       setToken(null);
       setUser(null);
+      // await auth0.webAuth.clearSession();
+
+      await fetch(
+        `https://${AUTH0_DOMAIN}/v2/logout?client_id=${AUTH0_CLIENT_ID}&federated=true`,
+      );
+
       if (navigationRef.isReady()) {
         navigate(ENavigationStack.Login);
       }
