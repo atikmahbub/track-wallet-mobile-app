@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   fabStyle: {
-    bottom: 10,
+    bottom: 3,
     right: 24,
     position: 'absolute',
     backgroundColor: colors.primary,
