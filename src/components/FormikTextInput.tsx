@@ -2,6 +2,7 @@ import React from 'react';
 import {TextInput, TextInputProps} from 'react-native-paper';
 import {useField} from 'formik';
 import {View, Text, StyleSheet} from 'react-native';
+import {colors} from '@trackingPortal/themes/colors';
 
 interface FormikTextInputProps extends TextInputProps {
   name: string;
@@ -49,7 +50,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   errorText: {
-    color: 'red',
+    color: colors.error,
     fontSize: 12,
     marginTop: 4,
   },

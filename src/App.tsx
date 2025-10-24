@@ -32,7 +32,7 @@ function App(): React.JSX.Element {
   return (
     <Fragment>
       <SafeAreaProvider>
-        <GestureHandlerRootView>
+        <GestureHandlerRootView style={{flex: 1}}>
           <PaperProvider theme={darkTheme}>
             <NavigationContainer
               ref={navigationRef}

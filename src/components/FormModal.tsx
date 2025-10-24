@@ -13,6 +13,7 @@ import {
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Modal from 'react-native-modal';
 import LoadingButton from '@trackingPortal/components/LoadingButton';
+import {colors} from '@trackingPortal/themes/colors';
 
 interface IFormModal {
   isVisible: boolean;
@@ -52,7 +53,7 @@ const FormModal: React.FC<IFormModal> = ({
       backdropTransitionOutTiming={0}
       animationInTiming={300}
       animationOutTiming={300}>
-      <SafeAreaView style={{flex: 1}}>
+      <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={styles.keyboardAvoidingView}>
@@ -89,25 +90,34 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     margin: 0,
   },
+  safeArea: {
+    flex: 1,
+  },
   keyboardAvoidingView: {
     flex: 1,
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#2A0845',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 50,
-    height: 'auto',
+    backgroundColor: 'rgba(8, 14, 32, 0.92)',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    paddingHorizontal: 24,
+    paddingTop: 22,
+    paddingBottom: 36,
     justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+    shadowColor: colors.primary,
+    shadowOpacity: 0.25,
+    shadowRadius: 30,
+    shadowOffset: {width: 0, height: -12},
   },
   title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#E1BEE7',
-    paddingBottom: 15,
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+    paddingBottom: 16,
+    letterSpacing: 0.4,
   },
   scrollView: {
     flexGrow: 1,
@@ -115,17 +125,20 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: 10, // Adjusted spacing above the buttons
+    marginTop: 18,
+    gap: 12,
   },
   cancelButton: {
-    backgroundColor: '#7B1FA2',
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 5,
-    marginRight: 10,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
   },
   buttonText: {
-    color: '#E1BEE7',
-    fontWeight: 'bold',
+    color: colors.subText,
+    fontWeight: '600',
+    letterSpacing: 0.3,
   },
 });

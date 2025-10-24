@@ -1,4 +1,4 @@
-import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import {View, StyleSheet, TouchableOpacity} from 'react-native';
 import React, {
   FC,
   Fragment,
@@ -6,11 +6,10 @@ import React, {
   useCallback,
   useState,
 } from 'react';
-import {Button, Card} from 'react-native-paper';
-import {darkTheme} from '@trackingPortal/themes/darkTheme';
+import {Button, Text} from 'react-native-paper';
 import dayjs, {Dayjs} from 'dayjs';
 
-import MonthPicker from 'react-native-month-year-picker';
+import DatePicker from 'react-native-date-picker';
 import DataTable from '@trackingPortal/components/DataTable';
 import {colors} from '@trackingPortal/themes/colors';
 import {Formik} from 'formik';
@@ -28,7 +27,11 @@ import {
 import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
 import {IUpdateExpenseParams} from '@trackingPortal/api/params';
 import Toast from 'react-native-toast-message';
-import {AnimatedLoader, LoadingButton} from '@trackingPortal/components';
+import {
+  AnimatedLoader,
+  LoadingButton,
+  GlassCard,
+} from '@trackingPortal/components';
 
 interface IExpenseList {
   notifyRowOpen: (value: boolean) => void;
@@ -53,15 +56,14 @@ const ExpenseList: FC<IExpenseList> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
 
-  const onValueChange = useCallback(
-    (event: any, newDate: any) => {
-      const selectedDate = newDate || filteredMonth;
+  const handleDateConfirm = useCallback(
+    (selectedDate: Date) => {
       setOpenPicker(false);
       if (selectedDate) {
-        setFilteredMonth(dayjs(selectedDate));
+        setFilteredMonth(dayjs(selectedDate).startOf('month'));
       }
     },
-    [filteredMonth, setOpenPicker],
+    [setFilteredMonth],
   );
 
   const onExpenseEdit = async (
@@ -170,28 +172,26 @@ const ExpenseList: FC<IExpenseList> = ({
 
   return (
     <View style={styles.mainContainer}>
-      <Card style={styles.listCard}>
-        <Card.Title
-          title="Expense's"
-          titleStyle={{
-            fontSize: 16,
-            fontWeight: '700',
-          }}
-        />
-        <Card.Actions style={styles.cardActions}>
-          <Button mode="outlined" onPress={() => setOpenPicker(!openPicker)}>
-            {dayjs(filteredMonth).format('MMMM YYYY')}
+      <GlassCard style={styles.listCard}>
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.title}>Expense History</Text>
+            <Text style={styles.subtitle}>
+              Swipe a row to edit details or remove an expense.
+            </Text>
+          </View>
+          <Button
+            mode="contained-tonal"
+            icon="calendar-month"
+            uppercase={false}
+            style={styles.monthButton}
+            contentStyle={styles.monthButtonContent}
+            labelStyle={styles.monthButtonLabel}
+            onPress={() => setOpenPicker(true)}>
+            {dayjs(filteredMonth).format('MMM YYYY')}
           </Button>
-          {openPicker && (
-            <MonthPicker
-              onChange={onValueChange}
-              value={filteredMonth.toDate()}
-              locale="en"
-              autoTheme={true}
-            />
-          )}
-        </Card.Actions>
-        <Card.Content>
+        </View>
+        <View style={styles.tableContainer}>
           <DataTable
             headers={headers}
             data={expenses.map(item => {
@@ -210,8 +210,17 @@ const ExpenseList: FC<IExpenseList> = ({
             setExpandedRowId={setExpandedRowId}
             renderCollapsibleContent={renderCollapsibleContent}
           />
-        </Card.Content>
-      </Card>
+        </View>
+      </GlassCard>
+      <DatePicker
+        modal
+        mode="date"
+        theme="dark"
+        open={openPicker}
+        date={filteredMonth.toDate()}
+        onConfirm={handleDateConfirm}
+        onCancel={() => setOpenPicker(false)}
+      />
     </View>
   );
 };
@@ -220,24 +229,44 @@ export default ExpenseList;
 
 const styles = StyleSheet.create({
   mainContainer: {
-    padding: 10,
+    paddingHorizontal: 16,
+    paddingTop: 16,
     flex: 1,
   },
   listCard: {
-    backgroundColor: darkTheme.colors.surface,
-    marginTop: 20,
+    marginTop: 12,
   },
-  cardActions: {
-    position: 'absolute',
-    right: 0,
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 16,
   },
-  pickerContainer: {},
-  input: {
-    backgroundColor: colors.surface,
+  title: {
     color: colors.text,
-    padding: 10,
-    marginVertical: 5,
-    borderRadius: 5,
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  subtitle: {
+    color: colors.subText,
+    fontSize: 13,
+    marginTop: 4,
+    lineHeight: 18,
+    maxWidth: 220,
+  },
+  monthButton: {
+    borderRadius: 999,
+  },
+  monthButtonContent: {
+    paddingHorizontal: 12,
+  },
+  monthButtonLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: 0.4,
+  },
+  tableContainer: {
+    marginTop: 12,
   },
   actionRow: {
     flexDirection: 'row',
@@ -247,12 +276,15 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   cancelButton: {
-    backgroundColor: colors.disabled,
-    padding: 10,
-    borderRadius: 5,
+    backgroundColor: 'transparent',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
   },
   cancelButtonText: {
-    color: colors.text,
-    fontWeight: 'bold',
+    color: colors.subText,
+    fontWeight: '600',
   },
 });

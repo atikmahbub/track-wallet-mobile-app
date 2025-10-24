@@ -1,18 +1,21 @@
 import React, {useState} from 'react';
 import {Menu, Button} from 'react-native-paper';
-import {View, StyleSheet} from 'react-native';
-import {darkTheme} from '@trackingPortal/themes/darkTheme';
+import {View, StyleSheet, Platform, StyleProp, ViewStyle} from 'react-native';
+import {colors} from '@trackingPortal/themes/colors';
+import {BlurView} from '@react-native-community/blur';
 
 interface TwMenuProps {
   options: {label: string; value: any}[];
   onSelect: (value: any) => void;
   buttonLabel?: string;
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
 const TwMenu: React.FC<TwMenuProps> = ({
   options,
   onSelect,
   buttonLabel = 'Select Option',
+  containerStyle,
 }) => {
   const [visible, setVisible] = useState(false);
 
@@ -25,16 +28,34 @@ const TwMenu: React.FC<TwMenuProps> = ({
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, containerStyle]}>
       <Menu
         visible={visible}
         onDismiss={closeMenu}
-        theme={darkTheme}
+        contentStyle={styles.menuSurface}
         anchor={
-          <Button mode="outlined" onPress={openMenu}>
+          <Button
+            mode="contained-tonal"
+            onPress={openMenu}
+            style={styles.menuButton}
+            labelStyle={styles.menuLabel}
+            contentStyle={styles.menuContent}
+            uppercase={false}
+            icon="chevron-down">
             {buttonLabel}
           </Button>
         }>
+        <View style={styles.menuBackdrop} pointerEvents="none">
+          {Platform.OS === 'ios' && (
+            <BlurView
+              style={StyleSheet.absoluteFillObject}
+              blurType="ultraThinMaterialDark"
+              blurAmount={20}
+              reducedTransparencyFallbackColor={colors.surfaceAlt}
+            />
+          )}
+          <View style={styles.menuTint} />
+        </View>
         {options.map(option => (
           <Menu.Item
             key={option.value}
@@ -51,6 +72,36 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  menuButton: {
+    borderRadius: 999,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    paddingHorizontal: 4,
+  },
+  menuContent: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+  menuLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: 0.4,
+    color: colors.text,
+  },
+  menuSurface: {
+    backgroundColor: 'transparent',
+    borderRadius: 22,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+  },
+  menuBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 22,
+  },
+  menuTint: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(8, 14, 32, 0.9)',
   },
 });
 

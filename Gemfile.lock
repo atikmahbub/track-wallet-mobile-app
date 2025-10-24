@@ -106,12 +106,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  activesupport (>= 6.1.7.5, != 7.1.0)
-  cocoapods (>= 1.13, != 1.15.1, != 1.15.0)
-  xcodeproj (< 1.26.0)
-
-RUBY VERSION
-   ruby 3.3.6p108
+  cocoapods (~> 1.15)
 
 BUNDLED WITH
    2.5.23

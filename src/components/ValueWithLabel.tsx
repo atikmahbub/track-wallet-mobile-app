@@ -1,6 +1,7 @@
 import {View, StyleSheet} from 'react-native';
 import React from 'react';
 import {Text} from 'react-native-paper';
+import {colors} from '@trackingPortal/themes/colors';
 
 interface IValueWithLabel {
   label: string;
@@ -11,8 +12,8 @@ interface IValueWithLabel {
 const ValueWithLabel: React.FC<IValueWithLabel> = ({label, value, error}) => {
   return (
     <View style={styles.container}>
-      <Text variant="bodyLarge">{label}</Text>
-      <Text variant="bodyLarge">{value}</Text>
+      <Text style={[styles.label, error && styles.error]}>{label}</Text>
+      <Text style={[styles.value, error && styles.error]}>{value}</Text>
     </View>
   );
 };
@@ -27,5 +28,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10,
+  },
+  label: {
+    color: colors.subText,
+    fontSize: 14,
+    letterSpacing: 0.4,
+  },
+  value: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  error: {
+    color: colors.error,
   },
 });

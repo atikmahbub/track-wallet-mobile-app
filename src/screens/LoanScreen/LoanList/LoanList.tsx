@@ -1,7 +1,6 @@
-import {View, StyleSheet, TouchableOpacity, Text} from 'react-native';
+import {View, StyleSheet, TouchableOpacity} from 'react-native';
 import React, {FC, Fragment, useCallback, useState} from 'react';
-import {Card} from 'react-native-paper';
-import {darkTheme} from '@trackingPortal/themes/darkTheme';
+import {Text} from 'react-native-paper';
 
 import DataTable from '@trackingPortal/components/DataTable';
 import {colors} from '@trackingPortal/themes/colors';
@@ -10,7 +9,7 @@ import {LoanModel} from '@trackingPortal/api/models';
 import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
 import {IUpdateLoanParams} from '@trackingPortal/api/params';
 import Toast from 'react-native-toast-message';
-import {AnimatedLoader, LoadingButton} from '@trackingPortal/components';
+import {AnimatedLoader, LoadingButton, GlassCard} from '@trackingPortal/components';
 import {LoanType} from '@trackingPortal/api/enums';
 import dayjs from 'dayjs';
 import {
@@ -144,15 +143,16 @@ const LoanList: FC<ILoanList> = ({notifyRowOpen, loans, getUserLoan}) => {
 
   return (
     <View style={styles.mainContainer}>
-      <Card style={styles.listCard}>
-        <Card.Title
-          title="Loan History"
-          titleStyle={{
-            fontSize: 16,
-            fontWeight: '700',
-          }}
-        />
-        <Card.Content>
+      <GlassCard style={styles.listCard}>
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.title}>Loan History</Text>
+            <Text style={styles.subtitle}>
+              Keep every obligation and repayment timeline in clear view.
+            </Text>
+          </View>
+        </View>
+        <View style={styles.tableContainer}>
           <DataTable
             headers={headers}
             data={loans.map(loan => ({
@@ -170,8 +170,8 @@ const LoanList: FC<ILoanList> = ({notifyRowOpen, loans, getUserLoan}) => {
             setExpandedRowId={setExpandedRowId}
             renderCollapsibleContent={renderCollapsibleContent}
           />
-        </Card.Content>
-      </Card>
+        </View>
+      </GlassCard>
     </View>
   );
 };
@@ -180,11 +180,33 @@ export default LoanList;
 
 const styles = StyleSheet.create({
   mainContainer: {
-    padding: 10,
+    paddingHorizontal: 20,
+    paddingTop: 20,
   },
   listCard: {
-    backgroundColor: darkTheme.colors.surface,
-    marginTop: 20,
+    marginTop: 12,
+    marginHorizontal: 4,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 16,
+  },
+  title: {
+    color: colors.text,
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  subtitle: {
+    color: colors.subText,
+    fontSize: 13,
+    marginTop: 4,
+    lineHeight: 18,
+    maxWidth: 260,
+  },
+  tableContainer: {
+    marginTop: 12,
   },
   actionRow: {
     flexDirection: 'row',
@@ -194,12 +216,15 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   cancelButton: {
-    backgroundColor: colors.disabled,
-    padding: 10,
-    borderRadius: 5,
+    backgroundColor: 'transparent',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
   },
   cancelButtonText: {
-    color: colors.text,
-    fontWeight: 'bold',
+    color: colors.subText,
+    fontWeight: '600',
   },
 });

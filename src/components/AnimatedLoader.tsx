@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import LottieView from 'lottie-react-native';
-import {darkTheme} from '@trackingPortal/themes/darkTheme';
+import {colors} from '@trackingPortal/themes/colors';
 
 const AppLoader = () => {
   return (
@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: darkTheme.colors.background,
+    backgroundColor: 'rgba(5, 9, 21, 0.86)',
   },
   loader: {
     width: 150,

@@ -10,7 +10,6 @@ import Toast from 'react-native-toast-message';
 import InvestCreation from '@trackingPortal/screens/InvestScreen/InvestCreation';
 import {EInvestStatus} from '@trackingPortal/api/enums';
 import {AnimatedLoader} from '@trackingPortal/components';
-import {darkTheme} from '@trackingPortal/themes/darkTheme';
 import {withHaptic} from '@trackingPortal/utils/haptic';
 
 export default function InvestScreen() {
@@ -109,14 +108,15 @@ export default function InvestScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: darkTheme.colors.background,
+    backgroundColor: 'transparent',
   },
   fabStyle: {
-    bottom: 25,
-    right: 25,
+    bottom: 75,
+    right: 24,
     position: 'absolute',
   },
   listContent: {
-    paddingBottom: 80,
+    paddingBottom: 180,
+    paddingTop: 8,
   },
 });

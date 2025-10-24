@@ -7,12 +7,11 @@ import Animated, {
   withTiming,
   interpolate,
 } from 'react-native-reanimated';
-import {useTheme} from 'react-native-paper';
+import {colors} from '@trackingPortal/themes/colors';
 
 const {width} = Dimensions.get('window');
 
 const AnimatedLoader = () => {
-  const theme = useTheme();
   const rotation = useSharedValue(0);
 
   React.useEffect(() => {
@@ -30,8 +29,7 @@ const AnimatedLoader = () => {
   });
 
   return (
-    <View
-      style={[styles.container, {backgroundColor: theme.colors.background}]}>
+    <View style={[styles.container, styles.backdrop]}>
       <Animated.View style={[styles.loader, animatedStyle]} />
     </View>
   );
@@ -43,13 +41,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  backdrop: {
+    backgroundColor: 'rgba(5, 9, 21, 0.86)',
+  },
   loader: {
     width: width * 0.2,
     height: width * 0.2,
     borderWidth: 5,
     borderRadius: width * 0.1,
-    borderColor: '#BB86FC',
-    borderTopColor: '#2A47AB',
+    borderColor: colors.primary,
+    borderTopColor: colors.accent,
   },
 });
 

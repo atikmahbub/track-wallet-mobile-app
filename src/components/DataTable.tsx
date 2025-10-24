@@ -1,12 +1,5 @@
 import React, {useRef, useEffect, useCallback} from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
+import {View, Text, StyleSheet, FlatList, TouchableOpacity, Alert} from 'react-native';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import Collapsible from 'react-native-collapsible';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -100,18 +93,20 @@ const DataTable: React.FC<DataTableProps> = ({
             : undefined
         }
         enabled={!isRowOpen}>
-        <View style={styles.row}>
-          {headers.map(header => (
-            <Text style={styles.cell} key={header}>
-              {item[header]}
-            </Text>
-          ))}
-        </View>
-        <Collapsible collapsed={!isRowOpen}>
-          <View style={styles.collapsibleContent}>
-            {renderCollapsibleContent(item)}
+        <View style={styles.rowWrapper}>
+          <View style={[styles.row, isRowOpen && styles.rowActive]}>
+            {headers.map(header => (
+              <Text style={styles.cell} key={header}>
+                {item[header]}
+              </Text>
+            ))}
           </View>
-        </Collapsible>
+          <Collapsible collapsed={!isRowOpen}>
+            <View style={styles.collapsibleContent}>
+              {renderCollapsibleContent(item)}
+            </View>
+          </Collapsible>
+        </View>
       </Swipeable>
     );
   };
@@ -148,34 +143,53 @@ export default DataTable;
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor: colors.background,
-    marginTop: 20,
+    marginTop: 16,
   },
   header: {
     flexDirection: 'row',
-    backgroundColor: colors.surface,
-    padding: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+    marginHorizontal: 4,
   },
   headerCell: {
     flex: 1,
-    color: colors.text,
-    fontWeight: 'bold',
+    color: colors.subText,
+    fontWeight: '600',
     textAlign: 'center',
+    letterSpacing: 1.2,
+    fontSize: 12,
   },
   table: {
-    backgroundColor: colors.background,
+    paddingVertical: 12,
+  },
+  rowWrapper: {
+    marginHorizontal: 4,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+    borderRadius: 22,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
   },
   row: {
     flexDirection: 'row',
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.disabled,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    gap: 8,
+  },
+  rowActive: {
+    backgroundColor: 'rgba(94, 92, 230, 0.18)',
   },
   cell: {
     flex: 1,
     color: colors.text,
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: 15,
+    fontWeight: '500',
   },
   swipeActions: {
     flexDirection: 'row',
@@ -196,17 +210,24 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   collapsibleContent: {
-    backgroundColor: colors.surface,
-    padding: 10,
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    borderTopWidth: 1,
+    borderTopColor: colors.glassBorder,
   },
   emptyContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    flex: 1,
-    backgroundColor: colors.surface,
+    paddingVertical: 40,
+    marginTop: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+    backgroundColor: 'rgba(15, 23, 42, 0.4)',
   },
   emptyText: {
-    color: colors.text,
+    color: colors.subText,
     fontSize: 16,
     textAlign: 'center',
   },

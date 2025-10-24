@@ -10,11 +10,11 @@ import dayjs from 'dayjs';
 import {Month, UnixTimeStampString, Year} from '@trackingPortal/api/primitives';
 import Toast from 'react-native-toast-message';
 import {AnimatedLoader} from '@trackingPortal/components';
-import {darkTheme} from '@trackingPortal/themes/darkTheme';
 import notifee from '@notifee/react-native';
 
 import HapticFeedback from 'react-native-haptic-feedback';
 import {withHaptic} from '@trackingPortal/utils/haptic';
+import {colors} from '@trackingPortal/themes/colors';
 
 export default function ExpenseScreen() {
   const {currentUser: user} = useStoreContext();
@@ -161,6 +161,7 @@ export default function ExpenseScreen() {
           animateFrom={'right'}
           iconMode={'static'}
           label="Add New"
+          color={colors.text}
           style={styles.fabStyle}
           onPress={() =>
             withHaptic(() => {
@@ -176,14 +177,21 @@ export default function ExpenseScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: darkTheme.colors.background,
+    backgroundColor: 'transparent',
   },
   fabStyle: {
-    bottom: 25,
-    right: 25,
+    bottom: 102,
+    right: 24,
     position: 'absolute',
+    backgroundColor: colors.primary,
+    shadowColor: colors.primary,
+    shadowOpacity: 0.35,
+    shadowRadius: 18,
+    shadowOffset: {width: 0, height: 12},
+    elevation: 10,
   },
   listContent: {
-    paddingBottom: 80,
+    paddingBottom: 180,
+    paddingTop: 8,
   },
 });
