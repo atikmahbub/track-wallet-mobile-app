@@ -192,8 +192,7 @@ function TabNavigator() {
             <AnimatedIcon name={iconMap[route.name]} focused={focused} />
           ),
           tabBarHideOnKeyboard: true,
-        })}
-        >
+        })}>
         <Tab.Screen
           name={ENavigationTab.Expense}
           options={{tabBarLabel: 'Expense'}}>
@@ -203,9 +202,7 @@ function TabNavigator() {
             </ScreenWrapper>
           )}
         </Tab.Screen>
-        <Tab.Screen
-          name={ENavigationTab.Loan}
-          options={{tabBarLabel: 'Loan'}}>
+        <Tab.Screen name={ENavigationTab.Loan} options={{tabBarLabel: 'Loan'}}>
           {() => (
             <ScreenWrapper>
               <LoanScreen />
@@ -214,7 +211,7 @@ function TabNavigator() {
         </Tab.Screen>
         <Tab.Screen
           name={ENavigationTab.Investment}
-          options={{tabBarLabel: 'Investment'}}>
+          options={{tabBarLabel: 'Invest'}}>
           {() => (
             <ScreenWrapper>
               <InvestScreen />
@@ -270,7 +267,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   tabBarContainer: {
-    marginHorizontal: 24,
+    marginHorizontal: 16,
     marginBottom: 8,
     borderRadius: 36,
     overflow: 'hidden',

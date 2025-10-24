@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   fabStyle: {
-    bottom: 102,
+    bottom: 10,
     right: 24,
     position: 'absolute',
     backgroundColor: colors.primary,

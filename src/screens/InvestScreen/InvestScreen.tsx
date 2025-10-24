@@ -11,6 +11,7 @@ import InvestCreation from '@trackingPortal/screens/InvestScreen/InvestCreation'
 import {EInvestStatus} from '@trackingPortal/api/enums';
 import {AnimatedLoader} from '@trackingPortal/components';
 import {withHaptic} from '@trackingPortal/utils/haptic';
+import {colors} from '@trackingPortal/themes/colors';
 
 export default function InvestScreen() {
   const [openCreationModal, setOpenCreationModal] = useState<boolean>(false);
@@ -93,6 +94,7 @@ export default function InvestScreen() {
           animateFrom={'right'}
           iconMode={'static'}
           label="Add New"
+          color={colors.text}
           style={styles.fabStyle}
           onPress={() =>
             withHaptic(() => {
@@ -111,9 +113,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   fabStyle: {
-    bottom: 75,
+    bottom: 10,
     right: 24,
     position: 'absolute',
+    backgroundColor: colors.primary,
+    shadowColor: colors.primary,
+    shadowOpacity: 0.35,
+    shadowRadius: 18,
+    shadowOffset: {width: 0, height: 12},
+    elevation: 10,
   },
   listContent: {
     paddingBottom: 180,
