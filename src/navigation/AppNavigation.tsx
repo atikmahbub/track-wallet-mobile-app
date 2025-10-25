@@ -14,6 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import {useTheme} from 'react-native-paper';
 import {BlurView} from '@react-native-community/blur';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import ExpenseScreen from '@trackingPortal/screens/ExpenseScreen';
 import LoanScreen from '@trackingPortal/screens/LoanScreen';
@@ -21,7 +22,6 @@ import InvestScreen from '@trackingPortal/screens/InvestScreen';
 import ProfileScreen from '@trackingPortal/screens/ProfileScreen';
 import LoginScreen from '@trackingPortal/screens/LoginScreen';
 import {darkTheme} from '@trackingPortal/themes/darkTheme';
-import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {CustomAppBar, AnimatedLoader} from '@trackingPortal/components';
 import {useAuth} from '@trackingPortal/auth/Auth0ProviderWithHistory';
 import {ENavigationTab} from '@trackingPortal/navigation/ERoutes';
@@ -31,6 +31,8 @@ enableScreens();
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+
+const TAB_CONTENT_BOTTOM_PADDING = 96; // keep content above the glass bar
 
 const AnimatedIcon = React.memo(
   ({name, focused}: {name: string; focused: boolean}) => {
@@ -71,8 +73,7 @@ const GlassTabBar: React.FC<BottomTabBarProps> = ({
   descriptors,
   navigation,
 }) => {
-  useSafeAreaInsets();
-  const bottomSpacing = 0;
+  const bottomSpacing = 0; // ⬅️ keep the bar flush with the bottom
 
   return (
     <View
@@ -159,7 +160,7 @@ const ScreenWrapper = React.memo(({children}: {children: React.ReactNode}) => {
   const theme = useTheme();
   return (
     <SafeAreaView
-      edges={['top']}
+      edges={['top']} // ⬅️ only top safe area
       style={{backgroundColor: darkTheme.colors.background, flex: 1}}>
       <CustomAppBar />
       <View
@@ -188,10 +189,13 @@ function TabNavigator() {
         sceneContainerStyle={styles.sceneContainer}
         screenOptions={({route}) => ({
           headerShown: false,
+          tabBarHideOnKeyboard: true,
+          // ⬇️ prevent any implicit bottom safe-area padding
+          safeAreaInsets: {bottom: 0},
+          tabBarStyle: {paddingBottom: 0, height: undefined},
           tabBarIcon: ({focused}) => (
             <AnimatedIcon name={iconMap[route.name]} focused={focused} />
           ),
-          tabBarHideOnKeyboard: true,
         })}>
         <Tab.Screen
           name={ENavigationTab.Expense}
@@ -235,9 +239,7 @@ function TabNavigator() {
 export default function AppNavigation() {
   const {token, loading} = useAuth();
 
-  if (loading) {
-    return <AnimatedLoader />;
-  }
+  if (loading) return <AnimatedLoader />;
 
   return (
     <Stack.Navigator screenOptions={{headerShown: false}}>
@@ -258,17 +260,23 @@ const styles = StyleSheet.create({
   sceneContainer: {
     backgroundColor: 'transparent',
   },
+  screenWrapper: {
+    flex: 1,
+    paddingBottom: TAB_CONTENT_BOTTOM_PADDING, // keep content above the tab bar
+  },
+
+  // ---- Custom Glass Tab Bar ----
   tabBarWrapper: {
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: 0,
+    bottom: 0, // ⬅️ flush with screen edge
     paddingHorizontal: 0,
     backgroundColor: 'transparent',
   },
   tabBarContainer: {
     marginHorizontal: 16,
-    marginBottom: 8,
+    marginBottom: 4, // small visual buffer above home indicator
     borderRadius: 36,
     overflow: 'hidden',
     backgroundColor: 'transparent',
@@ -290,7 +298,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 18,
-    paddingVertical: 12,
+    paddingVertical: 8,
   },
   tabTouchable: {
     flex: 1,
@@ -303,7 +311,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 999,
     paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingVertical: 8,
     gap: 4,
   },
   tabPillInactive: {
@@ -331,10 +339,7 @@ const styles = StyleSheet.create({
   tabLabelActive: {
     color: colors.text,
   },
-  screenWrapper: {
-    flex: 1,
-    paddingBottom: 120,
-  },
+
   iconSlot: {
     width: 36,
     height: 36,

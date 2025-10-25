@@ -54,24 +54,33 @@ const DataTable: React.FC<DataTableProps> = ({
   const defaultSwipeActions = useCallback(
     (id: number, close: () => void) => (
       <View style={styles.swipeActions}>
-        <TouchableOpacity
-          style={styles.editAction}
+        <View style={styles.swipeActionsBackdrop} />
+        <View style={styles.swipeActionsContent}>
+          <TouchableOpacity
+            style={[styles.swipeActionButton, styles.editAction]}
+            activeOpacity={0.9}
           onPress={() => {
             close();
             handleEditToggle(id);
           }}>
-          <Icon name="edit" size={24} color="#FFF" />
+          <View style={[styles.actionIconBadge, styles.editBadge]}>
+            <Icon name="edit" size={18} color="#10192e" />
+          </View>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.deleteAction}
+          style={[styles.swipeActionButton, styles.deleteAction]}
+          activeOpacity={0.9}
           onPress={() => {
             close();
             handleDelete(id);
           }}>
-          <Icon name="delete" size={24} color="#FFF" />
+          <View style={[styles.actionIconBadge, styles.deleteBadge]}>
+            <Icon name="delete" size={18} color="#280c12" />
+          </View>
         </TouchableOpacity>
       </View>
-    ),
+    </View>
+  ),
     [handleEditToggle, handleDelete],
   );
 
@@ -193,21 +202,57 @@ const styles = StyleSheet.create({
   },
   swipeActions: {
     flexDirection: 'row',
+    alignItems: 'stretch',
+    justifyContent: 'flex-end',
+    height: '100%',
+    paddingHorizontal: 12,
+  },
+  swipeActionsBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 22,
+    backgroundColor: 'rgba(5, 11, 26, 0.92)',
+    borderWidth: 1,
+    borderColor: 'rgba(94, 92, 230, 0.22)',
+  },
+  swipeActionsContent: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
+    paddingVertical: 12,
+  },
+  swipeActionButton: {
+    width: 72,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    shadowOffset: {width: 0, height: 10},
+    elevation: 6,
   },
   editAction: {
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 75,
-    height: '100%',
+    backgroundColor: 'rgba(94, 92, 230, 0.35)',
   },
   deleteAction: {
-    backgroundColor: colors.error,
-    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 69, 94, 0.32)',
+  },
+  actionIconBadge: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     alignItems: 'center',
-    width: 75,
-    height: '100%',
+    justifyContent: 'center',
+  },
+  editBadge: {
+    backgroundColor: 'rgba(231, 233, 255, 0.9)',
+  },
+  deleteBadge: {
+    backgroundColor: 'rgba(255, 214, 222, 0.88)',
   },
   collapsibleContent: {
     backgroundColor: 'rgba(15, 23, 42, 0.75)',
