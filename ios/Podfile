@@ -1,34 +1,65 @@
+source 'https://cdn.cocoapods.org/'
+source 'https://github.com/facebook/react-native.git'
+
+require 'fileutils'
+require File.join(File.dirname(`node --print "require.resolve('expo/package.json')"`), 'scripts/autolinking')
+
 # Resolve react_native_pods.rb with node to allow for hoisting
 require Pod::Executable.execute_command('node', ['-p',
   'require.resolve(
     "react-native/scripts/react_native_pods.rb",
-    {paths: [process.argv[1]]},
+    { paths: [process.argv[1]] },
   )', __dir__]).strip
 
-platform :ios, min_ios_version_supported
+platform :ios, '15.1'
 prepare_react_native_project!
 
-# Avoid use_frameworks! unless you absolutely need it
+# If you use nvm, point Node for Xcode build phases via ENV
+ENV['NODE_BINARY'] = '/Users/atikmahbub/.nvm/versions/node/v20.19.4/bin/node' # <— put your `which node` here
+
+# Avoid use_frameworks! unless necessary
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
   use_frameworks! :linkage => linkage.to_sym
 end
 
+# Disable expo-router native pod (ExpoHead)
+Pod::HooksManager.register('cocoapods', :pre_install) do |_|
+  expo_head = File.expand_path('../node_modules/expo-router/ios/ExpoHead.podspec', __dir__)
+  if File.exist?(expo_head)
+    disabled = "#{expo_head}.disabled"
+    FileUtils.mv(expo_head, disabled) unless File.exist?(disabled)
+    Pod::UI.puts "⏭️  Disabled ExpoHead.podspec (renamed to ExpoHead.podspec.disabled)".yellow
+  end
+end
+
 target 'TrackWalletApp' do
-  config = use_native_modules!
+  use_expo_modules!
+
+  config_command = [
+    'node',
+    '--no-warnings',
+    '--eval',
+    'require(require.resolve("expo-modules-autolinking", { paths: [require.resolve("expo/package.json")] }))(process.argv.slice(1))',
+    'react-native-config',
+    '--json',
+    '--platform',
+    'ios'
+  ]
+  config = use_native_modules!(config_command)
 
   use_react_native!(
-    :new_arch_enabled => false,   # keep OFF until build is green
     :hermes_enabled   => true,
+    :new_arch_enabled => true, # Reanimated v4 + Worklets require New Arch
     :path             => config[:reactNativePath],
     :app_path         => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  # RNSVG (react-native-svg)
-  pod 'RNSVG', :path => '../node_modules/react-native-svg'
-
-  # Lottie
+  # Link pods to local sources to ensure versions match JS
+  pod 'RNReanimated', :path => '../node_modules/react-native-reanimated'
+  pod 'RNScreens',    :path => '../node_modules/react-native-screens'
+  pod 'RNSVG',        :path => '../node_modules/react-native-svg'
   pod 'lottie-react-native', :path => '../node_modules/lottie-react-native'
 
   target 'TrackWalletAppTests' do
@@ -42,7 +73,7 @@ target 'TrackWalletApp' do
       :mac_catalyst_enabled => false
     )
 
-    # Fix non-modular include for RNSVG only
+    # Optional: non-modular include fix for RNSVG
     installer.pods_project.targets.each do |t|
       next unless t.name == 'RNSVG'
       t.build_configurations.each do |bc|

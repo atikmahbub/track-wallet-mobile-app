@@ -1,11 +1,5 @@
 import {View, StyleSheet, Animated, Easing} from 'react-native';
-import React, {
-  useState,
-  useRef,
-  useMemo,
-  useCallback,
-  useEffect,
-} from 'react';
+import React, {useState, useRef, useMemo, useCallback, useEffect} from 'react';
 import {Button, Text} from 'react-native-paper';
 import {
   CircularProgress,

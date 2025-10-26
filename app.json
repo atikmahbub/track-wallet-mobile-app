@@ -1,4 +1,21 @@
 {
-  "name": "TrackWalletApp",
-  "displayName": "TrackWalletApp"
+  "expo": {
+    "name": "TrackWalletApp",
+    "slug": "trackwalletapp",
+    "scheme": "trackwalletapp",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "org.reactjs.native.example.TrackWalletApp"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "package": "org.reactjs.native.example.TrackWalletApp"
+    },
+    "plugins": ["expo-router"]
+  }
 }
