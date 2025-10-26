@@ -1,3 +1,4 @@
+// src/components/GlassCard.tsx
 import React from 'react';
 import {
   Platform,
@@ -6,14 +7,53 @@ import {
   StyleProp,
   ViewStyle,
 } from 'react-native';
-import {BlurView} from '@react-native-community/blur';
+import {BlurView} from 'expo-blur';
+import {GlassView, GlassStyle} from 'expo-glass-effect';
+
 import {colors} from '@trackingPortal/themes/colors';
+
+type GlassEngine = 'auto' | 'glass' | 'blur';
 
 interface GlassCardProps {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   contentStyle?: StyleProp<ViewStyle>;
   padding?: number;
+  /**
+   * Force a specific rendering engine.
+   * - `auto` (default) chooses native glass on supported iOS, blur elsewhere
+   * - `glass` always uses the native glass engine
+   * - `blur` always uses the blur fallback
+   */
+  engine?: GlassEngine;
+  /**
+   * Controls the native glass style. Only applies when the glass engine is used.
+   */
+  glassEffectStyle?: GlassStyle;
+  /**
+   * Controls the blur intensity for the fallback engine.
+   */
+  blurIntensity?: number;
+}
+
+const MIN_IOS_GLASS_VERSION = 17;
+
+function getIOSMajorVersion(): number {
+  if (Platform.OS !== 'ios') {
+    return 0;
+  }
+
+  const version = Platform.Version as unknown;
+  if (typeof version === 'string') {
+    const major = parseInt(version.split('.')[0] ?? '0', 10);
+    return Number.isNaN(major) ? 0 : major;
+  }
+
+  if (typeof version === 'number') {
+    return version;
+  }
+
+  return 0;
 }
 
 const GlassCard: React.FC<GlassCardProps> = ({
@@ -21,24 +61,63 @@ const GlassCard: React.FC<GlassCardProps> = ({
   style,
   contentStyle,
   padding = 20,
+  engine = 'auto',
+  glassEffectStyle = 'clear',
+  blurIntensity = 85,
 }) => {
-  if (Platform.OS === 'ios') {
+  const iosMajor = getIOSMajorVersion();
+  const glassSupported =
+    Platform.OS === 'ios' && iosMajor >= MIN_IOS_GLASS_VERSION;
+
+  const forceGlass = engine === 'glass';
+  const forceBlur = engine === 'blur';
+
+  const useGlass = forceGlass || (engine === 'auto' && glassSupported);
+  const useBlur = forceBlur || !useGlass;
+
+  if (useGlass) {
     return (
-      <View style={[styles.container, style]}>
-        <BlurView
-          blurType="ultraThinMaterialDark"
-          blurAmount={24}
-          reducedTransparencyFallbackColor={colors.surfaceAlt}
-          style={StyleSheet.absoluteFillObject}
-        />
-        <View style={styles.tintLayer} />
+      <GlassView
+        glassEffectStyle={glassEffectStyle}
+        tintColor="rgba(9, 14, 28, 0.55)"
+        isInteractive
+        style={[styles.container, styles.shadow, style]}>
+        <View pointerEvents="none" style={styles.tintLayer} />
+        <View pointerEvents="none" style={styles.decorLayer}>
+          <View style={[styles.glow, styles.primaryGlow]} />
+          <View style={[styles.glow, styles.accentGlow]} />
+          <View style={[styles.glow, styles.highlightGlow]} />
+        </View>
         <View style={[styles.inner, {padding}, contentStyle]}>{children}</View>
-      </View>
+      </GlassView>
+    );
+  }
+
+  if (useBlur) {
+    return (
+      <BlurView
+        intensity={blurIntensity}
+        tint="system"
+        style={[styles.container, styles.shadow, style]}>
+        <View pointerEvents="none" style={styles.tintLayer} />
+        <View pointerEvents="none" style={styles.decorLayer}>
+          <View style={[styles.glow, styles.primaryGlow]} />
+          <View style={[styles.glow, styles.accentGlow]} />
+          <View style={[styles.glow, styles.highlightGlow]} />
+        </View>
+        <View style={[styles.inner, {padding}, contentStyle]}>{children}</View>
+      </BlurView>
     );
   }
 
   return (
-    <View style={[styles.container, styles.androidContainer, style]}>
+    <View style={[styles.container, styles.shadow, style]}>
+      <View pointerEvents="none" style={styles.tintLayer} />
+      <View pointerEvents="none" style={styles.decorLayer}>
+        <View style={[styles.glow, styles.primaryGlow]} />
+        <View style={[styles.glow, styles.accentGlow]} />
+        <View style={[styles.glow, styles.highlightGlow]} />
+      </View>
       <View style={[styles.inner, {padding}, contentStyle]}>{children}</View>
     </View>
   );
@@ -51,22 +130,49 @@ const styles = StyleSheet.create({
     borderColor: colors.glassBorder,
     overflow: 'hidden',
     backgroundColor: 'transparent',
-    position: 'relative',
   },
   inner: {
     gap: 0,
   },
   tintLayer: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(5, 9, 21, 0.35)',
+    backgroundColor: 'rgba(12, 17, 34, 0.45)',
   },
-  androidContainer: {
-    backgroundColor: colors.surfaceAlt,
+  decorLayer: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
+  },
+  glow: {
+    position: 'absolute',
+    width: 240,
+    height: 240,
+    borderRadius: 240,
+    opacity: 0.25,
+  },
+  primaryGlow: {
+    top: -140,
+    left: -100,
+    backgroundColor: 'rgba(94, 92, 230, 0.65)',
+  },
+  accentGlow: {
+    bottom: -160,
+    right: -60,
+    backgroundColor: 'rgba(100, 210, 255, 0.45)',
+  },
+  highlightGlow: {
+    top: 80,
+    right: 40,
+    width: 160,
+    height: 160,
+    borderRadius: 160,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+  },
+  shadow: {
     shadowColor: colors.primary,
     shadowOpacity: 0.18,
     shadowRadius: 24,
-    elevation: 10,
     shadowOffset: {width: 0, height: 12},
+    elevation: 10,
   },
 });
 

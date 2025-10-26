@@ -16,6 +16,6 @@
       },
       "package": "org.reactjs.native.example.TrackWalletApp"
     },
-    "plugins": ["expo-router"]
+    "plugins": ["expo-font", "expo-router"]
   }
 }

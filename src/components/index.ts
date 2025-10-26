@@ -10,6 +10,9 @@ import FormikCheckboxField from '@trackingPortal/components/CheckboxField';
 import TwMenu from '@trackingPortal/components/TwMenu';
 import GlassCard from '@trackingPortal/components/GlassCard';
 import CircularProgress from '@trackingPortal/components/CircularProgress';
+import TabScreenContainer, {
+  TAB_CONTENT_BOTTOM_PADDING,
+} from '@trackingPortal/components/TabScreenContainer';
 
 export {
   CustomAppBar,
@@ -24,4 +27,6 @@ export {
   TwMenu,
   GlassCard,
   CircularProgress,
+  TabScreenContainer,
+  TAB_CONTENT_BOTTOM_PADDING,
 };

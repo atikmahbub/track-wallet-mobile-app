@@ -2,17 +2,11 @@ import React, {createContext, useContext, useEffect, useState} from 'react';
 import Auth0 from 'react-native-auth0';
 import {AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_AUDIENCE} from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-import {
-  navigationRef,
-  navigate,
-} from '@trackingPortal/navigation/navigationRef';
-import {
-  ENavigationTab,
-  ENavigationStack,
-} from '@trackingPortal/navigation/ERoutes';
+import {useRouter} from 'expo-router';
 
 const TOKEN_KEY = 'auth_token';
+const LOGGED_IN_ROUTE = '/(tabs)/expense';
+const LOGIN_ROUTE = '/login';
 
 const auth0 = new Auth0({
   domain: AUTH0_DOMAIN || '',
@@ -34,6 +28,7 @@ export const Auth0ProviderWithHistory = ({
 }: {
   children: React.ReactNode;
 }) => {
+  const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -52,31 +47,20 @@ export const Auth0ProviderWithHistory = ({
           try {
             const userInfo = await auth0.auth.userInfo({token: storedToken});
             setUser(userInfo);
-            if (navigationRef.isReady()) {
-              navigate('Tabs', {
-                screen: ENavigationTab.Expense,
-              } as any);
-            }
           } catch (error) {
             console.error('Token expired or invalid:', error);
-            // Clear stored token and navigate to login
             await AsyncStorage.removeItem(TOKEN_KEY);
             setToken(null);
             setUser(null);
-            if (navigationRef.isReady()) {
-              navigate(ENavigationStack.Login);
-            }
           }
         } else {
-          if (navigationRef.isReady()) {
-            navigate(ENavigationStack.Login);
-          }
+          setToken(null);
+          setUser(null);
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
-        if (navigationRef.isReady()) {
-          navigate(ENavigationStack.Login);
-        }
+        setToken(null);
+        setUser(null);
       } finally {
         setLoading(false);
       }
@@ -102,11 +86,7 @@ export const Auth0ProviderWithHistory = ({
       });
       setUser(userInfo);
 
-      if (navigationRef.isReady()) {
-        navigate('Tabs', {
-          screen: ENavigationTab.Expense,
-        } as any);
-      }
+      router.replace(LOGGED_IN_ROUTE);
     } catch (error) {
       console.error('Login error:', error);
     } finally {
@@ -120,15 +100,12 @@ export const Auth0ProviderWithHistory = ({
       await AsyncStorage.removeItem(TOKEN_KEY);
       setToken(null);
       setUser(null);
-      // await auth0.webAuth.clearSession();
 
       await fetch(
         `https://${AUTH0_DOMAIN}/v2/logout?client_id=${AUTH0_CLIENT_ID}&federated=true`,
       );
 
-      if (navigationRef.isReady()) {
-        navigate(ENavigationStack.Login);
-      }
+      router.replace(LOGIN_ROUTE);
     } catch (error: any) {
       console.error('Logout error:', JSON.stringify(error, null, 2));
     } finally {

@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import {Menu, Button} from 'react-native-paper';
 import {View, StyleSheet, Platform, StyleProp, ViewStyle} from 'react-native';
 import {colors} from '@trackingPortal/themes/colors';
-import {BlurView} from '@react-native-community/blur';
+import {BlurView} from 'expo-blur';
 
 interface TwMenuProps {
   options: {label: string; value: any}[];
@@ -49,9 +49,8 @@ const TwMenu: React.FC<TwMenuProps> = ({
           {Platform.OS === 'ios' && (
             <BlurView
               style={StyleSheet.absoluteFillObject}
-              blurType="ultraThinMaterialDark"
-              blurAmount={20}
-              reducedTransparencyFallbackColor={colors.surfaceAlt}
+              // blurAmount={20}
+              // reducedTransparencyFallbackColor={colors.surfaceAlt}
             />
           )}
           <View style={styles.menuTint} />

@@ -2,10 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
   <dict>
-    <key>CFBundleDeveloperName</key>
-    <string>Atik Mahbub</string>
+    <key>CADisableMinimumFrameDurationOnPhone</key>
+    <true/>
     <key>CFBundleDevelopmentRegion</key>
-    <string>en</string>
+    <string>$(DEVELOPMENT_LANGUAGE)</string>
     <key>CFBundleDisplayName</key>
     <string>TrackWalletApp</string>
     <key>CFBundleExecutable</key>
@@ -17,7 +17,7 @@
     <key>CFBundleName</key>
     <string>$(PRODUCT_NAME)</string>
     <key>CFBundlePackageType</key>
-    <string>APPL</string>
+    <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
     <key>CFBundleShortVersionString</key>
     <string>1.0.0</string>
     <key>CFBundleSignature</key>
@@ -40,6 +40,8 @@
     </array>
     <key>CFBundleVersion</key>
     <string>1</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>12.0</string>
     <key>LSRequiresIPhoneOS</key>
     <true/>
     <key>NSAppTransportSecurity</key>
@@ -49,33 +51,12 @@
       <key>NSAllowsLocalNetworking</key>
       <true/>
     </dict>
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string/>
     <key>NSUserActivityTypes</key>
     <array>
       <string>$(PRODUCT_BUNDLE_IDENTIFIER).expo.index_route</string>
     </array>
-    <key>NSUserNotificationUsageDescription</key>
-    <string>Notification permission is required for alerts.</string>
     <key>RCTNewArchEnabled</key>
     <true/>
-    <key>UIAppFonts</key>
-    <array>
-      <string>MaterialCommunityIcons.ttf</string>
-      <string>FontAwesome.ttf</string>
-      <string>Ionicons.ttf</string>
-      <string>MaterialIcons.ttf</string>
-      <string>Entypo.ttf</string>
-      <string>Feather.ttf</string>
-      <string>Foundation.ttf</string>
-      <string>Octicons.ttf</string>
-      <string>SimpleLineIcons.ttf</string>
-      <string>Zocial.ttf</string>
-    </array>
-    <key>UIBackgroundModes</key>
-    <array>
-      <string>remote-notification</string>
-    </array>
     <key>UILaunchStoryboardName</key>
     <string>SplashScreen</string>
     <key>UIRequiredDeviceCapabilities</key>
@@ -84,10 +65,8 @@
     </array>
     <key>UIRequiresFullScreen</key>
     <false/>
-    <key>UIStatusBarHidden</key>
-    <false/>
     <key>UIStatusBarStyle</key>
-    <string>UIStatusBarStyleLightContent</string>
+    <string>UIStatusBarStyleDefault</string>
     <key>UISupportedInterfaceOrientations</key>
     <array>
       <string>UIInterfaceOrientationPortrait</string>

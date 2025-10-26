@@ -1759,11 +1759,6 @@
   dependencies:
     merge-options "^3.0.4"
 
-"@react-native-community/blur@4.4.1":
-  version "4.4.1"
-  resolved "https://registry.yarnpkg.com/@react-native-community/blur/-/blur-4.4.1.tgz#72cbc0be5a84022c33091683ec6888925ebcca6e"
-  integrity sha512-XBSsRiYxE/MOEln2ayunShfJtWztHwUxLFcSL20o+HNNRnuUDv+GXkF6FmM2zE8ZUfrnhQ/zeTqvnuDPGw6O8A==
-
 "@react-native-community/cli-clean@15.0.1":
   version "15.0.1"
   resolved "https://registry.yarnpkg.com/@react-native-community/cli-clean/-/cli-clean-15.0.1.tgz#80ce09ffe0d62bb265447007f24dc8dcbf8fe7d3"
@@ -4262,7 +4257,7 @@ expo-blur@15.0.7:
   resolved "https://registry.yarnpkg.com/expo-blur/-/expo-blur-15.0.7.tgz#a11466e697fbf2b272444a38722065e60d0ecbe5"
   integrity sha512-SugQQbQd+zRPy8z2G5qDD4NqhcD7srBF7fN7O7yq6q7ZFK59VWvpDxtMoUkmSfdxgqONsrBN/rLdk00USADrMg==
 
-expo-constants@~18.0.10, expo-constants@~18.0.9:
+expo-constants@^18.0.10, expo-constants@~18.0.10, expo-constants@~18.0.8, expo-constants@~18.0.9:
   version "18.0.10"
   resolved "https://registry.yarnpkg.com/expo-constants/-/expo-constants-18.0.10.tgz#92d4490d51193fc94bd40590453ce9cab4faf6fb"
   integrity sha512-Rhtv+X974k0Cahmvx6p7ER5+pNhBC0XbP1lRviL2J1Xl4sT2FBaIuIxF/0I0CbhOsySf0ksqc5caFweAy9Ewiw==
@@ -4306,12 +4301,17 @@ expo-file-system@~19.0.17:
   resolved "https://registry.yarnpkg.com/expo-file-system/-/expo-file-system-19.0.17.tgz#2555c05c26a19038d005f281b11dbda9722d0c0d"
   integrity sha512-WwaS01SUFrxBnExn87pg0sCTJjZpf2KAOzfImG0o8yhkU7fbYpihpl/oocXBEsNbj58a8hVt1Y4CVV5c1tzu/g==
 
-expo-font@~14.0.9:
+expo-font@^14.0.9, expo-font@~14.0.9:
   version "14.0.9"
   resolved "https://registry.yarnpkg.com/expo-font/-/expo-font-14.0.9.tgz#552d66afc8c6efa8839f5f4063c2e0226b3edad1"
   integrity sha512-xCoQbR/36qqB6tew/LQ6GWICpaBmHLhg/Loix5Rku/0ZtNaXMJv08M9o1AcrdiGTn/Xf/BnLu6DgS45cWQEHZg==
   dependencies:
     fontfaceobserver "^2.1.0"
+
+expo-glass-effect@~0.1.4:
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/expo-glass-effect/-/expo-glass-effect-0.1.4.tgz#c7a7278ab06dee2488b2239e185a8b56158adbc6"
+  integrity sha512-RW7lf2SWNVSvpJqBxQUlC/VVzeeHFrJeoKoIlNIFfKTFj3HyF7xQKq6/h/bpO8M0ssy0v5KEKw4GggkjTwx7Fw==
 
 expo-json-utils@~0.15.0:
   version "0.15.0"
@@ -4322,6 +4322,14 @@ expo-keep-awake@~15.0.7:
   version "15.0.7"
   resolved "https://registry.yarnpkg.com/expo-keep-awake/-/expo-keep-awake-15.0.7.tgz#4eada556e1cca6c9c2e5aa39478fd01816cd0bc9"
   integrity sha512-CgBNcWVPnrIVII5G54QDqoE125l+zmqR4HR8q+MQaCfHet+dYpS5vX5zii/RMayzGN4jPgA4XYIQ28ePKFjHoA==
+
+expo-linking@^8.0.8:
+  version "8.0.8"
+  resolved "https://registry.yarnpkg.com/expo-linking/-/expo-linking-8.0.8.tgz#ad348c133d048043990177f67dfb6a89bf628a6e"
+  integrity sha512-MyeMcbFDKhXh4sDD1EHwd0uxFQNAc6VCrwBkNvvvufUsTYFq3glTA9Y8a+x78CPpjNqwNAamu74yIaIz7IEJyg==
+  dependencies:
+    expo-constants "~18.0.8"
+    invariant "^2.2.4"
 
 expo-manifests@~1.0.8:
   version "1.0.8"
