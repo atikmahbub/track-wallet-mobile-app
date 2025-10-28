@@ -66,13 +66,21 @@ const FormModal: React.FC<IFormModal> = ({
                 {children}
               </ScrollView>
               <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => {
+                    dismissKeyboard();
+                    onClose();
+                  }}>
                   <Text style={styles.buttonText}>Cancel</Text>
                 </TouchableOpacity>
                 <LoadingButton
                   label="Save"
                   loading={!!loading}
-                  onPress={onSave}
+                  onPress={() => {
+                    dismissKeyboard();
+                    onSave();
+                  }}
                 />
               </View>
             </View>

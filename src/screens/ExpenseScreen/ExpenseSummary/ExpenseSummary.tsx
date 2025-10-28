@@ -1,5 +1,5 @@
-import {View, StyleSheet, Animated, Easing} from 'react-native';
-import React, {useState, useRef, useMemo, useCallback, useEffect} from 'react';
+import {View, StyleSheet} from 'react-native';
+import React, {useState, useMemo} from 'react';
 import {Button, Text} from 'react-native-paper';
 import {
   CircularProgress,
@@ -7,11 +7,12 @@ import {
   ValueWithLabel,
   GlassCard,
 } from '@trackingPortal/components';
+import FormModal from '@trackingPortal/components/FormModal';
 import dayjs, {Dayjs} from 'dayjs';
 import {MonthlyLimitModel} from '@trackingPortal/api/models';
 import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
 import {getCurrencyAmount} from '@trackingPortal/utils/utils';
-import {Formik} from 'formik';
+import {Formik, FormikHelpers} from 'formik';
 import {EMonthlyLimitFields} from '@trackingPortal/screens/ExpenseScreen/ExpenseCreation/ExpenseCreation.constants';
 import Toast from 'react-native-toast-message';
 import {Month, Year} from '@trackingPortal/api/primitives';
@@ -25,112 +26,17 @@ interface ISummary {
   getMonthlyLimit: () => void;
 }
 
-const DEFAULT_LIMIT_FORM_HEIGHT = 220;
-
 const ExpenseSummary: React.FC<ISummary> = ({
   totalExpense,
   filterMonth,
   monthLimit,
   getMonthlyLimit,
 }) => {
-  const [showLimitInput, setShowLimitInput] = useState<boolean>(false);
-  const [isAnimatingLimit, setIsAnimatingLimit] = useState<boolean>(false);
-  const [formHeight, setFormHeight] = useState<number>(0);
-  const [shouldRenderLimit, setShouldRenderLimit] = useState<boolean>(false);
-  const limitProgress = useRef(new Animated.Value(0)).current;
+  const [isLimitModalVisible, setIsLimitModalVisible] =
+    useState<boolean>(false);
   const {apiGateway, currentUser: user} = useStoreContext();
   const [loading, setLoading] = useState<boolean>(false);
   const {currency} = useStoreContext();
-  const limitFormExpandedHeight = Math.max(
-    formHeight > 0 ? formHeight + 16 : 0,
-    DEFAULT_LIMIT_FORM_HEIGHT,
-  );
-  const animatedHeight = useMemo(
-    () =>
-      limitProgress.interpolate({
-        inputRange: [0, 1],
-        outputRange: [0, limitFormExpandedHeight],
-      }),
-    [limitProgress, limitFormExpandedHeight],
-  );
-  const animatedMarginTop = useMemo(
-    () =>
-      limitProgress.interpolate({
-        inputRange: [0, 1],
-        outputRange: [0, 20],
-      }),
-    [limitProgress],
-  );
-  const animatedTranslateY = useMemo(
-    () =>
-      limitProgress.interpolate({
-        inputRange: [0, 1],
-        outputRange: [-12, 0],
-      }),
-    [limitProgress],
-  );
-
-  const animateLimit = useCallback(
-    (toValue: number, onFinished?: () => void) => {
-      setIsAnimatingLimit(true);
-      Animated.timing(limitProgress, {
-        toValue,
-        duration: 260,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: false,
-      }).start(({finished}) => {
-        if (finished) {
-          onFinished?.();
-        }
-        setIsAnimatingLimit(false);
-      });
-    },
-    [limitProgress],
-  );
-
-  const toggleLimitInput = () => {
-    if (isAnimatingLimit) {
-      return;
-    }
-    if (showLimitInput) {
-      setShowLimitInput(false);
-    } else {
-      limitProgress.stopAnimation(() => {
-        limitProgress.setValue(0);
-      });
-      setShouldRenderLimit(true);
-      setShowLimitInput(true);
-    }
-  };
-
-  useEffect(() => {
-    if (!shouldRenderLimit) {
-      return;
-    }
-
-    if (showLimitInput && formHeight === 0) {
-      return;
-    }
-
-    animateLimit(showLimitInput ? 1 : 0, () => {
-      if (!showLimitInput) {
-        setShouldRenderLimit(false);
-        limitProgress.setValue(0);
-      }
-    });
-  }, [
-    showLimitInput,
-    shouldRenderLimit,
-    formHeight,
-    animateLimit,
-    limitProgress,
-  ]);
-
-  useEffect(() => {
-    if (showLimitInput && !shouldRenderLimit) {
-      setShouldRenderLimit(true);
-    }
-  }, [showLimitInput, shouldRenderLimit]);
 
   const limitValue = monthLimit?.limit ?? 0;
 
@@ -153,7 +59,14 @@ const ExpenseSummary: React.FC<ISummary> = ({
     return Math.max(limitValue - totalExpense, 0);
   }, [limitValue, totalExpense]);
 
-  const handleSaveMonthlyLimit = async (values: any) => {
+  const closeLimitModal = () => {
+    setIsLimitModalVisible(false);
+  };
+
+  const handleSaveMonthlyLimit = async (
+    values: any,
+    {resetForm}: FormikHelpers<any>,
+  ) => {
     try {
       setLoading(true);
       const numericLimit = Number(values.limit);
@@ -189,7 +102,8 @@ const ExpenseSummary: React.FC<ISummary> = ({
         });
       }
       await getMonthlyLimit();
-      toggleLimitInput();
+      closeLimitModal();
+      resetForm();
     } catch (error) {
       console.log(error);
       Toast.show({
@@ -267,7 +181,9 @@ const ExpenseSummary: React.FC<ISummary> = ({
             textColor={colors.text}
             style={styles.actionButton}
             onPress={() => {
-              withHaptic(toggleLimitInput);
+              withHaptic(() => {
+                setIsLimitModalVisible(true);
+              });
             }}>
             {limitValue ? 'Adjust limit' : 'Set limit'}
           </Button>
@@ -281,32 +197,18 @@ const ExpenseSummary: React.FC<ISummary> = ({
               : '',
           }}
           onSubmit={handleSaveMonthlyLimit}>
-          {({handleSubmit, values}) => {
-            if (!shouldRenderLimit) {
-              return null;
-            }
+          {({handleSubmit, values, resetForm}) => {
             return (
-              <Animated.View
-                pointerEvents={showLimitInput ? 'auto' : 'none'}
-                style={[
-                  styles.animatedContainer,
-                  {
-                    opacity: limitProgress,
-                    height: animatedHeight,
-                    marginTop: animatedMarginTop,
-                    transform: [{translateY: animatedTranslateY}],
-                  },
-                ]}>
-                <View
-                  style={styles.limitForm}
-                  onLayout={event => {
-                    const height = event.nativeEvent.layout.height;
-                    if (height > 0) {
-                      setFormHeight(previous =>
-                        Math.abs(previous - height) < 1 ? previous : height,
-                      );
-                    }
-                  }}>
+              <FormModal
+                isVisible={isLimitModalVisible}
+                title={limitValue ? 'Adjust Monthly Limit' : 'Set Monthly Limit'}
+                onClose={() => {
+                  closeLimitModal();
+                  resetForm();
+                }}
+                onSave={handleSubmit}
+                loading={loading}>
+                <View style={styles.limitForm}>
                   <FormikTextInput
                     name={EMonthlyLimitFields.LIMIT}
                     mode="outlined"
@@ -314,26 +216,8 @@ const ExpenseSummary: React.FC<ISummary> = ({
                     keyboardType="numeric"
                     value={values[EMonthlyLimitFields.LIMIT] || ''}
                   />
-                  <View style={styles.saveButtonContainer}>
-                    <Button
-                      mode="text"
-                      textColor={colors.subText}
-                      onPress={() => {
-                        toggleLimitInput();
-                      }}>
-                      Cancel
-                    </Button>
-                    <Button
-                      loading={loading}
-                      mode="contained"
-                      onPress={() => handleSubmit()}
-                      style={styles.saveButton}
-                      labelStyle={styles.saveButtonLabel}>
-                      Save
-                    </Button>
-                  </View>
                 </View>
-              </Animated.View>
+              </FormModal>
             );
           }}
         </Formik>
@@ -408,27 +292,8 @@ const styles = StyleSheet.create({
     borderColor: colors.glassBorder,
     paddingHorizontal: 12,
   },
-  animatedContainer: {
-    overflow: 'hidden',
-    width: '100%',
-  },
   limitForm: {
     gap: 12,
-    paddingBottom: 12,
-  },
-  saveButtonContainer: {
-    marginTop: 4,
-    flexDirection: 'row',
-    gap: 12,
-    justifyContent: 'flex-end',
-  },
-  saveButton: {
-    borderRadius: 999,
-    paddingHorizontal: 16,
-  },
-  saveButtonLabel: {
-    fontWeight: '600',
-    letterSpacing: 0.6,
   },
 });
 
