@@ -79,7 +79,7 @@ const GlassCard: React.FC<GlassCardProps> = ({
     return (
       <GlassView
         glassEffectStyle={glassEffectStyle}
-        tintColor="rgba(9, 14, 28, 0.55)"
+        tintColor={colors.glassTint}
         isInteractive
         style={[styles.container, styles.shadow, style]}>
         <View pointerEvents="none" style={styles.tintLayer} />
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
   },
   tintLayer: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(12, 17, 34, 0.45)',
+    backgroundColor: colors.glassTint,
   },
   decorLayer: {
     ...StyleSheet.absoluteFillObject,
@@ -152,12 +152,12 @@ const styles = StyleSheet.create({
   primaryGlow: {
     top: -140,
     left: -100,
-    backgroundColor: 'rgba(94, 92, 230, 0.65)',
+    backgroundColor: 'rgba(255, 140, 66, 0.55)',
   },
   accentGlow: {
     bottom: -160,
     right: -60,
-    backgroundColor: 'rgba(100, 210, 255, 0.45)',
+    backgroundColor: 'rgba(255, 217, 160, 0.4)',
   },
   highlightGlow: {
     top: 80,
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     width: 160,
     height: 160,
     borderRadius: 160,
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    backgroundColor: 'rgba(194, 76, 48, 0.25)',
   },
   shadow: {
     shadowColor: colors.primary,

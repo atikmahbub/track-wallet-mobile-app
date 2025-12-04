@@ -132,12 +132,12 @@ const styles = StyleSheet.create({
     borderColor: colors.glassBorder,
   },
   statusActive: {
-    backgroundColor: 'rgba(94, 92, 230, 0.2)',
-    borderColor: 'rgba(94, 92, 230, 0.4)',
+    backgroundColor: colors.badgePositiveBg,
+    borderColor: colors.badgePositiveBorder,
   },
   statusCompleted: {
-    backgroundColor: 'rgba(47, 213, 157, 0.16)',
-    borderColor: 'rgba(47, 213, 157, 0.45)',
+    backgroundColor: colors.surfaceAlt,
+    borderColor: colors.glassBorder,
   },
   statusText: {
     color: colors.text,

@@ -1,35 +1,24 @@
-import {View, Pressable, Animated, StyleSheet} from 'react-native';
-import React, {useRef, useState} from 'react';
+import {View, Pressable, StyleSheet} from 'react-native';
+import React, {useMemo, useState} from 'react';
 import {useFormikContext} from 'formik';
 import {EAddLoanFields} from '@trackingPortal/screens/LoanScreen';
-import {Button, TextInput} from 'react-native-paper';
+import {TextInput} from 'react-native-paper';
 import {FormikSelectField, FormikTextInput} from '@trackingPortal/components';
 import DatePicker from 'react-native-date-picker';
 import dayjs from 'dayjs';
-import {darkTheme} from '@trackingPortal/themes/darkTheme';
 import {LoanType} from '@trackingPortal/api/enums';
 
 export default function LoanForm() {
   const {values, setFieldValue} = useFormikContext<any>();
   const [pickerVisible, setPickerVisible] = useState(false);
-  const animatedHeight = useRef(new Animated.Value(0)).current;
-
-  const animatePicker = () => {
-    if (pickerVisible) {
-      Animated.timing(animatedHeight, {
-        toValue: 0,
-        duration: 320,
-        useNativeDriver: false,
-      }).start(() => setPickerVisible(false));
-    } else {
-      setPickerVisible(true);
-      Animated.timing(animatedHeight, {
-        toValue: 300,
-        duration: 300,
-        useNativeDriver: false,
-      }).start();
+  const deadlineValue = values[EAddLoanFields.DEADLINE];
+  const currentDeadline = useMemo(() => {
+    if (deadlineValue instanceof Date && !isNaN(deadlineValue.getTime())) {
+      return deadlineValue;
     }
-  };
+    const parsed = new Date(deadlineValue);
+    return isNaN(parsed.getTime()) ? new Date() : parsed;
+  }, [deadlineValue]);
 
   return (
     <View style={{gap: 16}}>
@@ -53,29 +42,27 @@ export default function LoanForm() {
         <TextInput
           mode="outlined"
           label="Soft Deadline"
-          value={dayjs(values[EAddLoanFields.DEADLINE]).format('DD MMM YYYY')}
+          value={dayjs(currentDeadline).format('DD MMM YYYY')}
           editable={false}
           pointerEvents="none"
         />
         <Pressable
           style={StyleSheet.absoluteFillObject}
-          onPress={animatePicker}
+          onPress={() => setPickerVisible(true)}
         />
       </View>
-      <Animated.View style={[styles.animatedPicker, {height: animatedHeight}]}>
-        {pickerVisible && (
-          <View style={styles.datePickerContainer}>
-            <DatePicker
-              date={values[EAddLoanFields.DEADLINE]}
-              mode="date"
-              onDateChange={selectedDate => {
-                setFieldValue(EAddLoanFields.DEADLINE, selectedDate);
-              }}
-            />
-            <Button onPress={animatePicker}>Done</Button>
-          </View>
-        )}
-      </Animated.View>
+      <DatePicker
+        modal
+        mode="date"
+        open={pickerVisible}
+        date={currentDeadline}
+        theme="dark"
+        onConfirm={selectedDate => {
+          setFieldValue(EAddLoanFields.DEADLINE, selectedDate);
+          setPickerVisible(false);
+        }}
+        onCancel={() => setPickerVisible(false)}
+      />
     </View>
   );
 }
@@ -83,14 +70,5 @@ export default function LoanForm() {
 const styles = StyleSheet.create({
   inputWrapper: {
     position: 'relative',
-  },
-  animatedPicker: {
-    overflow: 'hidden',
-  },
-  datePickerContainer: {
-    backgroundColor: darkTheme.colors.surface,
-    padding: 20,
-    borderRadius: 8,
-    alignItems: 'center',
   },
 });

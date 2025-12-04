@@ -3,6 +3,7 @@ import {View, StyleSheet, Text} from 'react-native';
 import {Checkbox} from 'react-native-paper';
 import {useField} from 'formik';
 import {darkTheme} from '@trackingPortal/themes/darkTheme';
+import {colors} from '@trackingPortal/themes/colors';
 
 interface FormikCheckboxFieldProps {
   name: string;
@@ -41,13 +42,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   label: {
-    color: '#FFFFFF',
+    color: colors.text,
   },
   checkbox: {
     backgroundColor: darkTheme.colors.background,
   },
   errorText: {
-    color: '#FF4081',
+    color: colors.error,
     fontSize: 12,
     marginTop: 4,
   },

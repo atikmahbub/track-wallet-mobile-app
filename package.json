@@ -8,6 +8,7 @@
     "ios:expo": "npx expo run:ios --configuration Debug",
     "start": "npx expo start -c",
     "start:fast": "npx expo start",
+    "prebuild": "npx expo prebuild",
     "lint": "eslint .",
     "test": "jest",
     "clean:pods": "cd ios && rm -rf Pods Podfile.lock && pod install && cd ..",

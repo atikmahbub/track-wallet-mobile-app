@@ -11,7 +11,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "org.reactjs.native.example.TrackWalletApp",
       "infoPlist": {
-        "CFBundleDisplayName": "Track Wallet"
+        "CFBundleDisplayName": "Track Wallet",
+        "UIStatusBarStyle": "UIStatusBarStyleLightContent",
+        "UIViewControllerBasedStatusBarAppearance": false
       }
     },
     "android": {

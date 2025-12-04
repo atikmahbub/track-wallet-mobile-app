@@ -1,34 +1,24 @@
-import {View, Pressable, Animated, StyleSheet} from 'react-native';
-import React, {useRef, useState} from 'react';
+import {View, Pressable, StyleSheet} from 'react-native';
+import React, {useMemo, useState} from 'react';
 import {useFormikContext} from 'formik';
 import {EAddExpenseFields} from '@trackingPortal/screens/ExpenseScreen/ExpenseCreation/ExpenseCreation.constants';
-import {Button, TextInput} from 'react-native-paper';
+import {TextInput} from 'react-native-paper';
 import {FormikTextInput} from '@trackingPortal/components';
 import DatePicker from 'react-native-date-picker';
 import dayjs from 'dayjs';
-import {darkTheme} from '@trackingPortal/themes/darkTheme';
 
 export default function ExpenseForm() {
   const {values, setFieldValue} = useFormikContext<any>();
   const [pickerVisible, setPickerVisible] = useState(false);
-  const animatedHeight = useRef(new Animated.Value(0)).current;
+  const dateValue = values[EAddExpenseFields.DATE];
 
-  const animatePicker = () => {
-    if (pickerVisible) {
-      Animated.timing(animatedHeight, {
-        toValue: 0,
-        duration: 320,
-        useNativeDriver: false,
-      }).start(() => setPickerVisible(false));
-    } else {
-      setPickerVisible(true);
-      Animated.timing(animatedHeight, {
-        toValue: 300,
-        duration: 300,
-        useNativeDriver: false,
-      }).start();
+  const currentDate = useMemo(() => {
+    if (dateValue instanceof Date && !isNaN(dateValue.getTime())) {
+      return dateValue;
     }
-  };
+    const parsed = new Date(dateValue);
+    return isNaN(parsed.getTime()) ? new Date() : parsed;
+  }, [dateValue]);
 
   return (
     <View style={{gap: 16}}>
@@ -36,29 +26,27 @@ export default function ExpenseForm() {
         <TextInput
           mode="outlined"
           label="Select Date"
-          value={dayjs(values[EAddExpenseFields.DATE]).format('DD MMM YYYY')}
+          value={dayjs(currentDate).format('DD MMM YYYY')}
           editable={false}
           pointerEvents="none"
         />
         <Pressable
           style={StyleSheet.absoluteFillObject}
-          onPress={animatePicker}
+          onPress={() => setPickerVisible(true)}
         />
       </View>
-      <Animated.View style={[styles.animatedPicker, {height: animatedHeight}]}>
-        {pickerVisible && (
-          <View style={styles.datePickerContainer}>
-            <DatePicker
-              date={values[EAddExpenseFields.DATE]}
-              mode="date"
-              onDateChange={selectedDate => {
-                setFieldValue(EAddExpenseFields.DATE, selectedDate);
-              }}
-            />
-            <Button onPress={animatePicker}>Done</Button>
-          </View>
-        )}
-      </Animated.View>
+      <DatePicker
+        modal
+        mode="date"
+        open={pickerVisible}
+        date={currentDate}
+        theme="dark"
+        onConfirm={selectedDate => {
+          setFieldValue(EAddExpenseFields.DATE, selectedDate);
+          setPickerVisible(false);
+        }}
+        onCancel={() => setPickerVisible(false)}
+      />
       <FormikTextInput name={EAddExpenseFields.DESCRIPTION} label="Purpose" />
       <FormikTextInput
         name={EAddExpenseFields.AMOUNT}
@@ -72,14 +60,5 @@ export default function ExpenseForm() {
 const styles = StyleSheet.create({
   inputWrapper: {
     position: 'relative',
-  },
-  animatedPicker: {
-    overflow: 'hidden',
-  },
-  datePickerContainer: {
-    backgroundColor: darkTheme.colors.surface,
-    padding: 20,
-    borderRadius: 8,
-    alignItems: 'center',
   },
 });

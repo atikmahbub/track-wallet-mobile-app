@@ -6,6 +6,7 @@ import {
   GestureResponderEvent,
 } from 'react-native';
 import React from 'react';
+import {colors} from '@trackingPortal/themes/colors';
 
 interface ILoadingButtonProps {
   onPress: (event: GestureResponderEvent) => void;
@@ -22,7 +23,11 @@ const LoadingButton: React.FC<ILoadingButtonProps> = ({
     <TouchableOpacity style={styles.buttonContainer} onPress={onPress}>
       <Text style={styles.buttonText}>{label}</Text>
       {loading && (
-        <ActivityIndicator size="small" color="#FFF" style={styles.loader} />
+        <ActivityIndicator
+          size="small"
+          color={colors.background}
+          style={styles.loader}
+        />
       )}
     </TouchableOpacity>
   );
@@ -32,14 +37,14 @@ export default LoadingButton;
 
 const styles = StyleSheet.create({
   buttonContainer: {
-    backgroundColor: '#9C27B0',
+    backgroundColor: colors.primary,
     padding: 10,
     borderRadius: 5,
     flexDirection: 'row',
     alignItems: 'center',
   },
   buttonText: {
-    color: '#E1BEE7',
+    color: colors.background,
     fontWeight: 'bold',
   },
   loader: {

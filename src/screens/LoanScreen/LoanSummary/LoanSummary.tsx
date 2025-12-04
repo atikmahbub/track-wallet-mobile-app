@@ -96,12 +96,12 @@ const styles = StyleSheet.create({
     borderColor: colors.glassBorder,
   },
   netPositive: {
-    backgroundColor: 'rgba(47, 213, 157, 0.18)',
-    borderColor: 'rgba(47, 213, 157, 0.45)',
+    backgroundColor: colors.badgePositiveBg,
+    borderColor: colors.badgePositiveBorder,
   },
   netNegative: {
-    backgroundColor: 'rgba(255, 107, 107, 0.18)',
-    borderColor: 'rgba(255, 107, 107, 0.45)',
+    backgroundColor: colors.badgeNegativeBg,
+    borderColor: colors.badgeNegativeBorder,
   },
   netPillText: {
     color: colors.text,

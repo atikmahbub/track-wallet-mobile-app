@@ -56,7 +56,7 @@ const ExpenseSummary: React.FC<ISummary> = ({
     if (!limitValue) {
       return null;
     }
-    return Math.max(limitValue - totalExpense, 0);
+    return limitValue - totalExpense;
   }, [limitValue, totalExpense]);
 
   const closeLimitModal = () => {
@@ -164,7 +164,7 @@ const ExpenseSummary: React.FC<ISummary> = ({
                 Number(remainingBalance.toFixed(2)),
                 currency,
               )}
-              error={totalExpense > limitValue}
+              error={remainingBalance < 0}
             />
           )}
         </View>
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     borderColor: colors.glassBorder,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: 'rgba(100, 210, 255, 0.15)',
+    backgroundColor: colors.badgePositiveBg,
   },
   setLimitLabel: {
     color: colors.text,

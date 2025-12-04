@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backdrop: {
-    backgroundColor: 'rgba(5, 9, 21, 0.86)',
+    backgroundColor: colors.overlay,
   },
   loader: {
     width: width * 0.2,

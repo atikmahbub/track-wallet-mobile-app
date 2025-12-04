@@ -9,6 +9,7 @@ import {
 import {useField} from 'formik';
 import {TextInput, TouchableRipple} from 'react-native-paper';
 import {darkTheme} from '@trackingPortal/themes/darkTheme';
+import {colors} from '@trackingPortal/themes/colors';
 
 interface FormikSelectFieldProps {
   name: string;
@@ -48,10 +49,10 @@ const FormikSelectField: React.FC<FormikSelectFieldProps> = ({
           right={<TextInput.Icon icon="chevron-down" />}
           theme={{
             colors: {
-              primary: '#9C27B0',
-              text: '#FFFFFF',
-              placeholder: '#9E9E9E',
-              background: '#1E1E2F',
+              primary: colors.primary,
+              text: colors.text,
+              placeholder: colors.placeholder,
+              background: colors.background,
             },
           }}
         />
@@ -86,11 +87,13 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: 'grey',
+    borderColor: colors.glassBorder,
+    borderRadius: 14,
+    overflow: 'hidden',
   },
   input: {
-    backgroundColor: darkTheme.colors.background,
-    color: '#FFFFFF',
+    backgroundColor: darkTheme.colors.surface,
+    color: colors.text,
   },
   dropdownOverlay: {
     position: 'absolute',
@@ -99,13 +102,13 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 10,
-    backgroundColor: darkTheme.colors.background,
+    backgroundColor: colors.overlay,
   },
   dropdown: {
     backgroundColor: darkTheme.colors.surface,
     marginHorizontal: 20,
     marginTop: 10,
-    borderRadius: 4,
+    borderRadius: 18,
     padding: 10,
     zIndex: 999,
   },
@@ -114,11 +117,11 @@ const styles = StyleSheet.create({
   },
   dropdownItem: {
     padding: 10,
-    color: '#FFFFFF',
+    color: colors.text,
     fontSize: 16,
   },
   errorText: {
-    color: '#FF4081',
+    color: colors.error,
     fontSize: 12,
     marginTop: 4,
   },

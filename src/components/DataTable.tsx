@@ -64,7 +64,7 @@ const DataTable: React.FC<DataTableProps> = ({
             handleEditToggle(id);
           }}>
           <View style={[styles.actionIconBadge, styles.editBadge]}>
-            <Icon name="edit" size={18} color="#10192e" />
+            <Icon name="edit" size={18} color={colors.background} />
           </View>
         </TouchableOpacity>
         <TouchableOpacity
@@ -75,7 +75,7 @@ const DataTable: React.FC<DataTableProps> = ({
             handleDelete(id);
           }}>
           <View style={[styles.actionIconBadge, styles.deleteBadge]}>
-            <Icon name="delete" size={18} color="#280c12" />
+            <Icon name="delete" size={18} color={colors.text} />
           </View>
         </TouchableOpacity>
       </View>
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    backgroundColor: colors.surface,
     borderRadius: 20,
     paddingVertical: 12,
     paddingHorizontal: 10,
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     borderColor: colors.glassBorder,
     borderRadius: 22,
     overflow: 'hidden',
-    backgroundColor: 'rgba(15, 23, 42, 0.45)',
+    backgroundColor: colors.surfaceAlt,
   },
   row: {
     flexDirection: 'row',
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   rowActive: {
-    backgroundColor: 'rgba(94, 92, 230, 0.18)',
+    backgroundColor: colors.badgePositiveBg,
   },
   cell: {
     flex: 1,
@@ -210,9 +210,9 @@ const styles = StyleSheet.create({
   swipeActionsBackdrop: {
     ...StyleSheet.absoluteFillObject,
     borderRadius: 22,
-    backgroundColor: 'rgba(5, 11, 26, 0.92)',
+    backgroundColor: colors.overlay,
     borderWidth: 1,
-    borderColor: 'rgba(94, 92, 230, 0.22)',
+    borderColor: colors.glassBorder,
   },
   swipeActionsContent: {
     flexDirection: 'row',
@@ -224,22 +224,22 @@ const styles = StyleSheet.create({
     width: 72,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: colors.glassBorder,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    shadowColor: '#000',
+    backgroundColor: colors.surface,
+    shadowColor: colors.overlay,
     shadowOpacity: 0.25,
     shadowRadius: 12,
     shadowOffset: {width: 0, height: 10},
     elevation: 6,
   },
   editAction: {
-    backgroundColor: 'rgba(94, 92, 230, 0.35)',
+    backgroundColor: colors.badgePositiveBg,
   },
   deleteAction: {
-    backgroundColor: 'rgba(255, 69, 94, 0.32)',
+    backgroundColor: colors.badgeNegativeBg,
   },
   actionIconBadge: {
     width: 34,
@@ -249,13 +249,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   editBadge: {
-    backgroundColor: 'rgba(231, 233, 255, 0.9)',
+    backgroundColor: colors.accent,
   },
   deleteBadge: {
-    backgroundColor: 'rgba(255, 214, 222, 0.88)',
+    backgroundColor: colors.error,
   },
   collapsibleContent: {
-    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+    backgroundColor: colors.overlay,
     paddingVertical: 20,
     paddingHorizontal: 20,
     borderTopWidth: 1,
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: colors.glassBorder,
-    backgroundColor: 'rgba(15, 23, 42, 0.4)',
+    backgroundColor: colors.surfaceAlt,
   },
   emptyText: {
     color: colors.subText,

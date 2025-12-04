@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
   },
   noiseOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(5, 9, 21, 0.5)',
+    backgroundColor: colors.softOverlay,
   },
 });
 

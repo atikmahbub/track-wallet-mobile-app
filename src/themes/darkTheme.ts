@@ -28,7 +28,7 @@ export const darkTheme = {
     error: colors.error,
     success: colors.success,
     warning: colors.warning,
-    backdrop: 'rgba(5, 9, 21, 0.65)',
+    backdrop: colors.overlay,
     border: colors.glassBorder,
   },
 };

@@ -16,7 +16,7 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
   progress,
   size = 56,
   strokeWidth = 5,
-  trackColor = 'rgba(255, 255, 255, 0.12)',
+  trackColor = colors.surface,
   progressColor = colors.accent,
   label,
 }) => {
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(5, 9, 21, 0.9)',
+    backgroundColor: colors.overlay,
   },
   label: {
     color: colors.text,

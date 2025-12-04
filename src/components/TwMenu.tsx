@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
   },
   menuButton: {
     borderRadius: 999,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: colors.surface,
     paddingHorizontal: 4,
   },
   menuContent: {
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
   },
   menuTint: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(8, 14, 32, 0.9)',
+    backgroundColor: colors.overlay,
   },
 });
 

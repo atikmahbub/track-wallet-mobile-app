@@ -1,12 +1,11 @@
-import {View, Pressable, Animated, StyleSheet} from 'react-native';
-import React, {Fragment, useRef, useState} from 'react';
+import {View, Pressable, StyleSheet} from 'react-native';
+import React, {Fragment, useMemo, useState} from 'react';
 import {useFormikContext} from 'formik';
 import {EAddInvestFormFields} from '@trackingPortal/screens/InvestScreen';
-import {Button, TextInput} from 'react-native-paper';
+import {TextInput} from 'react-native-paper';
 import {FormikCheckboxField, FormikTextInput} from '@trackingPortal/components';
 import DatePicker from 'react-native-date-picker';
 import dayjs from 'dayjs';
-import {darkTheme} from '@trackingPortal/themes/darkTheme';
 
 interface IInvestForm {
   update?: boolean;
@@ -14,45 +13,28 @@ interface IInvestForm {
 
 const InvestForm: React.FC<IInvestForm> = ({update}) => {
   const {values, setFieldValue} = useFormikContext<any>();
-  const [pickerVisible, setPickerVisible] = useState(false);
-  const animatedHeight = useRef(new Animated.Value(0)).current;
+  const [startPickerVisible, setStartPickerVisible] = useState(false);
+  const [endPickerVisible, setEndPickerVisible] = useState(false);
+  const startDateValue = values[EAddInvestFormFields.START_DATE];
+  const endDateValue = values[EAddInvestFormFields.END_DATE];
 
-  const [pickerVisible1, setPickerVisible1] = useState(false);
-  const animatedHeight1 = useRef(new Animated.Value(0)).current;
-
-  const animatePicker = () => {
-    if (pickerVisible) {
-      Animated.timing(animatedHeight, {
-        toValue: 0,
-        duration: 320,
-        useNativeDriver: false,
-      }).start(() => setPickerVisible(false));
-    } else {
-      setPickerVisible(true);
-      Animated.timing(animatedHeight, {
-        toValue: 300,
-        duration: 300,
-        useNativeDriver: false,
-      }).start();
+  const resolveDate = (value: any) => {
+    if (value instanceof Date && !isNaN(value.getTime())) {
+      return value;
     }
+    const parsed = new Date(value);
+    return isNaN(parsed.getTime()) ? new Date() : parsed;
   };
 
-  const animatePicker1 = () => {
-    if (pickerVisible1) {
-      Animated.timing(animatedHeight1, {
-        toValue: 0,
-        duration: 320,
-        useNativeDriver: false,
-      }).start(() => setPickerVisible1(false));
-    } else {
-      setPickerVisible1(true);
-      Animated.timing(animatedHeight1, {
-        toValue: 300,
-        duration: 300,
-        useNativeDriver: false,
-      }).start();
-    }
-  };
+  const startDate = useMemo(
+    () => resolveDate(startDateValue),
+    [startDateValue],
+  );
+
+  const endDate = useMemo(
+    () => resolveDate(endDateValue),
+    [endDateValue],
+  );
 
   return (
     <View style={{gap: 16}}>
@@ -72,31 +54,27 @@ const InvestForm: React.FC<IInvestForm> = ({update}) => {
         <TextInput
           mode="outlined"
           label="Start Date"
-          value={dayjs(values[EAddInvestFormFields.START_DATE]).format(
-            'DD MMM YYYY',
-          )}
+          value={dayjs(startDate).format('DD MMM YYYY')}
           editable={false}
           pointerEvents="none"
         />
         <Pressable
           style={StyleSheet.absoluteFillObject}
-          onPress={animatePicker}
+          onPress={() => setStartPickerVisible(true)}
         />
       </View>
-      <Animated.View style={[styles.animatedPicker, {height: animatedHeight}]}>
-        {pickerVisible && (
-          <View style={styles.datePickerContainer}>
-            <DatePicker
-              date={values[EAddInvestFormFields.START_DATE]}
-              mode="date"
-              onDateChange={selectedDate => {
-                setFieldValue(EAddInvestFormFields.START_DATE, selectedDate);
-              }}
-            />
-            <Button onPress={animatePicker}>Done</Button>
-          </View>
-        )}
-      </Animated.View>
+      <DatePicker
+        modal
+        mode="date"
+        open={startPickerVisible}
+        date={startDate}
+        theme="dark"
+        onConfirm={selectedDate => {
+          setFieldValue(EAddInvestFormFields.START_DATE, selectedDate);
+          setStartPickerVisible(false);
+        }}
+        onCancel={() => setStartPickerVisible(false)}
+      />
 
       {update && (
         <Fragment>
@@ -104,32 +82,27 @@ const InvestForm: React.FC<IInvestForm> = ({update}) => {
             <TextInput
               mode="outlined"
               label="End Date"
-              value={dayjs(values[EAddInvestFormFields.END_DATE]).format(
-                'DD MMM YYYY',
-              )}
+              value={dayjs(endDate).format('DD MMM YYYY')}
               editable={false}
               pointerEvents="none"
             />
             <Pressable
               style={StyleSheet.absoluteFillObject}
-              onPress={animatePicker1}
+              onPress={() => setEndPickerVisible(true)}
             />
           </View>
-          <Animated.View
-            style={[styles.animatedPicker, {height: animatedHeight1}]}>
-            {pickerVisible1 && (
-              <View style={styles.datePickerContainer}>
-                <DatePicker
-                  date={values[EAddInvestFormFields.END_DATE]}
-                  mode="date"
-                  onDateChange={selectedDate => {
-                    setFieldValue(EAddInvestFormFields.END_DATE, selectedDate);
-                  }}
-                />
-                <Button onPress={animatePicker1}>Done</Button>
-              </View>
-            )}
-          </Animated.View>
+          <DatePicker
+            modal
+            mode="date"
+            open={endPickerVisible}
+            date={endDate}
+            theme="dark"
+            onConfirm={selectedDate => {
+              setFieldValue(EAddInvestFormFields.END_DATE, selectedDate);
+              setEndPickerVisible(false);
+            }}
+            onCancel={() => setEndPickerVisible(false)}
+          />
           <FormikTextInput
             name={EAddInvestFormFields.EARNED}
             label="Profit (with capital)"
@@ -150,14 +123,5 @@ export default InvestForm;
 const styles = StyleSheet.create({
   inputWrapper: {
     position: 'relative',
-  },
-  animatedPicker: {
-    overflow: 'hidden',
-  },
-  datePickerContainer: {
-    backgroundColor: darkTheme.colors.surface,
-    padding: 20,
-    borderRadius: 8,
-    alignItems: 'center',
   },
 });
