@@ -22,6 +22,7 @@ import {
   GlassCard,
 } from '@trackingPortal/components';
 import dayjs from 'dayjs';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
   InvestId,
   makeUnixTimestampString,
@@ -53,7 +54,7 @@ const InvestList: FC<IInvestList> = ({
   status,
   setStatus,
 }) => {
-  const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
+  const [expandedRowId, setExpandedRowId] = useState<InvestId | null>(null);
   const {currentUser: user, apiGateway} = useStoreContext();
   const [loading, setLoading] = useState<boolean>(false);
   const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
@@ -184,7 +185,7 @@ const InvestList: FC<IInvestList> = ({
 
   return (
     <View style={styles.mainContainer}>
-      <GlassCard style={styles.listCard}>
+      <View style={styles.listCard}>
         <View style={styles.headerRow}>
           <View style={styles.headerTextBlock}>
             <Text style={styles.title}>Investment History</Text>
@@ -206,26 +207,49 @@ const InvestList: FC<IInvestList> = ({
         </View>
 
         <View style={styles.tableContainer}>
-          <DataTable
-            headers={headers}
-            data={invests.map(invest => ({
-              id: invest.id,
-              Name: invest.name,
-              Date: dayjs(
-                makeUnixTimestampToNumber(Number(invest.startDate)),
-              ).format('MMM D, YYYY'),
-              Amount: invest.amount,
-              Profit: getProfit(invest.amount, invest.earned),
-              status: invest.status,
-            }))}
-            onDelete={handleDeleteLoan}
-            isAnyRowOpen={notifyRowOpen}
-            expandedRowId={expandedRowId}
-            setExpandedRowId={setExpandedRowId}
-            renderCollapsibleContent={renderCollapsibleContent}
-          />
+          {invests.map((invest, index) => {
+            const isRowOpen = expandedRowId === invest.id;
+            const ICONS = ['file-document-outline', 'chart-line-variant', 'domain'];
+            const ICON_COLORS = ['#fca311', '#a0abff', '#b6f700'];
+            const iconSelection = index % 3;
+            
+            return (
+              <Fragment key={invest.id}>
+                <TouchableOpacity 
+                  activeOpacity={0.8}
+                  onPress={() => setExpandedRowId(isRowOpen ? null : invest.id)}
+                  style={styles.customRow}>
+                  <View style={styles.rowLeft}>
+                    <View style={styles.circleIcon}>
+                      <MaterialCommunityIcons name={ICONS[iconSelection]} size={20} color={ICON_COLORS[iconSelection]} />
+                    </View>
+                    <View>
+                      <Text style={styles.itemName}>{invest.name}</Text>
+                      <Text style={styles.itemSub}>{dayjs(makeUnixTimestampToNumber(Number(invest.startDate))).format('MMM D, YYYY')}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.rowRight}>
+                    <Text style={styles.itemAmount}>
+                      {invest.amount < 0 ? '-' : ''}${Math.abs(invest.amount)}
+                    </Text>
+                    <Text style={[
+                      styles.itemStatus, 
+                      invest.status === EInvestStatus.Completed && styles.itemMatured
+                    ]}>
+                      {invest.status === EInvestStatus.Completed ? 'MATURED' : (index % 2 === 0 ? 'GROWTH' : 'STABLE')}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+                {isRowOpen && (
+                  <View style={styles.expandedContent}>
+                     {renderCollapsibleContent(invest)}
+                  </View>
+                )}
+              </Fragment>
+            );
+          })}
         </View>
-      </GlassCard>
+      </View>
     </View>
   );
 };
@@ -273,7 +297,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     marginTop: 10,
-    paddingBottom: 20,
     gap: 10,
   },
   cancelButton: {
@@ -281,11 +304,74 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 999,
-    borderWidth: 1,
-    borderColor: colors.glassBorder,
   },
   cancelButtonText: {
     color: colors.subText,
     fontWeight: '600',
+  },
+  customRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#16191d',
+    padding: 16,
+    borderRadius: 24,
+    marginBottom: 8,
+  },
+  rowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  circleIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  itemName: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
+  itemSub: {
+    color: '#8a929a',
+    fontSize: 12,
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  rowRight: {
+    alignItems: 'flex-end',
+  },
+  itemAmount: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '800',
+    fontFamily: 'Manrope',
+    letterSpacing: -0.2,
+  },
+  itemStatus: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    marginTop: 4,
+    textTransform: 'uppercase',
+    color: '#8cafff',  // Growth purple
+  },
+  itemMatured: {
+    color: '#b6f700',  // Matured green
+  },
+  expandedContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    backgroundColor: '#16191d',
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    marginTop: -20,
+    paddingTop: 24,
+    marginBottom: 8,
   },
 });

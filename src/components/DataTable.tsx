@@ -3,7 +3,9 @@ import {View, Text, StyleSheet, FlatList, TouchableOpacity, Alert} from 'react-n
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import Collapsible from 'react-native-collapsible';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {colors} from '@trackingPortal/themes/colors';
+import {Image} from 'react-native';
 
 interface DataTableProps {
   headers: string[];
@@ -104,11 +106,38 @@ const DataTable: React.FC<DataTableProps> = ({
         enabled={!isRowOpen}>
         <View style={styles.rowWrapper}>
           <View style={[styles.row, isRowOpen && styles.rowActive]}>
-            {headers.map(header => (
-              <Text style={styles.cell} key={header}>
-                {item[header]}
+            {item.Avatar ? (
+              <View style={styles.avatarContainer}>
+                <Image source={{uri: item.Avatar}} style={styles.avatarImage} />
+                <View style={[styles.avatarBadge, item.Type === 'Given' ? styles.badgeGiven : styles.badgeTaken]}>
+                  <MaterialCommunityIcons 
+                    name={item.Type === 'Given' ? 'arrow-up' : 'arrow-down'} 
+                    size={10} 
+                    color={colors.background} 
+                  />
+                </View>
+              </View>
+            ) : (
+              <View style={styles.iconWrapper}>
+                <Icon name="receipt" size={24} color={colors.primary} />
+              </View>
+            )}
+            <View style={styles.textContainer}>
+              <Text style={styles.purposeText}>{item['Purpose'] || item['Name'] || item[headers[1]] || 'Transaction'}</Text>
+              <Text style={styles.dateText}>{item['Date'] || item['Deadline'] || item[headers[0]]}</Text>
+            </View>
+            <View style={styles.amountContainer}>
+              <Text style={[styles.amountText, item.Type === 'Taken' && {color: colors.error}]}>
+                {String(item['Amount'] || item[headers[2]]).includes('-')
+                  ? item['Amount'] || item[headers[2]]
+                  : item.Type === 'Taken' ? `-$${item['Amount'] || item[headers[2]]}` : `$${item['Amount'] || item[headers[2]]}`}
               </Text>
-            ))}
+              <View style={[styles.typeBadge, item.Type === 'Given' ? styles.typeBadgeGiven : item.Type === 'Taken' ? styles.typeBadgeTaken : undefined]}>
+                <Text style={[styles.categoryText, item.Type === 'Given' && {color: '#b6f700'}, item.Type === 'Taken' && {color: '#ff8e8b'}]}>
+                  {item.Type === 'Given' ? 'LENT' : item.Type === 'Taken' ? 'BORROWED' : 'EXPENSE'}
+                </Text>
+              </View>
+            </View>
           </View>
           <Collapsible collapsed={!isRowOpen}>
             <View style={styles.collapsibleContent}>
@@ -128,13 +157,6 @@ const DataTable: React.FC<DataTableProps> = ({
 
   return (
     <View style={styles.mainContainer}>
-      <View style={styles.header}>
-        {headers.map(header => (
-          <Text style={styles.headerCell} key={header}>
-            {header.toUpperCase()}
-          </Text>
-        ))}
-      </View>
       <FlatList
         data={data}
         keyExtractor={item => item.id.toString()}
@@ -155,50 +177,114 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   header: {
-    flexDirection: 'row',
-    backgroundColor: colors.surface,
-    borderRadius: 20,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: colors.glassBorder,
-    marginHorizontal: 4,
+    display: 'none',
   },
   headerCell: {
-    flex: 1,
-    color: colors.subText,
-    fontWeight: '600',
-    textAlign: 'center',
-    letterSpacing: 1.2,
-    fontSize: 12,
+    display: 'none',
   },
   table: {
     paddingVertical: 12,
   },
   rowWrapper: {
-    marginHorizontal: 4,
-    marginTop: 12,
-    borderWidth: 1,
-    borderColor: colors.glassBorder,
-    borderRadius: 22,
+    marginBottom: 8,
+    borderWidth: 0,
+    borderColor: 'transparent',
+    borderRadius: 20,
     overflow: 'hidden',
     backgroundColor: colors.surfaceAlt,
   },
   row: {
     flexDirection: 'row',
     paddingVertical: 16,
-    paddingHorizontal: 20,
-    gap: 8,
+    paddingHorizontal: 16,
+    gap: 16,
+    alignItems: 'center',
   },
   rowActive: {
-    backgroundColor: colors.badgePositiveBg,
+    backgroundColor: colors.surface,
   },
-  cell: {
+  iconWrapper: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  textContainer: {
     flex: 1,
+    justifyContent: 'center',
+  },
+  purposeText: {
     color: colors.text,
-    textAlign: 'center',
-    fontSize: 15,
-    fontWeight: '500',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.1,
+  },
+  dateText: {
+    color: colors.subText,
+    fontSize: 13,
+    marginTop: 4,
+  },
+  amountContainer: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  amountText: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '700',
+    fontFamily: 'Manrope',
+    letterSpacing: 0.2,
+  },
+  typeBadge: {
+    marginTop: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  typeBadgeGiven: {
+    backgroundColor: 'rgba(182, 247, 0, 0.1)',
+  },
+  typeBadgeTaken: {
+    backgroundColor: 'rgba(255, 142, 139, 0.1)',
+  },
+  categoryText: {
+    color: colors.subText,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    fontWeight: '700',
+  },
+  avatarContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    position: 'relative',
+  },
+  avatarImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.surface,
+  },
+  avatarBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: colors.surfaceAlt,
+  },
+  badgeGiven: {
+    backgroundColor: '#a1faff',
+  },
+  badgeTaken: {
+    backgroundColor: '#ff8e8b',
   },
   swipeActions: {
     flexDirection: 'row',

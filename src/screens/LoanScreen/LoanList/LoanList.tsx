@@ -9,7 +9,7 @@ import {LoanModel} from '@trackingPortal/api/models';
 import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
 import {IUpdateLoanParams} from '@trackingPortal/api/params';
 import Toast from 'react-native-toast-message';
-import {AnimatedLoader, LoadingButton, GlassCard} from '@trackingPortal/components';
+import {AnimatedLoader, LoadingButton} from '@trackingPortal/components';
 import {LoanType} from '@trackingPortal/api/enums';
 import dayjs from 'dayjs';
 import {
@@ -143,14 +143,12 @@ const LoanList: FC<ILoanList> = ({notifyRowOpen, loans, getUserLoan}) => {
 
   return (
     <View style={styles.mainContainer}>
-      <GlassCard style={styles.listCard}>
+      <View style={styles.listCard}>
         <View style={styles.headerRow}>
-          <View>
-            <Text style={styles.title}>Loan History</Text>
-            <Text style={styles.subtitle}>
-              Keep every obligation and repayment timeline in clear view.
-            </Text>
-          </View>
+          <Text style={styles.title}>Loan History</Text>
+          <TouchableOpacity>
+            <Text style={styles.viewAllText}>VIEW ALL</Text>
+          </TouchableOpacity>
         </View>
         <View style={styles.tableContainer}>
           <DataTable
@@ -159,10 +157,9 @@ const LoanList: FC<ILoanList> = ({notifyRowOpen, loans, getUserLoan}) => {
               id: loan.id,
               Type: loan.loanType === LoanType.GIVEN ? 'Given' : 'Taken',
               Name: loan.name,
-              Deadline: dayjs(
-                makeUnixTimestampToNumber(Number(loan.deadLine)),
-              ).format('MMM D, YYYY'),
+              Deadline: `Due: ${dayjs(makeUnixTimestampToNumber(Number(loan.deadLine))).format('MMM DD, YYYY')}`,
               Amount: loan.amount,
+              Avatar: `https://api.dicebear.com/7.x/avataaars/png?seed=${loan.name.replace(/\s+/g, '')}&backgroundColor=transparent`,
             }))}
             onDelete={handleDeleteLoan}
             isAnyRowOpen={notifyRowOpen}
@@ -171,7 +168,7 @@ const LoanList: FC<ILoanList> = ({notifyRowOpen, loans, getUserLoan}) => {
             renderCollapsibleContent={renderCollapsibleContent}
           />
         </View>
-      </GlassCard>
+      </View>
     </View>
   );
 };
@@ -198,12 +195,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
   },
-  subtitle: {
-    color: colors.subText,
-    fontSize: 13,
-    marginTop: 4,
-    lineHeight: 18,
-    maxWidth: 260,
+  viewAllText: {
+    color: colors.primary,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
   },
   tableContainer: {
     marginTop: 12,

@@ -1,4 +1,4 @@
-package org.reactjs.native.example.TrackWalletApp
+package org.reactjs.native.example.aether
 
 import android.app.Application
 import android.content.res.Configuration

@@ -21,23 +21,23 @@ const TAB_ITEMS: Array<{
 }> = [
   {
     name: 'expense',
-    label: 'Expense',
-    icon: 'currency-usd',
+    label: 'EXPENSES',
+    icon: 'cash',
   },
   {
     name: 'loan',
-    label: 'Loan',
-    icon: 'hand-coin',
+    label: 'LOANS',
+    icon: 'bank-outline',
   },
   {
     name: 'investment',
-    label: 'Invest',
-    icon: 'chart-line',
+    label: 'INVESTMENTS',
+    icon: 'chart-line-variant',
   },
   {
     name: 'profile',
-    label: 'Profile',
-    icon: 'account-circle',
+    label: 'PROFILE',
+    icon: 'account-outline',
   },
 ] as const;
 
@@ -46,9 +46,9 @@ export default function TabsLayout() {
     <NativeTabs
       iconColor={colors.subText}
       tintColor={colors.primary}
-      backgroundColor="rgba(8, 14, 32, 0.9)"
+      backgroundColor={colors.surfaceAlt}
       blurEffect="systemUltraThinMaterialDark"
-      shadowColor="rgba(94, 92, 230, 0.35)">
+      shadowColor={colors.glassBorder}>
       {TAB_ITEMS.map(tab => (
         <NativeTabs.Trigger key={tab.name} name={tab.name}>
           <Icon
@@ -56,7 +56,7 @@ export default function TabsLayout() {
             src={<VectorIcon family={MaterialCommunityIcons} name={tab.icon} />}
           />
           <Label
-            selectedStyle={{color: colors.text, fontWeight: '600'}}
+            selectedStyle={{color: colors.primary, fontWeight: '700', fontSize: 10}}
             hidden={false}>
             {tab.label}
           </Label>

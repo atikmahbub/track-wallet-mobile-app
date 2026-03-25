@@ -73,7 +73,7 @@ const ExpenseCreation: React.FC<IExpenseCreation> = ({
         return (
           <View>
             <FormModal
-              title="Add a new Expense"
+              title="New Entry"
               isVisible={openCreationModal}
               onClose={() => {
                 setOpenCreationModal(false);

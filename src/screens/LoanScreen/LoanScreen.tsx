@@ -95,22 +95,21 @@ export default function LoanScreen() {
         openCreationModal={openCreationModal}
         setOpenCreationModal={setOpenCreationModal}
       />
-      {!hideFabIcon && (
-        <AnimatedFAB
-          extended={false}
-          icon={'plus'}
-          animateFrom={'right'}
-          iconMode={'static'}
-          label="Add New"
-          color={colors.text}
-          style={styles.fabStyle}
-          onPress={() =>
-            withHaptic(() => {
-              setOpenCreationModal(true);
-            })
-          }
-        />
-      )}
+      <AnimatedFAB
+        extended={false}
+        visible={!hideFabIcon}
+        icon={'plus'}
+        animateFrom={'right'}
+        iconMode={'static'}
+        label="Add New"
+        color={colors.background}
+        style={styles.fabStyle}
+        onPress={() =>
+          withHaptic(() => {
+            setOpenCreationModal(true);
+          })
+        }
+      />
     </View>
   );
 }

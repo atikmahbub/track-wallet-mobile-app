@@ -19,20 +19,8 @@ interface GlassCardProps {
   style?: StyleProp<ViewStyle>;
   contentStyle?: StyleProp<ViewStyle>;
   padding?: number;
-  /**
-   * Force a specific rendering engine.
-   * - `auto` (default) chooses native glass on supported iOS, blur elsewhere
-   * - `glass` always uses the native glass engine
-   * - `blur` always uses the blur fallback
-   */
   engine?: GlassEngine;
-  /**
-   * Controls the native glass style. Only applies when the glass engine is used.
-   */
   glassEffectStyle?: GlassStyle;
-  /**
-   * Controls the blur intensity for the fallback engine.
-   */
   blurIntensity?: number;
 }
 
@@ -60,10 +48,10 @@ const GlassCard: React.FC<GlassCardProps> = ({
   children,
   style,
   contentStyle,
-  padding = 20,
+  padding = 24,
   engine = 'auto',
   glassEffectStyle = 'clear',
-  blurIntensity = 85,
+  blurIntensity = 20,
 }) => {
   const iosMajor = getIOSMajorVersion();
   const glassSupported =
@@ -79,15 +67,9 @@ const GlassCard: React.FC<GlassCardProps> = ({
     return (
       <GlassView
         glassEffectStyle={glassEffectStyle}
-        tintColor={colors.glassTint}
+        tintColor={colors.surface}
         isInteractive
         style={[styles.container, styles.shadow, style]}>
-        <View pointerEvents="none" style={styles.tintLayer} />
-        <View pointerEvents="none" style={styles.decorLayer}>
-          <View style={[styles.glow, styles.primaryGlow]} />
-          <View style={[styles.glow, styles.accentGlow]} />
-          <View style={[styles.glow, styles.highlightGlow]} />
-        </View>
         <View style={[styles.inner, {padding}, contentStyle]}>{children}</View>
       </GlassView>
     );
@@ -97,14 +79,8 @@ const GlassCard: React.FC<GlassCardProps> = ({
     return (
       <BlurView
         intensity={blurIntensity}
-        tint="system"
+        tint="dark"
         style={[styles.container, styles.shadow, style]}>
-        <View pointerEvents="none" style={styles.tintLayer} />
-        <View pointerEvents="none" style={styles.decorLayer}>
-          <View style={[styles.glow, styles.primaryGlow]} />
-          <View style={[styles.glow, styles.accentGlow]} />
-          <View style={[styles.glow, styles.highlightGlow]} />
-        </View>
         <View style={[styles.inner, {padding}, contentStyle]}>{children}</View>
       </BlurView>
     );
@@ -112,12 +88,6 @@ const GlassCard: React.FC<GlassCardProps> = ({
 
   return (
     <View style={[styles.container, styles.shadow, style]}>
-      <View pointerEvents="none" style={styles.tintLayer} />
-      <View pointerEvents="none" style={styles.decorLayer}>
-        <View style={[styles.glow, styles.primaryGlow]} />
-        <View style={[styles.glow, styles.accentGlow]} />
-        <View style={[styles.glow, styles.highlightGlow]} />
-      </View>
       <View style={[styles.inner, {padding}, contentStyle]}>{children}</View>
     </View>
   );
@@ -125,54 +95,21 @@ const GlassCard: React.FC<GlassCardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 26,
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: colors.glassBorder,
+    borderColor: 'rgba(161, 250, 255, 0.05)',
     overflow: 'hidden',
-    backgroundColor: 'transparent',
+    backgroundColor: '#1b2026', 
   },
   inner: {
     gap: 0,
   },
-  tintLayer: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: colors.glassTint,
-  },
-  decorLayer: {
-    ...StyleSheet.absoluteFillObject,
-    overflow: 'hidden',
-  },
-  glow: {
-    position: 'absolute',
-    width: 240,
-    height: 240,
-    borderRadius: 240,
-    opacity: 0.25,
-  },
-  primaryGlow: {
-    top: -140,
-    left: -100,
-    backgroundColor: 'rgba(255, 140, 66, 0.55)',
-  },
-  accentGlow: {
-    bottom: -160,
-    right: -60,
-    backgroundColor: 'rgba(255, 217, 160, 0.4)',
-  },
-  highlightGlow: {
-    top: 80,
-    right: 40,
-    width: 160,
-    height: 160,
-    borderRadius: 160,
-    backgroundColor: 'rgba(194, 76, 48, 0.25)',
-  },
   shadow: {
-    shadowColor: colors.primary,
-    shadowOpacity: 0.18,
-    shadowRadius: 24,
+    shadowColor: 'rgba(161, 250, 255, 0.08)',
+    shadowOpacity: 1,
+    shadowRadius: 40,
     shadowOffset: {width: 0, height: 12},
-    elevation: 10,
+    elevation: 8,
   },
 });
 

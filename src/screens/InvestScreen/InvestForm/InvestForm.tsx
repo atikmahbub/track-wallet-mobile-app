@@ -1,4 +1,4 @@
-import {View, Pressable, StyleSheet} from 'react-native';
+import {View, Pressable, StyleSheet, Text} from 'react-native';
 import React, {Fragment, useMemo, useState} from 'react';
 import {useFormikContext} from 'formik';
 import {EAddInvestFormFields} from '@trackingPortal/screens/InvestScreen';
@@ -37,32 +37,51 @@ const InvestForm: React.FC<IInvestForm> = ({update}) => {
   );
 
   return (
-    <View style={{gap: 16}}>
-      <FormikTextInput name={EAddInvestFormFields.NAME} label="Name" />
-      <FormikTextInput
-        name={EAddInvestFormFields.AMOUNT}
-        label="Amount"
-        keyboardType="numeric"
-      />
-      <FormikTextInput
-        name={EAddInvestFormFields.NOTE}
-        label="Note"
-        multiline
-        minRows={3}
-      />
-      <View style={styles.inputWrapper}>
-        <TextInput
-          mode="outlined"
-          label="Start Date"
-          value={dayjs(startDate).format('DD MMM YYYY')}
-          editable={false}
-          pointerEvents="none"
+    <View style={styles.formRoot}>
+      <View style={styles.fieldSection}>
+        <Text style={styles.sectionLabel}>NAME</Text>
+        <FormikTextInput 
+          name={EAddInvestFormFields.NAME} 
+          placeholder="e.g. S&P 500 Index" 
         />
+      </View>
+      <View style={styles.fieldSection}>
+        <Text style={styles.sectionLabel}>AMOUNT</Text>
+        <FormikTextInput
+          name={EAddInvestFormFields.AMOUNT}
+          placeholder="$ 0.00"
+          keyboardType="numeric"
+        />
+      </View>
+      <View style={styles.fieldSection}>
+        <Text style={styles.sectionLabel}>START DATE</Text>
+        <View style={styles.inputWrapper}>
+          <TextInput
+            mode="flat"
+            value={dayjs(startDate).format('DD MMM YYYY')}
+            editable={false}
+            pointerEvents="none"
+            right={<TextInput.Icon icon="calendar-month-outline" color="#5a6069" />}
+            underlineColor="transparent"
+            activeUnderlineColor="transparent"
+          />
         <Pressable
           style={StyleSheet.absoluteFillObject}
           onPress={() => setStartPickerVisible(true)}
         />
+        </View>
       </View>
+
+      <View style={styles.fieldSection}>
+        <Text style={styles.sectionLabel}>NOTE</Text>
+        <FormikTextInput
+          name={EAddInvestFormFields.NOTE}
+          placeholder="Additional details..."
+          multiline
+          numberOfLines={4}
+        />
+      </View>
+      
       <DatePicker
         modal
         mode="date"
@@ -78,18 +97,23 @@ const InvestForm: React.FC<IInvestForm> = ({update}) => {
 
       {update && (
         <Fragment>
-          <View style={styles.inputWrapper}>
-            <TextInput
-              mode="outlined"
-              label="End Date"
-              value={dayjs(endDate).format('DD MMM YYYY')}
-              editable={false}
-              pointerEvents="none"
-            />
-            <Pressable
-              style={StyleSheet.absoluteFillObject}
-              onPress={() => setEndPickerVisible(true)}
-            />
+          <View style={styles.fieldSection}>
+            <Text style={styles.sectionLabel}>END DATE</Text>
+            <View style={styles.inputWrapper}>
+              <TextInput
+                mode="flat"
+                value={dayjs(endDate).format('DD MMM YYYY')}
+                editable={false}
+                pointerEvents="none"
+                right={<TextInput.Icon icon="calendar-month-outline" color="#5a6069" />}
+                underlineColor="transparent"
+                activeUnderlineColor="transparent"
+              />
+              <Pressable
+                style={StyleSheet.absoluteFillObject}
+                onPress={() => setEndPickerVisible(true)}
+              />
+            </View>
           </View>
           <DatePicker
             modal
@@ -103,13 +127,16 @@ const InvestForm: React.FC<IInvestForm> = ({update}) => {
             }}
             onCancel={() => setEndPickerVisible(false)}
           />
-          <FormikTextInput
-            name={EAddInvestFormFields.EARNED}
-            label="Profit (with capital)"
-            keyboardType="numeric"
-          />
+          <View style={styles.fieldSection}>
+            <Text style={styles.sectionLabel}>RETURN (including capital)</Text>
+            <FormikTextInput
+              name={EAddInvestFormFields.EARNED}
+              placeholder="$ 0.00"
+              keyboardType="numeric"
+            />
+          </View>
           <FormikCheckboxField
-            label="Mark as completed"
+            label="Mark as COMPLETED"
             name={EAddInvestFormFields.STATUS}
           />
         </Fragment>
@@ -121,7 +148,22 @@ const InvestForm: React.FC<IInvestForm> = ({update}) => {
 export default InvestForm;
 
 const styles = StyleSheet.create({
+  formRoot: {
+    gap: 16,
+  },
+  fieldSection: {
+    gap: 8,
+  },
+  sectionLabel: {
+    color: '#8a929a',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+  },
   inputWrapper: {
     position: 'relative',
+    borderRadius: 24,
+    overflow: 'hidden',
   },
 });

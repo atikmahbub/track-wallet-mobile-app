@@ -74,6 +74,8 @@ const InvestCreation: React.FC<IInvestCreation> = ({
           <View>
             <FormModal
               title="Add a new Investment"
+              subtitle="Expansion of your financial sanctuary."
+              saveLabel="Save Investment"
               isVisible={openCreationModal}
               onClose={() => {
                 setOpenCreationModal(false);

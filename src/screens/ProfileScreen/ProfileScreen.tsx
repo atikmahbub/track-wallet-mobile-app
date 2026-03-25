@@ -1,11 +1,10 @@
-import {View, StyleSheet, TouchableOpacity} from 'react-native';
+import {View, StyleSheet, TouchableOpacity, ScrollView, Image} from 'react-native';
 import React from 'react';
-import {Avatar, Text} from 'react-native-paper';
+import {Text} from 'react-native-paper';
 import {useAuth} from '@trackingPortal/auth/Auth0ProviderWithHistory';
-import {AnimatedLoader, ValueWithLabel, GlassCard} from '@trackingPortal/components';
+import {AnimatedLoader} from '@trackingPortal/components';
 import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
-import {ScrollView} from 'react-native-gesture-handler';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {colors} from '@trackingPortal/themes/colors';
 
 export default function ProfileScreen() {
@@ -21,39 +20,77 @@ export default function ProfileScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.avatarSection}>
         <View style={styles.avatarGlow} />
-        <Avatar.Image
-          size={110}
-          source={{
-            uri: user?.profilePicture ?? '',
-          }}
-          style={styles.avatar}
-        />
+        <View style={styles.avatarWrapper}>
+          <Image
+            source={{uri: user?.profilePicture ?? 'https://api.dicebear.com/7.x/avataaars/png?seed=Julian&backgroundColor=transparent'}}
+            style={styles.avatarImg}
+          />
+        </View>
         <Text style={styles.greeting}>Hey, {firstName} 👋</Text>
         <Text style={styles.caption}>
-          {"Here's a quick peek at your identity inside TrackWallet."}
+          Welcome back to your financial sanctuary.
         </Text>
       </View>
-      <GlassCard
-        style={styles.profileCard}
-        contentStyle={styles.profileCardContent}>
-        <Text style={styles.cardTitle}>Account Details</Text>
-        <View style={styles.cardDivider} />
-        <ValueWithLabel label="Full Name" value={user?.name || 'N/A'} />
-        <ValueWithLabel label="Email Address" value={user?.email || 'N/A'} />
-      </GlassCard>
+
+      <Text style={styles.sectionHeader}>ACCOUNT DETAILS</Text>
+
+      <View style={styles.cardContainer}>
+        {/* Name Row */}
+        <View style={styles.detailRow}>
+          <View style={styles.iconCircle}>
+            <MaterialCommunityIcons name="account-outline" size={20} color={colors.text} />
+          </View>
+          <View style={styles.detailTextCol}>
+            <Text style={styles.detailLabel}>FULL NAME</Text>
+            <Text style={styles.detailValue}>{user?.name || 'Julian Aether Sterling'}</Text>
+          </View>
+        </View>
+
+        {/* Space */}
+        <View style={{height: 24}} />
+
+        {/* Email Row */}
+        <View style={styles.detailRow}>
+          <View style={styles.iconCircle}>
+            <MaterialCommunityIcons name="email-outline" size={20} color={colors.text} />
+          </View>
+          <View style={styles.detailTextCol}>
+            <Text style={styles.detailLabel}>EMAIL ADDRESS</Text>
+            <Text style={styles.detailValue}>{user?.email || 'j.sterling@aether.finance'}</Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.badgesRow}>
+        <View style={styles.smallCard}>
+          <MaterialCommunityIcons name="shield-check-outline" size={20} color="#b6f700" style={styles.badgeIcon} />
+          <Text style={styles.badgeTitle}>Tier One</Text>
+          <Text style={styles.badgeSub}>Verified Member</Text>
+        </View>
+        <View style={styles.smallCard}>
+          <MaterialCommunityIcons name="shield-lock-outline" size={20} color="#fca311" style={styles.badgeIcon} />
+          <Text style={styles.badgeTitle}>Privacy</Text>
+          <Text style={styles.badgeSub}>Biometrics Active</Text>
+        </View>
+      </View>
+
       <TouchableOpacity
         style={styles.logoutButton}
-        onPress={() => {
-          logout();
-        }}>
-        <View style={styles.logoutIconWrapper}>
-          <Icon name="logout" size={22} color={colors.error} />
+        activeOpacity={0.8}
+        onPress={() => logout()}>
+        <View style={styles.logoutLeft}>
+          <View style={styles.logoutIconWrapper}>
+            <MaterialCommunityIcons name="logout" size={20} color="#ff8e8b" />
+          </View>
+          <View>
+            <Text style={styles.logoutLabel}>Log out</Text>
+            <Text style={styles.logoutHint}>See you soon</Text>
+          </View>
         </View>
-        <View>
-          <Text style={styles.logoutLabel}>Log out</Text>
-          <Text style={styles.logoutHint}>See you soon</Text>
-        </View>
+        <MaterialCommunityIcons name="chevron-right" size={24} color="#4f555c" />
       </TouchableOpacity>
+
+      <Text style={styles.footerText}>TW V4.2.0 • BUILD 991</Text>
     </ScrollView>
   );
 }
@@ -70,87 +107,162 @@ const styles = StyleSheet.create({
   },
   avatarSection: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 40,
   },
   avatarGlow: {
     position: 'absolute',
-    width: 180,
-    height: 180,
-    borderRadius: 180,
-    backgroundColor: 'rgba(255, 140, 66, 0.28)',
-    top: -4,
-    shadowColor: colors.primary,
-    shadowOpacity: 0.45,
-    shadowRadius: 60,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: 'rgba(140, 175, 255, 0.15)', // Neon blue glow from photo
+    top: -20,
+    shadowColor: '#8cafff',
+    shadowOpacity: 0.5,
+    shadowRadius: 50,
     shadowOffset: {width: 0, height: 0},
+    zIndex: 0,
   },
-  avatar: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: colors.glassBorder,
+  avatarWrapper: {
+    backgroundColor: '#fff', // White inner background per avatar
+    borderRadius: 55,
+    padding: 4,
+    width: 110,
+    height: 110,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
+  avatarImg: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#f3f4f6', // Inner light shade
   },
   greeting: {
     color: colors.text,
-    fontSize: 26,
-    fontWeight: '700',
-    marginTop: 20,
+    fontSize: 28,
+    fontWeight: '800',
+    fontFamily: 'Manrope',
+    marginTop: 24,
+    letterSpacing: -0.5,
   },
   caption: {
-    color: colors.subText,
+    color: '#8a929a',
     fontSize: 14,
     textAlign: 'center',
-    marginTop: 8,
-    lineHeight: 20,
-    maxWidth: 280,
+    marginTop: 6,
+    fontWeight: '500',
   },
-  profileCard: {
-    marginTop: 8,
-  },
-  profileCardContent: {
-    gap: 12,
-  },
-  cardTitle: {
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  cardDivider: {
-    height: 1,
-    backgroundColor: colors.glassBorder,
-    opacity: 0.5,
+  sectionHeader: {
+    color: '#a0aab5',
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
     marginBottom: 12,
   },
+  cardContainer: {
+    backgroundColor: '#16191d',
+    borderRadius: 32,
+    padding: 24,
+    marginBottom: 16,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  iconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  detailTextCol: {
+    flex: 1,
+  },
+  detailLabel: {
+    color: '#8a929a',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
+  detailValue: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  badgesRow: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 32,
+  },
+  smallCard: {
+    flex: 1,
+    backgroundColor: '#16191d',
+    borderRadius: 28,
+    padding: 20,
+  },
+  badgeIcon: {
+    marginBottom: 16,
+  },
+  badgeTitle: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '800',
+    marginBottom: 4,
+  },
+  badgeSub: {
+    color: '#8a929a',
+    fontSize: 12,
+    fontWeight: '500',
+  },
   logoutButton: {
-    marginTop: 28,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: colors.glassBorder,
-    backgroundColor: colors.surface,
-    paddingVertical: 18,
-    paddingHorizontal: 20,
+    backgroundColor: '#16191d',
+    borderRadius: 36,
+    padding: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 48,
+  },
+  logoutLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
   },
   logoutIconWrapper: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: colors.badgeNegativeBorder,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 142, 139, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.badgeNegativeBg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 142, 139, 0.2)',
   },
   logoutLabel: {
-    color: colors.error,
-    fontSize: 17,
-    fontWeight: '700',
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: '800',
   },
   logoutHint: {
-    color: colors.subText,
+    color: '#8a929a',
     fontSize: 13,
     marginTop: 2,
+    fontWeight: '500',
+  },
+  footerText: {
+    textAlign: 'center',
+    color: '#4f555c',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 3,
+    textTransform: 'uppercase',
+    paddingBottom: 20,
   },
 });

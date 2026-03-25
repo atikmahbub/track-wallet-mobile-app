@@ -1,4 +1,4 @@
-import {View, StyleSheet, TouchableOpacity} from 'react-native';
+import {View, StyleSheet, TouchableOpacity, ScrollView, Modal} from 'react-native';
 import React, {
   FC,
   Fragment,
@@ -30,7 +30,6 @@ import Toast from 'react-native-toast-message';
 import {
   AnimatedLoader,
   LoadingButton,
-  GlassCard,
 } from '@trackingPortal/components';
 
 interface IExpenseList {
@@ -172,25 +171,39 @@ const ExpenseList: FC<IExpenseList> = ({
 
   return (
     <View style={styles.mainContainer}>
-      <GlassCard style={styles.listCard}>
-        <View style={styles.headerRow}>
-          <View>
-            <Text style={styles.title}>Expense History</Text>
-            <Text style={styles.subtitle}>
-              Swipe a row to edit details or remove an expense.
-            </Text>
-          </View>
+      <View style={styles.listCard}>
+        <View style={styles.timelineRow}>
+          <Text style={styles.title}>Timeline</Text>
           <Button
             mode="contained-tonal"
-            icon="calendar-month"
+            icon="chevron-down"
+            contentStyle={{flexDirection: 'row-reverse'}}
             uppercase={false}
             style={styles.monthButton}
-            contentStyle={styles.monthButtonContent}
             labelStyle={styles.monthButtonLabel}
             onPress={() => setOpenPicker(true)}>
-            {dayjs(filteredMonth).format('MMM YYYY')}
+            {dayjs(filteredMonth).format('YYYY')}
           </Button>
         </View>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          contentContainerStyle={styles.chipsRow}
+          style={styles.chipsScroll}>
+          {Array.from({length: 12}, (_, i) => dayjs().month(i)).map((m, idx) => {
+            const isActive = filteredMonth.month() === m.month();
+            return (
+              <Button 
+                key={idx}
+                mode="outlined" 
+                style={[styles.chip, isActive && styles.chipActive]} 
+                labelStyle={isActive ? styles.chipLabelActive : styles.chipLabel}
+                onPress={() => setFilteredMonth(dayjs(filteredMonth).month(m.month()))}>
+                {m.format('MMM').toUpperCase()}
+              </Button>
+            );
+          })}
+        </ScrollView>
         <View style={styles.tableContainer}>
           <DataTable
             headers={headers}
@@ -211,16 +224,32 @@ const ExpenseList: FC<IExpenseList> = ({
             renderCollapsibleContent={renderCollapsibleContent}
           />
         </View>
-      </GlassCard>
-      <DatePicker
-        modal
-        mode="date"
-        theme="dark"
-        open={openPicker}
-        date={filteredMonth.toDate()}
-        onConfirm={handleDateConfirm}
-        onCancel={() => setOpenPicker(false)}
-      />
+      </View>
+      <Modal visible={openPicker} transparent animationType="fade" onRequestClose={() => setOpenPicker(false)}>
+        <TouchableOpacity style={styles.yearPickerOverlay} activeOpacity={1} onPress={() => setOpenPicker(false)}>
+          <View style={styles.yearPickerContent}>
+            <Text style={styles.yearPickerTitle}>Select Year</Text>
+            <View style={{maxHeight: 240}}>
+              <ScrollView>
+                {Array.from({length: 10}, (_, i) => dayjs().year() + 2 - i).map(yr => (
+                  <TouchableOpacity 
+                    key={yr} 
+                    style={styles.yearOption} 
+                    onPress={() => {
+                      setFilteredMonth(filteredMonth.year(yr));
+                      setOpenPicker(false);
+                      // Trigger API fetch implicitly through the useEffect on filteredMonth in ExpenseScreen
+                    }}>
+                    <Text style={[styles.yearOptionText, filteredMonth.year() === yr && styles.yearOptionTextActive]}>
+                      {yr}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 };
@@ -236,32 +265,60 @@ const styles = StyleSheet.create({
   listCard: {
     marginTop: 12,
   },
-  headerRow: {
+  chipsScroll: {
+    flexGrow: 0,
+    marginBottom: 16,
+  },
+  timelineRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: 16,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  chipsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingRight: 16,
+  },
+  chip: {
+    borderColor: colors.glassBorder,
+    borderRadius: 999,
+  },
+  chipActive: {
+    borderColor: colors.primary,
+    backgroundColor: 'rgba(161, 250, 255, 0.08)',
+  },
+  chipLabel: {
+    color: colors.subText,
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 1.2,
+  },
+  chipLabelActive: {
+    color: colors.primary,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.2,
   },
   title: {
     color: colors.text,
     fontSize: 20,
     fontWeight: '700',
   },
-  subtitle: {
-    color: colors.subText,
-    fontSize: 13,
-    marginTop: 4,
-    lineHeight: 18,
-    maxWidth: 220,
+  viewAllText: {
+    color: colors.primary,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
   },
   monthButton: {
-    borderRadius: 999,
-  },
-  monthButtonContent: {
-    paddingHorizontal: 12,
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: 8,
   },
   monthButtonLabel: {
-    fontSize: 13,
+    color: colors.text,
+    fontSize: 14,
     fontWeight: '600',
     letterSpacing: 0.4,
   },
@@ -286,5 +343,39 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     color: colors.subText,
     fontWeight: '600',
+  },
+  yearPickerOverlay: {
+    flex: 1,
+    backgroundColor: colors.overlay,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  yearPickerContent: {
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: 24,
+    padding: 24,
+    width: 240,
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+  },
+  yearPickerTitle: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  yearOption: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  yearOptionText: {
+    color: colors.subText,
+    fontSize: 18,
+    fontWeight: '500',
+  },
+  yearOptionTextActive: {
+    color: colors.primary,
+    fontWeight: '700',
   },
 });

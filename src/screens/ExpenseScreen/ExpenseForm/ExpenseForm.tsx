@@ -1,4 +1,4 @@
-import {View, Pressable, StyleSheet} from 'react-native';
+import {View, Pressable, StyleSheet, Text} from 'react-native';
 import React, {useMemo, useState} from 'react';
 import {useFormikContext} from 'formik';
 import {EAddExpenseFields} from '@trackingPortal/screens/ExpenseScreen/ExpenseCreation/ExpenseCreation.constants';
@@ -21,20 +21,53 @@ export default function ExpenseForm() {
   }, [dateValue]);
 
   return (
-    <View style={{gap: 16}}>
-      <View style={styles.inputWrapper}>
+    <View style={{gap: 24}}>
+      <View style={styles.amountContainer}>
+        <Text style={styles.amountLabel}>TRANSACTION AMOUNT</Text>
         <TextInput
-          mode="outlined"
-          label="Select Date"
-          value={dayjs(currentDate).format('DD MMM YYYY')}
-          editable={false}
-          pointerEvents="none"
+          mode="flat"
+          value={values[EAddExpenseFields.AMOUNT] || ''}
+          onChangeText={text => setFieldValue(EAddExpenseFields.AMOUNT, text)}
+          keyboardType="numeric"
+          style={styles.amountInput}
+          placeholder="0.00"
+          placeholderTextColor="#666"
+          underlineColor="transparent"
+          activeUnderlineColor="transparent"
+          left={<TextInput.Affix text="৳ " textStyle={styles.amountCurrency} />}
         />
-        <Pressable
-          style={StyleSheet.absoluteFillObject}
-          onPress={() => setPickerVisible(true)}
+        <View style={styles.currencyPill}>
+          <Text style={styles.currencyPillText}>BDT - Bangladeshi Taka</Text>
+        </View>
+      </View>
+
+      <View style={styles.fieldSection}>
+        <Text style={styles.sectionLabel}>PURPOSE</Text>
+        <FormikTextInput 
+          name={EAddExpenseFields.DESCRIPTION} 
+          placeholder="What is this for?" 
         />
       </View>
+
+      <View style={styles.fieldSection}>
+        <Text style={styles.sectionLabel}>SELECT DATE</Text>
+        <View style={styles.inputWrapper}>
+          <TextInput
+            mode="flat"
+            value={dayjs(currentDate).format('MMMM D, YYYY')}
+            editable={false}
+            pointerEvents="none"
+            style={styles.dateInput}
+            underlineColor="transparent"
+            activeUnderlineColor="transparent"
+          />
+          <Pressable
+            style={StyleSheet.absoluteFillObject}
+            onPress={() => setPickerVisible(true)}
+          />
+        </View>
+      </View>
+
       <DatePicker
         modal
         mode="date"
@@ -47,18 +80,61 @@ export default function ExpenseForm() {
         }}
         onCancel={() => setPickerVisible(false)}
       />
-      <FormikTextInput name={EAddExpenseFields.DESCRIPTION} label="Purpose" />
-      <FormikTextInput
-        name={EAddExpenseFields.AMOUNT}
-        label="Amount"
-        keyboardType="numeric"
-      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  amountContainer: {
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  amountLabel: {
+    color: '#8A929A',
+    fontSize: 12,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+  },
+  amountInput: {
+    backgroundColor: 'transparent',
+    fontSize: 56,
+    fontFamily: 'Manrope',
+    fontWeight: '800',
+    textAlign: 'center',
+    height: 80,
+    width: '100%',
+  },
+  amountCurrency: {
+    color: '#a1faff',
+    fontSize: 32,
+    fontWeight: '400',
+  },
+  currencyPill: {
+    backgroundColor: '#1b2026',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginTop: 8,
+  },
+  currencyPillText: {
+    color: '#8A929A',
+    fontSize: 12,
+  },
+  fieldSection: {
+    gap: 8,
+  },
+  sectionLabel: {
+    color: '#8A929A',
+    fontSize: 12,
+    letterSpacing: 1.5,
+  },
   inputWrapper: {
     position: 'relative',
+    backgroundColor: '#0f1418',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  dateInput: {
+    backgroundColor: 'transparent',
   },
 });

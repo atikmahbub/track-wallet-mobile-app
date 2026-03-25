@@ -5,6 +5,7 @@ import {
   Text,
   TouchableWithoutFeedback,
   FlatList,
+  Modal,
 } from 'react-native';
 import {useField} from 'formik';
 import {TextInput, TouchableRipple} from 'react-native-paper';
@@ -26,8 +27,23 @@ const FormikSelectField: React.FC<FormikSelectFieldProps> = ({
 }) => {
   const [field, meta, helpers] = useField(name);
   const [visible, setVisible] = React.useState(false);
+  const inputRef = React.useRef<View>(null);
+  const [dropdownPosition, setDropdownPosition] = React.useState({
+    top: 0,
+    left: 0,
+    width: 0,
+  });
 
-  const openMenu = () => setVisible(true);
+  const openMenu = () => {
+    inputRef.current?.measureInWindow((x, y, width, height) => {
+      setDropdownPosition({
+        top: y + height + 6,
+        left: x,
+        width,
+      });
+      setVisible(true);
+    });
+  };
   const closeMenu = () => setVisible(false);
 
   const handleSelect = (value: string | number) => {
@@ -37,45 +53,61 @@ const FormikSelectField: React.FC<FormikSelectFieldProps> = ({
 
   return (
     <View style={styles.container}>
-      <TouchableRipple onPress={openMenu}>
-        <TextInput
-          label={label}
-          value={
-            options.find(option => option.value === field.value)?.label || ''
-          }
-          editable={false}
-          pointerEvents="none"
-          style={styles.input}
-          right={<TextInput.Icon icon="chevron-down" />}
-          theme={{
-            colors: {
-              primary: colors.primary,
-              text: colors.text,
-              placeholder: colors.placeholder,
-              background: colors.background,
-            },
-          }}
-        />
-      </TouchableRipple>
-      {visible && (
-        <TouchableWithoutFeedback onPress={closeMenu}>
-          <View style={styles.dropdownOverlay}>
-            <View style={[styles.dropdown, {height: height}]}>
-              <FlatList
-                data={options}
-                keyExtractor={item => item.value.toString()}
-                renderItem={({item}) => (
-                  <TouchableRipple onPress={() => handleSelect(item.value)}>
-                    <Text style={styles.dropdownItem}>{item.label}</Text>
-                  </TouchableRipple>
-                )}
-                contentContainerStyle={styles.flatListContent}
-                showsVerticalScrollIndicator
-              />
-            </View>
+      <View ref={inputRef} collapsable={false}>
+        <TouchableRipple onPress={openMenu}>
+          <TextInput
+            label={label}
+            value={
+              options.find(option => option.value === field.value)?.label || ''
+            }
+            editable={false}
+            pointerEvents="none"
+            style={styles.input}
+            right={<TextInput.Icon icon="chevron-down" />}
+            theme={{
+              colors: {
+                primary: colors.primary,
+                text: colors.text,
+                placeholder: colors.placeholder,
+                background: colors.background,
+              },
+            }}
+          />
+        </TouchableRipple>
+      </View>
+      <Modal
+        visible={visible}
+        transparent
+        onRequestClose={closeMenu}
+        animationType="fade">
+        <View style={StyleSheet.absoluteFillObject}>
+          <TouchableWithoutFeedback onPress={closeMenu}>
+            <View style={styles.dropdownOverlay} />
+          </TouchableWithoutFeedback>
+          <View
+            style={[
+              styles.dropdown,
+              {
+                top: dropdownPosition.top,
+                left: dropdownPosition.left,
+                width: dropdownPosition.width,
+                maxHeight: height,
+              },
+            ]}>
+            <FlatList
+              data={options}
+              keyExtractor={item => item.value.toString()}
+              renderItem={({item}) => (
+                <TouchableRipple onPress={() => handleSelect(item.value)}>
+                  <Text style={styles.dropdownItem}>{item.label}</Text>
+                </TouchableRipple>
+              )}
+              contentContainerStyle={styles.flatListContent}
+              showsVerticalScrollIndicator
+            />
           </View>
-        </TouchableWithoutFeedback>
-      )}
+        </View>
+      </Modal>
       {meta.touched && meta.error && (
         <Text style={styles.errorText}>{meta.error}</Text>
       )}
@@ -96,21 +128,17 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   dropdownOverlay: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    zIndex: 10,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: colors.overlay,
   },
   dropdown: {
+    position: 'absolute',
     backgroundColor: darkTheme.colors.surface,
-    marginHorizontal: 20,
-    marginTop: 10,
     borderRadius: 18,
-    padding: 10,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
     zIndex: 999,
+    elevation: 6,
   },
   flatListContent: {
     paddingVertical: 5,

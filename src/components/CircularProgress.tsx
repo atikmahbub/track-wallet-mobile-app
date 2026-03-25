@@ -16,7 +16,7 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
   progress,
   size = 56,
   strokeWidth = 5,
-  trackColor = colors.surface,
+  trackColor = colors.surfaceAlt,
   progressColor = colors.accent,
   label,
 }) => {

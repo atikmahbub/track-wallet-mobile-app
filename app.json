@@ -1,28 +1,31 @@
 {
   "expo": {
-    "name": "Track Wallet",
-    "slug": "trackwalletapp",
-    "scheme": "trackwalletapp",
+    "name": "Aether",
+    "slug": "aether",
+    "scheme": "aether",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
+
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "org.reactjs.native.example.TrackWalletApp",
+      "bundleIdentifier": "org.reactjs.native.example.aether",
       "infoPlist": {
-        "CFBundleDisplayName": "Track Wallet",
+        "CFBundleDisplayName": "Aether",
         "UIStatusBarStyle": "UIStatusBarStyleLightContent",
         "UIViewControllerBasedStatusBarAppearance": false
       }
     },
+
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
+        "backgroundColor": "#0a0f13"
       },
-      "package": "org.reactjs.native.example.TrackWalletApp"
+      "package": "org.reactjs.native.example.aether"
     },
+
     "plugins": ["expo-font", "expo-router"]
   }
 }

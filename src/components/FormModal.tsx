@@ -9,15 +9,17 @@ import {
   ScrollView,
   Keyboard,
   TouchableWithoutFeedback,
+  Modal,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import Modal from 'react-native-modal';
 import LoadingButton from '@trackingPortal/components/LoadingButton';
 import {colors} from '@trackingPortal/themes/colors';
 
 interface IFormModal {
   isVisible: boolean;
   title: string;
+  subtitle?: string;
+  saveLabel?: string;
   onClose: () => void;
   onSave: () => void;
   loading?: boolean;
@@ -27,6 +29,8 @@ interface IFormModal {
 const FormModal: React.FC<IFormModal> = ({
   isVisible,
   title,
+  subtitle,
+  saveLabel,
   onClose,
   onSave,
   loading,
@@ -34,59 +38,60 @@ const FormModal: React.FC<IFormModal> = ({
 }) => {
   const dismissKeyboard = () => Keyboard.dismiss();
 
+  const handleClose = () => {
+    dismissKeyboard();
+    onClose();
+  };
+
   return (
     <Modal
-      isVisible={isVisible}
-      onBackdropPress={() => {
-        dismissKeyboard();
-        onClose();
-      }}
-      onBackButtonPress={() => {
-        dismissKeyboard();
-        onClose();
-      }}
-      style={styles.modal}
-      animationIn="slideInUp"
-      animationOut="slideOutDown"
-      useNativeDriver
-      useNativeDriverForBackdrop
-      backdropTransitionOutTiming={0}
-      animationInTiming={300}
-      animationOutTiming={300}>
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.keyboardAvoidingView}>
-          <TouchableWithoutFeedback onPress={dismissKeyboard}>
-            <View style={styles.modalContent}>
-              <Text style={styles.title}>{title}</Text>
-              <ScrollView
-                contentContainerStyle={styles.scrollView}
-                keyboardShouldPersistTaps="handled">
-                {children}
-              </ScrollView>
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                  style={styles.cancelButton}
-                  onPress={() => {
-                    dismissKeyboard();
-                    onClose();
-                  }}>
-                  <Text style={styles.buttonText}>Cancel</Text>
-                </TouchableOpacity>
-                <LoadingButton
-                  label="Save"
-                  loading={!!loading}
-                  onPress={() => {
-                    dismissKeyboard();
-                    onSave();
-                  }}
-                />
+      transparent
+      animationType="slide"
+      visible={isVisible}
+      onRequestClose={handleClose}
+      statusBarTranslucent>
+      <View style={styles.modalRoot}>
+        <TouchableWithoutFeedback onPress={handleClose}>
+          <View style={styles.backdrop} />
+        </TouchableWithoutFeedback>
+        <SafeAreaView style={styles.safeArea}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            style={styles.keyboardAvoidingView}>
+            <TouchableWithoutFeedback onPress={dismissKeyboard}>
+              <View style={styles.modalContent}>
+                <View>
+                  <Text style={styles.title}>{title}</Text>
+                  {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+                </View>
+                <ScrollView
+                  contentContainerStyle={styles.scrollView}
+                  keyboardShouldPersistTaps="handled">
+                  {children}
+                </ScrollView>
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={() => {
+                      dismissKeyboard();
+                      onClose();
+                    }}>
+                    <Text style={styles.buttonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <LoadingButton
+                    label={saveLabel || 'Save'}
+                    loading={!!loading}
+                    onPress={() => {
+                      dismissKeyboard();
+                      onSave();
+                    }}
+                  />
+                </View>
               </View>
-            </View>
-          </TouchableWithoutFeedback>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+            </TouchableWithoutFeedback>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </View>
     </Modal>
   );
 };
@@ -94,12 +99,17 @@ const FormModal: React.FC<IFormModal> = ({
 export default FormModal;
 
 const styles = StyleSheet.create({
-  modal: {
+  modalRoot: {
+    flex: 1,
     justifyContent: 'flex-end',
-    margin: 0,
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: colors.overlay,
   },
   safeArea: {
     flex: 1,
+    justifyContent: 'flex-end',
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -124,8 +134,14 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     color: colors.text,
-    paddingBottom: 16,
     letterSpacing: 0.4,
+    marginBottom: 16,
+  },
+  subtitle: {
+    fontSize: 13,
+    color: colors.subText,
+    marginTop: 4,
+    marginBottom: 16,
   },
   scrollView: {
     flexGrow: 1,

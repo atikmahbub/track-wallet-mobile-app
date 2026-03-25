@@ -15,6 +15,7 @@ const auth0 = new Auth0({
 
 type AuthContextType = {
   login: () => Promise<void>;
+  loginWithPasskey: () => Promise<void>;
   logout: () => Promise<void>;
   token: string | null;
   user: any;
@@ -69,7 +70,7 @@ export const Auth0ProviderWithHistory = ({
     initializeAuth();
   }, []);
 
-  const login = async () => {
+  const handleLogin = async (options?: Record<string, any>) => {
     try {
       setLoading(true);
       const credentials = await auth0.webAuth.authorize({
@@ -77,6 +78,7 @@ export const Auth0ProviderWithHistory = ({
         audience: AUTH0_AUDIENCE,
         redirectUrl: redirectUrl,
         connection: 'google-oauth2',
+        ...options,
       });
       setToken(credentials.accessToken);
       await AsyncStorage.setItem(TOKEN_KEY, credentials.accessToken);
@@ -93,6 +95,14 @@ export const Auth0ProviderWithHistory = ({
       setLoading(false);
     }
   };
+
+  const login = () => handleLogin();
+
+  const loginWithPasskey = () =>
+    handleLogin({
+      connection: 'webauthn-platform',
+      additionalParameters: {prompt: 'login'},
+    });
 
   const logout = async () => {
     setLoading(true);
@@ -114,7 +124,8 @@ export const Auth0ProviderWithHistory = ({
   };
 
   return (
-    <AuthContext.Provider value={{login, logout, token, user, loading}}>
+    <AuthContext.Provider
+      value={{login, loginWithPasskey, logout, token, user, loading}}>
       {children}
     </AuthContext.Provider>
   );

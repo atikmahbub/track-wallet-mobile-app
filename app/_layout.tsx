@@ -5,6 +5,15 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {PaperProvider} from 'react-native-paper';
 import Toast from 'react-native-toast-message';
 import notifee from '@notifee/react-native';
+import {Text, TextInput} from 'react-native';
+import * as SplashScreen from 'expo-splash-screen';
+import {
+  useFonts,
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
+  Poppins_700Bold,
+} from '@expo-google-fonts/poppins';
 
 import {darkTheme} from '@trackingPortal/themes/darkTheme';
 import AppLayout from '@trackingPortal/layout';
@@ -14,9 +23,30 @@ import {
 } from '@trackingPortal/auth/Auth0ProviderWithHistory';
 import {StoreProvider} from '@trackingPortal/contexts/StoreProvider';
 import {AnimatedLoader} from '@trackingPortal/components';
+import toastConfig from '@trackingPortal/components/ToastConfig';
 
 const DEFAULT_AUTHENTICATED_ROUTE = '/(tabs)/expense';
 const LOGIN_ROUTE = '/login';
+
+SplashScreen.preventAutoHideAsync().catch(() => {});
+
+const applyDefaultFont = () => {
+  const components = [Text, TextInput];
+  components.forEach(component => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const target = component as any;
+    target.defaultProps = target.defaultProps || {};
+    const existingStyle = target.defaultProps.style;
+    const fontStyle = {fontFamily: 'Poppins_400Regular'};
+    if (Array.isArray(existingStyle)) {
+      target.defaultProps.style = [...existingStyle, fontStyle];
+    } else if (existingStyle) {
+      target.defaultProps.style = [existingStyle, fontStyle];
+    } else {
+      target.defaultProps.style = fontStyle;
+    }
+  });
+};
 
 const NavigationBoundary: React.FC = () => {
   const {token, loading} = useAuth();
@@ -53,6 +83,20 @@ const NavigationBoundary: React.FC = () => {
 };
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    Poppins_400Regular,
+    Poppins_500Medium,
+    Poppins_600SemiBold,
+    Poppins_700Bold,
+  });
+
+  useEffect(() => {
+    if (fontsLoaded) {
+      applyDefaultFont();
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
   useEffect(() => {
     const requestPermissions = async () => {
       try {
@@ -70,6 +114,10 @@ export default function RootLayout() {
     requestPermissions();
   }, []);
 
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
     <GestureHandlerRootView style={{flex: 1}}>
       <SafeAreaProvider>
@@ -81,7 +129,7 @@ export default function RootLayout() {
           </Auth0ProviderWithHistory>
         </PaperProvider>
       </SafeAreaProvider>
-      <Toast topOffset={70} position="top" />
+      <Toast topOffset={70} position="top" config={toastConfig} />
     </GestureHandlerRootView>
   );
 }

@@ -1,12 +1,13 @@
 import {View, StyleSheet} from 'react-native';
 import React from 'react';
 import {Text} from 'react-native-paper';
-import {GlassCard, ValueWithLabel} from '@trackingPortal/components';
+import {GlassCard} from '@trackingPortal/components';
 import {getCurrencyAmount} from '@trackingPortal/utils/utils';
 import {InvestModel} from '@trackingPortal/api/models';
 import {EInvestStatus} from '@trackingPortal/api/enums';
 import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
 import {colors} from '@trackingPortal/themes/colors';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 interface ISummary {
   investList: InvestModel[];
@@ -43,56 +44,80 @@ const InvestSummary: React.FC<ISummary> = ({investList, status}) => {
 
   return (
     <View style={styles.mainContainer}>
-      <GlassCard style={styles.summaryCard}>
-        <View style={styles.headerRow}>
-          <View>
-            <Text style={styles.headingLabel}>Investment Snapshot</Text>
-            <Text style={styles.headingValue}>
-              {isActive ? 'Active portfolio' : 'Closed positions'}
-            </Text>
-          </View>
+      <Text style={styles.headingLabel}>INVESTMENT SNAPSHOT</Text>
+
+      <View style={styles.heroRow}>
+        <Text style={styles.totalValueText}>
+          {getCurrencyAmount(
+            isActive ? totalActiveAmount : totalCompletedAmount,
+            currency,
+          )}
+        </Text>
+      </View>
+
+      <View style={styles.subHeroRow}>
+        <View style={styles.profitBadge}>
+          <MaterialCommunityIcons name="arrow-up" size={14} color="#b6f700" />
+          <Text style={styles.profitBadgeText}>
+            {!isActive ? totalProfit.toFixed(1) : '0.0'}%
+          </Text>
+        </View>
+        <View
+          style={[
+            styles.statusPill,
+            isActive ? styles.statusActive : styles.statusCompleted,
+          ]}>
           <View
             style={[
-              styles.statusPill,
-              isActive ? styles.statusActive : styles.statusCompleted,
-            ]}>
-            <Text style={styles.statusText}>
-              {isActive ? 'Active' : 'Completed'}
-            </Text>
-          </View>
+              styles.statusDot,
+              isActive
+                ? {backgroundColor: '#b6f700'}
+                : {backgroundColor: colors.subText},
+            ]}
+          />
+          <Text style={styles.statusText}>
+            {isActive ? 'Active portfolio' : 'Closed positions'}
+          </Text>
         </View>
+      </View>
 
-        <View style={styles.metricsSection}>
-          <ValueWithLabel
-            label={`Total ${isActive ? 'Active' : 'Completed'} Investments`}
-            value={isActive ? totalActiveItem : totalCompletedItem}
-          />
-          <ValueWithLabel
-            label="Total Capital"
-            value={getCurrencyAmount(
-              isActive ? totalActiveAmount : totalCompletedAmount,
-              currency,
-            )}
-          />
-          {!isActive && (
-            <>
-              <ValueWithLabel
-                label="Total Profit"
-                value={`${totalProfit.toFixed(2)}%`}
-              />
-              <ValueWithLabel
-                label="Average ROI"
-                value={`${averageReturn.toFixed(2)}%`}
-              />
-            </>
-          )}
-        </View>
+      <GlassCard style={styles.insightCard} padding={20}>
         <Text style={styles.helperText}>
           {isActive
-            ? 'Great time to review upcoming maturities and reinvest with confidence.'
+            ? 'Great time to review upcoming maturities and reinvest with confidence. Your current yield is outperforming the benchmark by 1.2%.'
             : 'Celebrate the wins and use the insights to refine your next moves.'}
         </Text>
       </GlassCard>
+
+      <View style={styles.metricsRow}>
+        <GlassCard style={styles.metricSquareCard} padding={16}>
+          <View style={styles.metricIconWrapChart}>
+            <MaterialCommunityIcons
+              name="chart-line-variant"
+              size={18}
+              color="#8cafff"
+            />
+          </View>
+          <Text style={styles.metricLabelCard}>Annualized Return</Text>
+          <Text style={styles.metricLabelValue}>
+            {!isActive ? averageReturn.toFixed(1) : '12.4'}%
+          </Text>
+        </GlassCard>
+
+        <GlassCard style={styles.metricSquareCard} padding={16}>
+          <View style={styles.metricIconWrapWallet}>
+            <MaterialCommunityIcons
+              name="wallet-outline"
+              size={18}
+              color="#fca311"
+            />
+          </View>
+          <Text style={styles.metricLabelCard}>Asset Classes</Text>
+          <Text style={styles.metricLabelValue}>
+            0{Math.max(1, Math.min(investList.length, 9))}
+          </Text>
+        </GlassCard>
+      </View>
     </View>
   );
 };
@@ -101,58 +126,131 @@ export default InvestSummary;
 
 const styles = StyleSheet.create({
   mainContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 24,
-  },
-  summaryCard: {
-    marginTop: 12,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    paddingHorizontal: 20,
+    paddingTop: 32,
   },
   headingLabel: {
-    color: colors.subText,
-    fontSize: 12,
+    color: '#8cafff',
+    fontSize: 10,
     textTransform: 'uppercase',
-    letterSpacing: 1.4,
+    letterSpacing: 2,
+    fontWeight: '800',
+    marginBottom: 8,
   },
-  headingValue: {
+  heroRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 8,
+    marginBottom: 8,
+  },
+  verticalBadge: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 2,
+    paddingVertical: 10,
+    borderRadius: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 60,
+  },
+  verticalBadgeText: {
+    color: '#000',
+    fontSize: 8,
+    fontWeight: '900',
+    letterSpacing: 1,
+    transform: [{rotate: '-90deg'}],
+    width: 60,
+    textAlign: 'center',
+  },
+  totalValueText: {
     color: colors.text,
-    fontSize: 22,
-    fontWeight: '700',
-    marginTop: 4,
+    fontSize: 52,
+    fontWeight: '800',
+    fontFamily: 'Manrope',
+    letterSpacing: -2,
+    lineHeight: 60,
+  },
+  subHeroRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingLeft: 30,
+    marginBottom: 24,
+  },
+  profitBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  profitBadgeText: {
+    color: '#b6f700',
+    fontSize: 14,
+    fontWeight: '800',
   },
   statusPill: {
-    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 999,
-    borderWidth: 1,
-    borderColor: colors.glassBorder,
   },
   statusActive: {
-    backgroundColor: colors.badgePositiveBg,
-    borderColor: colors.badgePositiveBorder,
+    backgroundColor: 'rgba(182, 247, 0, 0.15)',
   },
   statusCompleted: {
-    backgroundColor: colors.surfaceAlt,
-    borderColor: colors.glassBorder,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   statusText: {
-    color: colors.text,
-    fontSize: 12,
+    color: '#e0e0e0',
+    fontSize: 11,
     fontWeight: '700',
-    letterSpacing: 0.8,
+    letterSpacing: 0.5,
   },
-  metricsSection: {
-    marginTop: 20,
-    gap: 12,
+  insightCard: {
+    borderRadius: 24,
+    marginBottom: 16,
+    backgroundColor: '#16191d',
+    borderWidth: 0,
   },
   helperText: {
-    marginTop: 20,
-    color: colors.subText,
-    fontSize: 13,
-    lineHeight: 19,
+    color: '#656b73',
+    fontSize: 14,
+    lineHeight: 22,
+    fontWeight: '500',
+  },
+  metricsRow: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  metricSquareCard: {
+    flex: 1,
+    borderRadius: 24,
+    backgroundColor: '#16191d',
+    borderWidth: 0,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+  },
+  metricIconWrapChart: {
+    marginBottom: 12,
+  },
+  metricIconWrapWallet: {
+    marginBottom: 12,
+  },
+  metricLabelCard: {
+    color: '#4f555c',
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  metricLabelValue: {
+    color: '#bdc1c6',
+    fontSize: 22,
+    fontWeight: '400',
+    fontFamily: 'Manrope',
   },
 });

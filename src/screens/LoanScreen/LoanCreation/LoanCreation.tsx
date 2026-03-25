@@ -76,7 +76,7 @@ const LoanCreation: React.FC<ILoanCreation> = ({
         return (
           <View>
             <FormModal
-              title="Add a new Loan"
+              title="New Entry"
               isVisible={openCreationModal}
               onClose={() => {
                 setOpenCreationModal(false);

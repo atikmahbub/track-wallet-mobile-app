@@ -5,6 +5,7 @@ import React from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 import {Avatar} from 'react-native-paper';
 import {colors} from '@trackingPortal/themes/colors';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 const AVATAR_SIZE = 54;
 
@@ -45,13 +46,10 @@ const CustomAppBar: React.FC = () => {
           )}
         </View>
         <View style={styles.textBlock}>
-          <Text style={styles.greetingText}>
+          <Text style={styles.appNameText}>
             {greeting}, {userName}
           </Text>
         </View>
-      </View>
-      <View style={styles.datePill}>
-        <Text style={styles.dateLabel}>{todayLabel}</Text>
       </View>
     </View>
   );
@@ -73,12 +71,14 @@ const styles = StyleSheet.create({
   },
   textBlock: {
     flex: 1,
+    paddingLeft: 2,
   },
-  greetingText: {
-    color: colors.text,
-    fontSize: 18,
+  appNameText: {
+    color: colors.primary,
+    fontSize: 20,
+    fontFamily: 'Manrope',
     fontWeight: '700',
-    letterSpacing: 0.2,
+    letterSpacing: -0.5,
   },
   avatarWrapper: {
     position: 'relative',
@@ -114,21 +114,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.glassBorder,
   },
-  dateLabel: {
-    color: colors.text,
-    fontSize: 11,
-    opacity: 0.6,
-    letterSpacing: 0.4,
-  },
-  datePill: {
-    borderWidth: 1,
-    borderColor: colors.glassBorder,
-    backgroundColor: colors.surface,
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
+  bellIconWrapper: {
+    padding: 8,
   },
   avatarFallback: {
     width: AVATAR_SIZE,

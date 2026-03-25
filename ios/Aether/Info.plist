@@ -7,7 +7,7 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>$(DEVELOPMENT_LANGUAGE)</string>
     <key>CFBundleDisplayName</key>
-    <string>Track Wallet</string>
+    <string>Aether</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
@@ -27,14 +27,14 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>trackwalletapp</string>
-          <string>org.reactjs.native.example.TrackWalletApp</string>
+          <string>aether</string>
+          <string>org.reactjs.native.example.aether</string>
         </array>
       </dict>
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>exp+trackwalletapp</string>
+          <string>exp+aether</string>
         </array>
       </dict>
     </array>

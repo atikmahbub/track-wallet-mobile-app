@@ -1,12 +1,8 @@
-import {View, StyleSheet} from 'react-native';
-import React, {useState, useMemo} from 'react';
-import {Button, Text} from 'react-native-paper';
-import {
-  CircularProgress,
-  FormikTextInput,
-  ValueWithLabel,
-  GlassCard,
-} from '@trackingPortal/components';
+import {View, StyleSheet, TouchableOpacity} from 'react-native';
+import React, {useState, useMemo, useEffect} from 'react';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import {Text} from 'react-native-paper';
+import {FormikTextInput, CircularProgress} from '@trackingPortal/components';
 import FormModal from '@trackingPortal/components/FormModal';
 import dayjs, {Dayjs} from 'dayjs';
 import {MonthlyLimitModel} from '@trackingPortal/api/models';
@@ -15,7 +11,7 @@ import {getCurrencyAmount} from '@trackingPortal/utils/utils';
 import {Formik, FormikHelpers} from 'formik';
 import {EMonthlyLimitFields} from '@trackingPortal/screens/ExpenseScreen/ExpenseCreation/ExpenseCreation.constants';
 import Toast from 'react-native-toast-message';
-import {Month, Year} from '@trackingPortal/api/primitives';
+import {Month, Year, UnixTimeStampString} from '@trackingPortal/api/primitives';
 import {withHaptic} from '@trackingPortal/utils/haptic';
 import {colors} from '@trackingPortal/themes/colors';
 
@@ -37,27 +33,201 @@ const ExpenseSummary: React.FC<ISummary> = ({
   const {apiGateway, currentUser: user} = useStoreContext();
   const [loading, setLoading] = useState<boolean>(false);
   const {currency} = useStoreContext();
+  const [previousMonthTotal, setPreviousMonthTotal] = useState<number | null>(
+    null,
+  );
+  const [previousMonthLoading, setPreviousMonthLoading] =
+    useState<boolean>(false);
 
   const limitValue = monthLimit?.limit ?? 0;
-
-  const expensePercentage = useMemo(() => {
-    if (!limitValue) {
-      return 0;
-    }
-    return Math.min((totalExpense * 100) / limitValue, 999);
-  }, [limitValue, totalExpense]);
-
-  const displayPercentage = useMemo(
-    () => Math.min(expensePercentage, 999),
-    [expensePercentage],
+  const hasLimit = limitValue > 0;
+  const previousMonthDate = useMemo(
+    () => dayjs(filterMonth).subtract(1, 'month'),
+    [filterMonth],
   );
+  const previousMonthKey = previousMonthDate.format('YYYY-MM');
+  const previousMonthLabel = previousMonthDate.format('MMM');
+  const previousMonthLabelFull = previousMonthDate.format('MMMM');
 
-  const remainingBalance = useMemo(() => {
-    if (!limitValue) {
-      return null;
+  useEffect(() => {
+    let isMounted = true;
+    const fetchPreviousMonth = async () => {
+      if (!user?.userId) {
+        return;
+      }
+      try {
+        setPreviousMonthLoading(true);
+        const response = await apiGateway.expenseService.getExpenseByUser({
+          userId: user.userId,
+          date: previousMonthDate.unix() as unknown as UnixTimeStampString,
+        });
+        const total = response.reduce((sum, expense) => sum + expense.amount, 0);
+        if (isMounted) {
+          setPreviousMonthTotal(total);
+        }
+      } catch (error) {
+        console.log('Failed to fetch previous month summary', error);
+        if (isMounted) {
+          setPreviousMonthTotal(null);
+        }
+      } finally {
+        if (isMounted) {
+          setPreviousMonthLoading(false);
+        }
+      }
+    };
+
+    fetchPreviousMonth();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [apiGateway, user.userId, previousMonthKey, previousMonthDate]);
+
+  const trendSnapshot = useMemo(() => {
+    if (previousMonthLoading) {
+      return {
+        icon: 'progress-clock',
+        color: colors.subText,
+        label: 'Measuring…',
+        isLower: null as boolean | null,
+        deltaAmount: 0,
+      };
     }
-    return limitValue - totalExpense;
-  }, [limitValue, totalExpense]);
+
+    if (previousMonthTotal === null) {
+      return {
+        icon: 'minus',
+        color: colors.subText,
+        label: 'No comparison',
+        isLower: null as boolean | null,
+        deltaAmount: 0,
+      };
+    }
+
+    if (previousMonthTotal === 0) {
+      if (totalExpense === 0) {
+        return {
+          icon: 'minus',
+          color: colors.subText,
+          label: 'Even with last month',
+          isLower: null as boolean | null,
+          deltaAmount: 0,
+        };
+      }
+      return {
+        icon: 'arrow-top-right',
+        color: colors.error,
+        label: `Higher vs ${previousMonthLabel}`,
+        isLower: false,
+        deltaAmount: totalExpense,
+      };
+    }
+
+    const delta = totalExpense - previousMonthTotal;
+    const isLower = delta <= 0;
+    const percent = (Math.abs(delta) / previousMonthTotal) * 100;
+
+    return {
+      icon: isLower ? 'arrow-bottom-right' : 'arrow-top-right',
+      color: isLower ? colors.accent : colors.error,
+      label: `${percent.toFixed(1)}% ${isLower ? 'lower' : 'higher'} vs ${previousMonthLabel}`,
+      isLower,
+      deltaAmount: Math.abs(delta),
+    };
+  }, [
+    previousMonthLoading,
+    previousMonthTotal,
+    totalExpense,
+    previousMonthLabel,
+  ]);
+
+  const comparisonSentence = useMemo(() => {
+    if (previousMonthLoading || previousMonthTotal === null) {
+      return '';
+    }
+
+    if (previousMonthTotal === 0) {
+      if (totalExpense === 0) {
+        return 'Exactly aligned with last month.';
+      }
+      return `Spending resumed after a quiet ${previousMonthLabelFull}.`;
+    }
+
+    if (trendSnapshot.deltaAmount === 0) {
+      return 'Exactly aligned with last month.';
+    }
+
+    const direction = trendSnapshot.isLower ? 'less' : 'more';
+    return `${getCurrencyAmount(
+      trendSnapshot.deltaAmount,
+      currency,
+    )} ${direction} than ${previousMonthLabelFull}.`;
+  }, [
+    previousMonthLoading,
+    previousMonthTotal,
+    totalExpense,
+    trendSnapshot.deltaAmount,
+    trendSnapshot.isLower,
+    currency,
+    previousMonthLabelFull,
+  ]);
+
+  const progressRatio = hasLimit ? totalExpense / limitValue : 0;
+  const clampedProgress = hasLimit
+    ? Math.max(0, Math.min(progressRatio, 1))
+    : 0;
+  const progressColor =
+    !hasLimit || progressRatio <= 1 ? colors.accent : colors.error;
+  const progressLabel = hasLimit
+    ? `${Math.min(progressRatio * 100, 999).toFixed(0)}%`
+    : '--';
+  const remainingBudget = hasLimit ? limitValue - totalExpense : 0;
+  const isBudgetOnTrack = remainingBudget >= 0;
+  const budgetDeltaText = hasLimit
+    ? isBudgetOnTrack
+      ? `${getCurrencyAmount(remainingBudget, currency)} left`
+      : `${getCurrencyAmount(Math.abs(remainingBudget), currency)} over`
+    : '';
+  const statusBackgroundColor = hasLimit
+    ? isBudgetOnTrack
+      ? 'rgba(161, 250, 255, 0.15)'
+      : 'rgba(255, 64, 85, 0.18)'
+    : 'rgba(255, 255, 255, 0.08)';
+  const statusColor = hasLimit
+    ? isBudgetOnTrack
+      ? colors.accent
+      : colors.error
+    : colors.subText;
+  const statusLabel = hasLimit
+    ? isBudgetOnTrack
+      ? 'Safe Velocity'
+      : 'Over Velocity'
+    : 'Set Limit';
+
+  const insightCopy = useMemo(() => {
+    const comparison =
+      comparisonSentence.length > 0 ? ` ${comparisonSentence}` : '';
+    if (!hasLimit) {
+      return `Set a monthly limit to unlock pacing insights.${comparison}`;
+    }
+    if (isBudgetOnTrack) {
+      return `You're pacing safely with ${getCurrencyAmount(
+        remainingBudget,
+        currency,
+      )} remaining.${comparison}`;
+    }
+    return `You've exceeded the budget by ${getCurrencyAmount(
+      Math.abs(remainingBudget),
+      currency,
+    )}.${comparison}`;
+  }, [
+    comparisonSentence,
+    hasLimit,
+    isBudgetOnTrack,
+    remainingBudget,
+    currency,
+  ]);
 
   const closeLimitModal = () => {
     setIsLimitModalVisible(false);
@@ -117,111 +287,122 @@ const ExpenseSummary: React.FC<ISummary> = ({
 
   return (
     <View style={styles.mainContainer}>
-      <GlassCard style={styles.summaryCard}>
-        <View style={styles.headerRow}>
-          <View>
-            <Text style={styles.headingLabel}>Monthly Overview</Text>
-            <Text style={styles.headingValue}>
-              {dayjs(filterMonth).format('MMMM, YYYY')}
+      <Text style={styles.headingLabel}>MONTHLY SPENDING</Text>
+      
+      <View style={styles.heroRow}>
+        <View style={styles.totalValueColumn}>
+          <Text style={styles.totalValueText}>
+            {getCurrencyAmount(totalExpense, currency)}
+          </Text>
+        </View>
+        {hasLimit ? (
+          <View style={styles.progressWrapper}>
+            <CircularProgress
+              progress={clampedProgress}
+              progressColor={progressColor}
+              size={72}
+              strokeWidth={6}
+              trackColor="rgba(255,255,255,0.08)"
+              label={progressLabel}
+            />
+            <Text style={[styles.progressCaption, {color: progressColor}]}>
+              {budgetDeltaText}
+            </Text>
+            <Text style={styles.progressSubLabel}>
+              of {getCurrencyAmount(limitValue, currency)}
             </Text>
           </View>
-          <View style={styles.progressBadge}>
-            {limitValue ? (
-              <CircularProgress
-                progress={Math.min(totalExpense / limitValue, 1)}
-                size={60}
-                strokeWidth={5}
-                progressColor={
-                  expensePercentage >= 100 ? colors.error : colors.accent
-                }
-                label={`${displayPercentage.toFixed(0)}%`}
-              />
-            ) : (
-              <View style={styles.setLimitBadge}>
-                <Text style={styles.setLimitLabel}>Set{'\n'}Limit</Text>
-              </View>
-            )}
+        ) : null}
+      </View>
+      
+      <View style={styles.subHeroRow}>
+        <View style={styles.trendBadge}>
+          <MaterialCommunityIcons
+            name={trendSnapshot.icon}
+            size={14}
+            color={trendSnapshot.color}
+          />
+          <Text
+            style={[styles.trendBadgeText, {color: trendSnapshot.color}]}
+            numberOfLines={1}>
+            {trendSnapshot.label}
+          </Text>
+        </View>
+        <View
+          style={[
+            styles.statusPill,
+            {backgroundColor: statusBackgroundColor},
+          ]}>
+          <View
+            style={[styles.statusDot, {backgroundColor: statusColor}]}
+          />
+          <Text style={[styles.statusText, {color: statusColor}]}>
+            {statusLabel}
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.insightCard}>
+        <Text style={styles.helperText}>{insightCopy}</Text>
+      </View>
+
+      <View style={styles.metricsRow}>
+        <View style={styles.metricSquareCard}>
+          <MaterialCommunityIcons name="target" size={18} color={colors.primary} style={styles.metricIcon} />
+          <Text style={styles.metricLabelCard}>Target Limit</Text>
+          <View style={styles.targetValueRow}>
+            <Text style={styles.metricLabelValue}>
+              {limitValue ? getCurrencyAmount(Number(limitValue.toFixed(0)), currency) : 'Set Limit'}
+            </Text>
+            <TouchableOpacity 
+              style={styles.editPill}
+              onPress={() => withHaptic(() => setIsLimitModalVisible(true))}>
+              <MaterialCommunityIcons name="pencil" size={10} color={colors.primary} />
+            </TouchableOpacity>
           </View>
         </View>
-
-        <View style={styles.metricsSection}>
-          <ValueWithLabel
-            label="Total Spend"
-            value={getCurrencyAmount(totalExpense, currency)}
-          />
-          <ValueWithLabel
-            label="Monthly Limit"
-            value={
-              limitValue
-                ? getCurrencyAmount(Number(limitValue.toFixed(2)), currency)
-                : 'Not set'
-            }
-          />
-          {remainingBalance !== null && (
-            <ValueWithLabel
-              label="Remaining"
-              value={getCurrencyAmount(
-                Number(remainingBalance.toFixed(2)),
-                currency,
-              )}
-              error={remainingBalance < 0}
-            />
-          )}
-        </View>
-
-        {!limitValue && (
-          <Text style={styles.helperText}>
-            Set a monthly spending limit to stay ahead of unexpected expenses.
+        
+        <View style={styles.metricSquareCard}>
+          <MaterialCommunityIcons name="chart-bell-curve-cumulative" size={18} color={colors.accent} style={styles.metricIcon} />
+          <Text style={styles.metricLabelCard}>Daily Avg</Text>
+          <Text style={styles.metricLabelValue}>
+            {getCurrencyAmount(Number((totalExpense / Math.max(dayjs().date(), 1)).toFixed(0)), currency)}
           </Text>
-        )}
-
-        <View style={styles.actionRow}>
-          <Button
-            mode="outlined"
-            textColor={colors.text}
-            style={styles.actionButton}
-            onPress={() => {
-              withHaptic(() => {
-                setIsLimitModalVisible(true);
-              });
-            }}>
-            {limitValue ? 'Adjust limit' : 'Set limit'}
-          </Button>
         </View>
+      </View>
 
-        <Formik
-          enableReinitialize={true}
-          initialValues={{
-            [EMonthlyLimitFields.LIMIT]: limitValue
-              ? String(Number(limitValue.toFixed(2)))
-              : '',
-          }}
-          onSubmit={handleSaveMonthlyLimit}>
-          {({handleSubmit, values, resetForm}) => {
-            return (
-              <FormModal
-                isVisible={isLimitModalVisible}
-                title={limitValue ? 'Adjust Monthly Limit' : 'Set Monthly Limit'}
-                onClose={() => {
-                  closeLimitModal();
-                  resetForm();
-                }}
-                onSave={handleSubmit}
-                loading={loading}>
-                <View style={styles.limitForm}>
-                  <FormikTextInput
-                    name={EMonthlyLimitFields.LIMIT}
-                    mode="outlined"
-                    label="Monthly limit"
-                    keyboardType="numeric"
-                    value={values[EMonthlyLimitFields.LIMIT] || ''}
-                  />
-                </View>
-              </FormModal>
-            );
-          }}
-        </Formik>
-      </GlassCard>
+      <Formik
+        enableReinitialize={true}
+        initialValues={{
+          [EMonthlyLimitFields.LIMIT]: limitValue
+            ? String(Number(limitValue.toFixed(2)))
+            : '',
+        }}
+        onSubmit={handleSaveMonthlyLimit}>
+        {({handleSubmit, values, resetForm}) => {
+          return (
+            <FormModal
+              isVisible={isLimitModalVisible}
+              title={limitValue ? 'Adjust Monthly Limit' : 'Set Monthly Limit'}
+              onClose={() => {
+                closeLimitModal();
+                resetForm();
+              }}
+              onSave={handleSubmit}
+              loading={loading}>
+              <View style={styles.limitForm}>
+                <FormikTextInput
+                  name={EMonthlyLimitFields.LIMIT}
+                  mode="outlined"
+                  label="Monthly limit"
+                  keyboardType="numeric"
+                  value={values[EMonthlyLimitFields.LIMIT] || ''}
+                />
+              </View>
+            </FormModal>
+          );
+        }}
+      </Formik>
     </View>
   );
 };
@@ -229,68 +410,131 @@ const ExpenseSummary: React.FC<ISummary> = ({
 const styles = StyleSheet.create({
   mainContainer: {
     paddingHorizontal: 20,
-    paddingTop: 28,
-  },
-  summaryCard: {
-    marginTop: 12,
-    marginHorizontal: 4,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: 12,
+    paddingTop: 32,
   },
   headingLabel: {
-    color: colors.subText,
-    fontSize: 12,
+    color: colors.primary,
+    fontSize: 10,
     textTransform: 'uppercase',
-    letterSpacing: 1.6,
+    letterSpacing: 2,
+    fontWeight: '800',
+    marginBottom: 8,
   },
-  headingValue: {
+  heroRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 16,
+    marginBottom: 8,
+  },
+  totalValueColumn: {
+    flex: 1,
+  },
+  totalValueText: {
     color: colors.text,
-    fontSize: 24,
+    fontSize: 52,
+    fontWeight: '800',
+    fontFamily: 'Manrope',
+    letterSpacing: -2,
+    lineHeight: 60,
+  },
+  progressWrapper: {
+    alignItems: 'center',
+    gap: 6,
+  },
+  progressCaption: {
+    fontSize: 13,
     fontWeight: '700',
-    marginTop: 4,
   },
-  progressBadge: {
-    alignItems: 'flex-end',
+  progressSubLabel: {
+    color: colors.subText,
+    fontSize: 11,
   },
-  setLimitBadge: {
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: colors.glassBorder,
+  subHeroRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+  trendBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  trendBadgeText: {
+    color: colors.accent,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  statusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: colors.badgePositiveBg,
+    paddingVertical: 6,
+    borderRadius: 999,
   },
-  setLimitLabel: {
-    color: colors.text,
-    fontSize: 12,
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  statusText: {
+    color: '#e0e0e0',
+    fontSize: 11,
     fontWeight: '700',
-    textAlign: 'center',
-    lineHeight: 16,
-    letterSpacing: 0.4,
+    letterSpacing: 0.5,
   },
-  metricsSection: {
-    marginTop: 20,
-    gap: 12,
+  insightCard: {
+    borderRadius: 24,
+    marginBottom: 16,
+    backgroundColor: '#16191d',
+    padding: 20,
   },
   helperText: {
-    marginTop: 24,
-    color: colors.subText,
-    fontSize: 13,
-    lineHeight: 20,
+    color: '#656b73',
+    fontSize: 14,
+    lineHeight: 22,
+    fontWeight: '500',
   },
-  actionRow: {
-    marginTop: 24,
-    justifyContent: 'flex-end',
+  metricsRow: {
     flexDirection: 'row',
+    gap: 16,
   },
-  actionButton: {
-    borderRadius: 999,
-    borderColor: colors.glassBorder,
-    paddingHorizontal: 12,
+  metricSquareCard: {
+    flex: 1,
+    borderRadius: 24,
+    backgroundColor: '#16191d',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+  },
+  metricIcon: {
+    marginBottom: 12,
+  },
+  metricLabelCard: {
+    color: '#4f555c',
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  targetValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  metricLabelValue: {
+    color: '#bdc1c6',
+    fontSize: 22,
+    fontWeight: '400',
+    fontFamily: 'Manrope',
+  },
+  editPill: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'rgba(161, 250, 255, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   limitForm: {
     gap: 12,
