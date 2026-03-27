@@ -7,6 +7,18 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import {colors} from '@trackingPortal/themes/colors';
 import {Image} from 'react-native';
 
+const tintHex = (hex?: string, alpha = 0.15) => {
+  if (!hex) {
+    return `rgba(255,255,255,${alpha})`;
+  }
+  const normalized = hex.replace('#', '');
+  const bigint = parseInt(normalized, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
 interface DataTableProps {
   headers: string[];
   data: Array<{[key: string]: any}>;
@@ -88,6 +100,15 @@ const DataTable: React.FC<DataTableProps> = ({
 
   const renderRow = ({item}: {item: any}) => {
     const isRowOpen = expandedRowId === item.id;
+    const isLoanRow = item.Type === 'Given' || item.Type === 'Taken';
+    const amountValue =
+      item.DisplayAmount ?? item['Amount'] ?? item[headers[2]] ?? '--';
+    const amountText =
+      typeof amountValue === 'number'
+        ? `${item.Type === 'Taken' ? '-$' : '$'}${amountValue}`
+        : String(amountValue);
+    const categoryName = item.CategoryName;
+    const categoryColor = item.CategoryColor;
     return (
       <Swipeable
         ref={ref => (swipeableRefs.current[item.id] = ref)}
@@ -117,6 +138,18 @@ const DataTable: React.FC<DataTableProps> = ({
                   />
                 </View>
               </View>
+            ) : item.IconName ? (
+              <View
+                style={[
+                  styles.iconWrapper,
+                  {backgroundColor: item.IconBackground || tintHex(item.IconColor, 0.12)},
+                ]}>
+                <MaterialCommunityIcons
+                  name={item.IconName}
+                  size={22}
+                  color={item.IconColor || colors.primary}
+                />
+              </View>
             ) : (
               <View style={styles.iconWrapper}>
                 <Icon name="receipt" size={24} color={colors.primary} />
@@ -124,17 +157,42 @@ const DataTable: React.FC<DataTableProps> = ({
             )}
             <View style={styles.textContainer}>
               <Text style={styles.purposeText}>{item['Purpose'] || item['Name'] || item[headers[1]] || 'Transaction'}</Text>
+              {categoryName ? (
+                <Text style={[styles.categoryLine, {color: categoryColor || colors.subText}]}>
+                  {categoryName}
+                </Text>
+              ) : null}
               <Text style={styles.dateText}>{item['Date'] || item['Deadline'] || item[headers[0]]}</Text>
             </View>
             <View style={styles.amountContainer}>
               <Text style={[styles.amountText, item.Type === 'Taken' && {color: colors.error}]}>
-                {String(item['Amount'] || item[headers[2]]).includes('-')
-                  ? item['Amount'] || item[headers[2]]
-                  : item.Type === 'Taken' ? `-$${item['Amount'] || item[headers[2]]}` : `$${item['Amount'] || item[headers[2]]}`}
+                {amountText}
               </Text>
-              <View style={[styles.typeBadge, item.Type === 'Given' ? styles.typeBadgeGiven : item.Type === 'Taken' ? styles.typeBadgeTaken : undefined]}>
-                <Text style={[styles.categoryText, item.Type === 'Given' && {color: '#b6f700'}, item.Type === 'Taken' && {color: '#ff8e8b'}]}>
-                  {item.Type === 'Given' ? 'LENT' : item.Type === 'Taken' ? 'BORROWED' : 'EXPENSE'}
+              <View
+                style={[
+                  styles.typeBadge,
+                  isLoanRow
+                    ? item.Type === 'Given'
+                      ? styles.typeBadgeGiven
+                      : styles.typeBadgeTaken
+                    : categoryColor
+                    ? {backgroundColor: tintHex(categoryColor, 0.12)}
+                    : undefined,
+                ]}>
+                <Text
+                  style={[
+                    styles.categoryText,
+                    isLoanRow && item.Type === 'Given' && {color: '#b6f700'},
+                    isLoanRow && item.Type === 'Taken' && {color: '#ff8e8b'},
+                    !isLoanRow && categoryColor && {color: categoryColor},
+                  ]}>
+                  {isLoanRow
+                    ? item.Type === 'Given'
+                      ? 'LENT'
+                      : 'BORROWED'
+                    : categoryName
+                    ? categoryName.toUpperCase()
+                    : 'EXPENSE'}
                 </Text>
               </View>
             </View>
@@ -183,10 +241,10 @@ const styles = StyleSheet.create({
     display: 'none',
   },
   table: {
-    paddingVertical: 12,
+    paddingVertical: 16,
   },
   rowWrapper: {
-    marginBottom: 8,
+    marginBottom: 16,
     borderWidth: 0,
     borderColor: 'transparent',
     borderRadius: 20,
@@ -220,6 +278,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     letterSpacing: 0.1,
+  },
+  categoryLine: {
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.3,
+    marginTop: 2,
+    textTransform: 'uppercase',
   },
   dateText: {
     color: colors.subText,

@@ -6,6 +6,7 @@ export enum EAddExpenseFields {
   DESCRIPTION = 'description',
   DATE = 'date',
   EXPENSE_LIST = 'expense_list',
+  CATEGORY_ID = 'categoryId',
 }
 
 export enum EMonthlyLimitFields {
@@ -16,6 +17,7 @@ export const defaultQuestion: INewExpense = {
   [EAddExpenseFields.AMOUNT]: '',
   [EAddExpenseFields.DESCRIPTION]: '',
   [EAddExpenseFields.DATE]: new Date(),
+  [EAddExpenseFields.CATEGORY_ID]: '',
 };
 
 export const CreateExpenseSchema = Yup.object().shape({
@@ -24,4 +26,5 @@ export const CreateExpenseSchema = Yup.object().shape({
   [EAddExpenseFields.AMOUNT]: Yup.number()
     .required('Amount is required')
     .positive('Amount must be positive'),
+  [EAddExpenseFields.CATEGORY_ID]: Yup.string().required('Pick a category'),
 });

@@ -1,5 +1,5 @@
-import React, {useMemo} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import React, {useEffect, useMemo, useRef} from 'react';
+import {Animated, Easing, View, Text, StyleSheet} from 'react-native';
 import Svg, {Circle} from 'react-native-svg';
 import {colors} from '@trackingPortal/themes/colors';
 
@@ -11,6 +11,8 @@ interface CircularProgressProps {
   progressColor?: string;
   label?: string;
 }
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 const CircularProgress: React.FC<CircularProgressProps> = ({
   progress,
@@ -25,6 +27,8 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
     [progress],
   );
 
+  const animatedProgress = useRef(new Animated.Value(clamped)).current;
+
   const radius = useMemo(
     () => (size - strokeWidth) / 2,
     [size, strokeWidth],
@@ -33,10 +37,19 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
     () => 2 * Math.PI * radius,
     [radius],
   );
-  const strokeDashoffset = useMemo(
-    () => circumference - circumference * clamped,
-    [circumference, clamped],
-  );
+  const strokeDashoffset = animatedProgress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [circumference, 0],
+  });
+
+  useEffect(() => {
+    Animated.timing(animatedProgress, {
+      toValue: clamped,
+      duration: 600,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false,
+    }).start();
+  }, [animatedProgress, clamped]);
 
   return (
     <View style={[styles.container, {width: size, height: size}]}>
@@ -49,7 +62,7 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
           r={radius}
           strokeWidth={strokeWidth}
         />
-        <Circle
+        <AnimatedCircle
           stroke={progressColor}
           fill="transparent"
           cx={size / 2}

@@ -4,4 +4,5 @@ export interface INewExpense {
   [EAddExpenseFields.AMOUNT]: string;
   [EAddExpenseFields.DESCRIPTION]: string;
   [EAddExpenseFields.DATE]: Date;
+  [EAddExpenseFields.CATEGORY_ID]: string;
 }

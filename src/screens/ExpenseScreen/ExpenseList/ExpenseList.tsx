@@ -1,9 +1,16 @@
-import {View, StyleSheet, TouchableOpacity, ScrollView, Modal} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Modal,
+} from 'react-native';
 import React, {
   FC,
   Fragment,
   SetStateAction,
   useCallback,
+  useMemo,
   useState,
 } from 'react';
 import {Button, Text} from 'react-native-paper';
@@ -18,7 +25,7 @@ import {
   EAddExpenseFields,
 } from '@trackingPortal/screens/ExpenseScreen/ExpenseCreation/ExpenseCreation.constants';
 import ExpenseForm from '@trackingPortal/screens/ExpenseScreen/ExpenseForm';
-import {ExpenseModel} from '@trackingPortal/api/models';
+import {ExpenseCategoryModel, ExpenseModel} from '@trackingPortal/api/models';
 import {
   ExpenseId,
   makeUnixTimestampString,
@@ -27,10 +34,8 @@ import {
 import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
 import {IUpdateExpenseParams} from '@trackingPortal/api/params';
 import Toast from 'react-native-toast-message';
-import {
-  AnimatedLoader,
-  LoadingButton,
-} from '@trackingPortal/components';
+import {AnimatedLoader, LoadingButton} from '@trackingPortal/components';
+import {getCurrencyAmount} from '@trackingPortal/utils/utils';
 
 interface IExpenseList {
   notifyRowOpen: (value: boolean) => void;
@@ -38,9 +43,26 @@ interface IExpenseList {
   filteredMonth: Dayjs;
   expenses: ExpenseModel[];
   getUserExpenses: () => void;
+  categories: ExpenseCategoryModel[];
+  categoriesLoading: boolean;
+  categoryError?: string | null;
+  refreshCategories: () => Promise<void> | void;
+  refreshAnalytics: (options?: {force?: boolean}) => Promise<void> | void;
 }
 
 const headers = ['Date', 'Purpose', 'Amount'];
+
+const tintFromHex = (hex?: string, alpha = 0.12) => {
+  if (!hex) {
+    return `rgba(255,255,255,${alpha})`;
+  }
+  const normalized = hex.replace('#', '');
+  const bigint = parseInt(normalized, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
 
 const ExpenseList: FC<IExpenseList> = ({
   notifyRowOpen,
@@ -48,12 +70,26 @@ const ExpenseList: FC<IExpenseList> = ({
   filteredMonth,
   expenses,
   getUserExpenses,
+  categories,
+  categoriesLoading,
+  categoryError,
+  refreshCategories,
+  refreshAnalytics,
 }) => {
   const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
   const [openPicker, setOpenPicker] = useState<boolean>(false);
-  const {currentUser: user, apiGateway} = useStoreContext();
+  const {currentUser: user, apiGateway, currency} = useStoreContext();
   const [loading, setLoading] = useState<boolean>(false);
   const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
+  const categoryLookup = useMemo(() => {
+    return categories?.reduce<Record<string, ExpenseCategoryModel>>(
+      (acc, category) => {
+        acc[category.id] = category;
+        return acc;
+      },
+      {},
+    );
+  }, [categories]);
 
   const handleDateConfirm = useCallback(
     (selectedDate: Date) => {
@@ -79,9 +115,11 @@ const ExpenseList: FC<IExpenseList> = ({
         amount: Number(values.amount),
         date: makeUnixTimestampString(Number(new Date(values.date))),
         description: values.description,
+        categoryId: values.categoryId,
       };
       await apiGateway.expenseService.updateExpense(params);
       await getUserExpenses();
+      await refreshAnalytics({force: true});
       Toast.show({
         type: 'success',
         text1: 'Expense updated successfully!',
@@ -105,6 +143,7 @@ const ExpenseList: FC<IExpenseList> = ({
       setDeleteLoading(true);
       await apiGateway.expenseService.deleteExpense(rowId);
       await getUserExpenses();
+      await refreshAnalytics({force: true});
       Toast.show({
         type: 'success',
         text1: 'Deleted Successfully!',
@@ -137,6 +176,7 @@ const ExpenseList: FC<IExpenseList> = ({
             ),
             [EAddExpenseFields.DESCRIPTION]: selectedItem.description || '',
             [EAddExpenseFields.AMOUNT]: selectedItem.amount.toString(),
+            [EAddExpenseFields.CATEGORY_ID]: selectedItem.categoryId || '',
           }}
           onSubmit={(values, formikHelpers) =>
             onExpenseEdit(values, formikHelpers, currentRowId)
@@ -144,7 +184,12 @@ const ExpenseList: FC<IExpenseList> = ({
           validationSchema={CreateExpenseSchema}>
           {({handleSubmit}) => (
             <Fragment>
-              <ExpenseForm />
+              <ExpenseForm
+                categories={categories}
+                categoriesLoading={categoriesLoading}
+                categoryError={categoryError}
+                refreshCategories={refreshCategories}
+              />
               <View style={styles.actionRow}>
                 <TouchableOpacity
                   style={styles.cancelButton}
@@ -162,7 +207,14 @@ const ExpenseList: FC<IExpenseList> = ({
         </Formik>
       );
     },
-    [expenses, setExpandedRowId],
+    [
+      expenses,
+      setExpandedRowId,
+      categories,
+      categoriesLoading,
+      categoryError,
+      refreshCategories,
+    ],
   );
 
   if (deleteLoading) {
@@ -185,36 +237,57 @@ const ExpenseList: FC<IExpenseList> = ({
             {dayjs(filteredMonth).format('YYYY')}
           </Button>
         </View>
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false} 
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.chipsRow}
           style={styles.chipsScroll}>
-          {Array.from({length: 12}, (_, i) => dayjs().month(i)).map((m, idx) => {
-            const isActive = filteredMonth.month() === m.month();
-            return (
-              <Button 
-                key={idx}
-                mode="outlined" 
-                style={[styles.chip, isActive && styles.chipActive]} 
-                labelStyle={isActive ? styles.chipLabelActive : styles.chipLabel}
-                onPress={() => setFilteredMonth(dayjs(filteredMonth).month(m.month()))}>
-                {m.format('MMM').toUpperCase()}
-              </Button>
-            );
-          })}
+          {Array.from({length: 12}, (_, i) => dayjs().month(i)).map(
+            (m, idx) => {
+              const isActive = filteredMonth.month() === m.month();
+              return (
+                <Button
+                  key={idx}
+                  mode="outlined"
+                  style={[styles.chip, isActive && styles.chipActive]}
+                  labelStyle={
+                    isActive ? styles.chipLabelActive : styles.chipLabel
+                  }
+                  onPress={() =>
+                    setFilteredMonth(dayjs(filteredMonth).month(m.month()))
+                  }>
+                  {m.format('MMM').toUpperCase()}
+                </Button>
+              );
+            },
+          )}
         </ScrollView>
         <View style={styles.tableContainer}>
           <DataTable
             headers={headers}
             data={expenses.map(item => {
+              const category = item.categoryId
+                ? categoryLookup[item.categoryId]
+                : undefined;
+              const fallbackName = category?.name || 'Uncategorized';
+              const formattedAmount =
+                currency && typeof item.amount === 'number'
+                  ? getCurrencyAmount(item.amount, currency)
+                  : `৳ ${item.amount}`;
+
               return {
                 id: item.id,
                 Date: dayjs(
                   makeUnixTimestampToNumber(Number(item.date)),
                 ).format('MMM D, YYYY'),
-                Purpose: item.description,
+                Purpose: item.description || fallbackName,
                 Amount: item.amount,
+                DisplayAmount: formattedAmount,
+                CategoryName: fallbackName,
+                CategoryColor: category?.color,
+                IconName: category?.icon,
+                IconColor: category?.color,
+                IconBackground: tintFromHex(category?.color, 0.16),
               };
             })}
             onDelete={handleDeleteExpense}
@@ -225,26 +298,40 @@ const ExpenseList: FC<IExpenseList> = ({
           />
         </View>
       </View>
-      <Modal visible={openPicker} transparent animationType="fade" onRequestClose={() => setOpenPicker(false)}>
-        <TouchableOpacity style={styles.yearPickerOverlay} activeOpacity={1} onPress={() => setOpenPicker(false)}>
+      <Modal
+        visible={openPicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setOpenPicker(false)}>
+        <TouchableOpacity
+          style={styles.yearPickerOverlay}
+          activeOpacity={1}
+          onPress={() => setOpenPicker(false)}>
           <View style={styles.yearPickerContent}>
             <Text style={styles.yearPickerTitle}>Select Year</Text>
             <View style={{maxHeight: 240}}>
               <ScrollView>
-                {Array.from({length: 10}, (_, i) => dayjs().year() + 2 - i).map(yr => (
-                  <TouchableOpacity 
-                    key={yr} 
-                    style={styles.yearOption} 
-                    onPress={() => {
-                      setFilteredMonth(filteredMonth.year(yr));
-                      setOpenPicker(false);
-                      // Trigger API fetch implicitly through the useEffect on filteredMonth in ExpenseScreen
-                    }}>
-                    <Text style={[styles.yearOptionText, filteredMonth.year() === yr && styles.yearOptionTextActive]}>
-                      {yr}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                {Array.from({length: 10}, (_, i) => dayjs().year() + 2 - i).map(
+                  yr => (
+                    <TouchableOpacity
+                      key={yr}
+                      style={styles.yearOption}
+                      onPress={() => {
+                        setFilteredMonth(filteredMonth.year(yr));
+                        setOpenPicker(false);
+                        // Trigger API fetch implicitly through the useEffect on filteredMonth in ExpenseScreen
+                      }}>
+                      <Text
+                        style={[
+                          styles.yearOptionText,
+                          filteredMonth.year() === yr &&
+                            styles.yearOptionTextActive,
+                        ]}>
+                        {yr}
+                      </Text>
+                    </TouchableOpacity>
+                  ),
+                )}
               </ScrollView>
             </View>
           </View>

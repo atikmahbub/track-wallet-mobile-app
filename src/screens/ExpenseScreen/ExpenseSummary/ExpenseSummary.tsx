@@ -61,7 +61,10 @@ const ExpenseSummary: React.FC<ISummary> = ({
           userId: user.userId,
           date: previousMonthDate.unix() as unknown as UnixTimeStampString,
         });
-        const total = response.reduce((sum, expense) => sum + expense.amount, 0);
+        const total = response.reduce(
+          (sum, expense) => sum + expense.amount,
+          0,
+        );
         if (isMounted) {
           setPreviousMonthTotal(total);
         }
@@ -288,7 +291,7 @@ const ExpenseSummary: React.FC<ISummary> = ({
   return (
     <View style={styles.mainContainer}>
       <Text style={styles.headingLabel}>MONTHLY SPENDING</Text>
-      
+
       <View style={styles.heroRow}>
         <View style={styles.totalValueColumn}>
           <Text style={styles.totalValueText}>
@@ -305,16 +308,10 @@ const ExpenseSummary: React.FC<ISummary> = ({
               trackColor="rgba(255,255,255,0.08)"
               label={progressLabel}
             />
-            <Text style={[styles.progressCaption, {color: progressColor}]}>
-              {budgetDeltaText}
-            </Text>
-            <Text style={styles.progressSubLabel}>
-              of {getCurrencyAmount(limitValue, currency)}
-            </Text>
           </View>
         ) : null}
       </View>
-      
+
       <View style={styles.subHeroRow}>
         <View style={styles.trendBadge}>
           <MaterialCommunityIcons
@@ -329,13 +326,8 @@ const ExpenseSummary: React.FC<ISummary> = ({
           </Text>
         </View>
         <View
-          style={[
-            styles.statusPill,
-            {backgroundColor: statusBackgroundColor},
-          ]}>
-          <View
-            style={[styles.statusDot, {backgroundColor: statusColor}]}
-          />
+          style={[styles.statusPill, {backgroundColor: statusBackgroundColor}]}>
+          <View style={[styles.statusDot, {backgroundColor: statusColor}]} />
           <Text style={[styles.statusText, {color: statusColor}]}>
             {statusLabel}
           </Text>
@@ -348,25 +340,44 @@ const ExpenseSummary: React.FC<ISummary> = ({
 
       <View style={styles.metricsRow}>
         <View style={styles.metricSquareCard}>
-          <MaterialCommunityIcons name="target" size={18} color={colors.primary} style={styles.metricIcon} />
+          <MaterialCommunityIcons
+            name="target"
+            size={18}
+            color={colors.primary}
+            style={styles.metricIcon}
+          />
           <Text style={styles.metricLabelCard}>Target Limit</Text>
           <View style={styles.targetValueRow}>
             <Text style={styles.metricLabelValue}>
-              {limitValue ? getCurrencyAmount(Number(limitValue.toFixed(0)), currency) : 'Set Limit'}
+              {limitValue
+                ? getCurrencyAmount(Number(limitValue.toFixed(0)), currency)
+                : 'Set Limit'}
             </Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.editPill}
               onPress={() => withHaptic(() => setIsLimitModalVisible(true))}>
-              <MaterialCommunityIcons name="pencil" size={10} color={colors.primary} />
+              <MaterialCommunityIcons
+                name="pencil"
+                size={10}
+                color={colors.primary}
+              />
             </TouchableOpacity>
           </View>
         </View>
-        
+
         <View style={styles.metricSquareCard}>
-          <MaterialCommunityIcons name="chart-bell-curve-cumulative" size={18} color={colors.accent} style={styles.metricIcon} />
+          <MaterialCommunityIcons
+            name="chart-bell-curve-cumulative"
+            size={18}
+            color={colors.accent}
+            style={styles.metricIcon}
+          />
           <Text style={styles.metricLabelCard}>Daily Avg</Text>
           <Text style={styles.metricLabelValue}>
-            {getCurrencyAmount(Number((totalExpense / Math.max(dayjs().date(), 1)).toFixed(0)), currency)}
+            {getCurrencyAmount(
+              Number((totalExpense / Math.max(dayjs().date(), 1)).toFixed(0)),
+              currency,
+            )}
           </Text>
         </View>
       </View>

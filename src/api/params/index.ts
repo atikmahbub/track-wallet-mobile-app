@@ -12,3 +12,4 @@ export * from '@trackingPortal/api/params/IUpdateLoanParams';
 export * from '@trackingPortal/api/params/IAddInvestParams';
 export * from '@trackingPortal/api/params/IUpdateInvestParams';
 export * from '@trackingPortal/api/params/IGetInvestParams';
+export * from '@trackingPortal/api/params/IGetExpenseAnalyticsParams';

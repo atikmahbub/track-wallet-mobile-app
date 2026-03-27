@@ -9,4 +9,5 @@ export interface IUpdateExpenseParams {
   amount?: number;
   description?: string | null;
   date?: UnixTimeStampString;
+  categoryId?: string | null;
 }

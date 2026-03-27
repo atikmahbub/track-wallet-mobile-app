@@ -1,9 +1,6 @@
 import {UnixTimeStampString, UserId} from '@trackingPortal/api/primitives';
 
-export interface IAddExpenseParams {
+export interface IGetExpenseAnalyticsParams {
   userId: UserId;
-  amount: number;
-  description: string | null;
   date: UnixTimeStampString;
-  categoryId: string;
 }

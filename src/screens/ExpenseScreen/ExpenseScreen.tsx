@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import ExpenseSummary from '@trackingPortal/screens/ExpenseScreen/ExpenseSummary';
 import {AnimatedFAB} from 'react-native-paper';
 import {FlatList, StyleSheet, RefreshControl, View} from 'react-native';
@@ -15,12 +15,13 @@ import notifee from '@notifee/react-native';
 import HapticFeedback from 'react-native-haptic-feedback';
 import {withHaptic} from '@trackingPortal/utils/haptic';
 import {colors} from '@trackingPortal/themes/colors';
+import {useExpenseInsights} from '@trackingPortal/screens/ExpenseScreen/hooks/useExpenseInsights';
+import AnalyticsCard from '@trackingPortal/screens/ExpenseScreen/components/AnalyticsCard';
 
 export default function ExpenseScreen() {
-  const {currentUser: user} = useStoreContext();
+  const {currentUser: user, apiGateway, currency} = useStoreContext();
   const [hideFabIcon, setHideFabIcon] = useState<boolean>(false);
   const [openCreationForm, setOpenCreationModal] = useState<boolean>(false);
-  const {apiGateway} = useStoreContext();
   const [expenses, setExpenses] = useState<ExpenseModel[]>([]);
   const [filterMonth, setFilterMonth] = useState(dayjs(new Date()));
   const [monthLimit, setMonthLimit] = useState<MonthlyLimitModel>(
@@ -30,12 +31,37 @@ export default function ExpenseScreen() {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [limitLoading, setLimitLoading] = useState<boolean>(false);
+  const {
+    categories,
+    categoryLoading,
+    categoryError,
+    refreshCategories,
+    analytics,
+    analyticsLoading,
+    analyticsError,
+    refreshAnalytics,
+    categoryLookup,
+  } = useExpenseInsights({userId: user.userId, month: filterMonth});
+
+  const fetchAnalytics = useCallback(
+    (options?: {force?: boolean}) => {
+      if (!user.userId || user.default) {
+        return;
+      }
+      return refreshAnalytics(options);
+    },
+    [refreshAnalytics, user.default, user.userId],
+  );
 
   useEffect(() => {
     if (user.userId && !user.default) {
       loadData();
     }
   }, [user, filterMonth]);
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, [fetchAnalytics]);
 
   const loadData = async () => {
     try {
@@ -110,7 +136,11 @@ export default function ExpenseScreen() {
   const onRefresh = async () => {
     setRefreshing(true);
     setCombinedLoading(true);
-    await loadData();
+    await Promise.all([
+      loadData(),
+      fetchAnalytics({force: true}),
+      refreshCategories({force: true}),
+    ]);
     setRefreshing(false);
   };
 
@@ -131,6 +161,14 @@ export default function ExpenseScreen() {
               monthLimit={monthLimit}
               getMonthlyLimit={getMonthlyLimit}
             />
+            <AnalyticsCard
+              analytics={analytics}
+              categories={categoryLookup}
+              loading={analyticsLoading}
+              error={analyticsError}
+              onRetry={() => fetchAnalytics({force: true})}
+              currency={currency}
+            />
           </View>
         }
         ListFooterComponent={
@@ -140,6 +178,11 @@ export default function ExpenseScreen() {
             setFilteredMonth={setFilterMonth}
             expenses={expenses}
             getUserExpenses={getExpenses}
+            categories={categories}
+            categoriesLoading={categoryLoading}
+            categoryError={categoryError}
+            refreshCategories={() => refreshCategories({force: true})}
+            refreshAnalytics={fetchAnalytics}
           />
         }
         refreshControl={
@@ -153,6 +196,11 @@ export default function ExpenseScreen() {
         setOpenCreationModal={setOpenCreationModal}
         getUserExpenses={getExpenses}
         getExceedExpenseNotification={getExceedExpenseNotification}
+        categories={categories}
+        categoriesLoading={categoryLoading}
+        categoryError={categoryError}
+        refreshCategories={() => refreshCategories({force: true})}
+        refreshAnalytics={fetchAnalytics}
       />
       <AnimatedFAB
         extended={false}

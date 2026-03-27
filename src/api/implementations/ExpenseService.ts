@@ -4,11 +4,16 @@ import {TrackingWalletConfig} from '../TrackingWalletConfig';
 import {ExpenseModel} from '@trackingPortal/api/models/Expense';
 import {
   IAddExpenseParams,
+  IGetExpenseAnalyticsParams,
   IGetUserExpenses,
   IUpdateExpenseParams,
 } from '@trackingPortal/api/params';
 import {urlJoin} from 'url-join-ts';
 import {ExpenseId, UserId} from '@trackingPortal/api/primitives';
+import {
+  ExpenseAnalyticsModel,
+  ExpenseCategoryModel,
+} from '@trackingPortal/api/models';
 
 export class ExpenseService implements IExpenseService {
   constructor(
@@ -75,6 +80,30 @@ export class ExpenseService implements IExpenseService {
 
     if (response.isOk()) {
       return response.value as boolean;
+    }
+    throw new Error(response.error);
+  }
+
+  async getCategories(): Promise<ExpenseCategoryModel[]> {
+    const url = new URL(urlJoin(this.config.baseUrl, 'v0', 'categories'));
+    const response = await this.ajaxUtils.get(url);
+
+    if (response.isOk()) {
+      return response.value as ExpenseCategoryModel[];
+    }
+    throw new Error(response.error);
+  }
+
+  async getExpenseAnalytics(
+    params: IGetExpenseAnalyticsParams,
+  ): Promise<ExpenseAnalyticsModel> {
+    const url = new URL(
+      urlJoin(this.config.baseUrl, 'v0', 'expenses', 'analytics'),
+    );
+    const response = await this.ajaxUtils.get(url, {...params});
+
+    if (response.isOk()) {
+      return response.value as ExpenseAnalyticsModel;
     }
     throw new Error(response.error);
   }

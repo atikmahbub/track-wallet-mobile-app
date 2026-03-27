@@ -1,16 +1,31 @@
 import {View, Pressable, StyleSheet, Text} from 'react-native';
-import React, {useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {useFormikContext} from 'formik';
 import {EAddExpenseFields} from '@trackingPortal/screens/ExpenseScreen/ExpenseCreation/ExpenseCreation.constants';
 import {TextInput} from 'react-native-paper';
 import {FormikTextInput} from '@trackingPortal/components';
 import DatePicker from 'react-native-date-picker';
 import dayjs from 'dayjs';
+import {ExpenseCategoryModel} from '@trackingPortal/api/models';
+import CategorySelector from '@trackingPortal/screens/ExpenseScreen/components/CategorySelector';
 
-export default function ExpenseForm() {
+interface ExpenseFormProps {
+  categories: ExpenseCategoryModel[];
+  categoriesLoading?: boolean;
+  categoryError?: string | null;
+  refreshCategories?: () => Promise<void> | void;
+}
+
+export default function ExpenseForm({
+  categories,
+  categoriesLoading,
+  categoryError,
+  refreshCategories,
+}: ExpenseFormProps) {
   const {values, setFieldValue} = useFormikContext<any>();
   const [pickerVisible, setPickerVisible] = useState(false);
   const dateValue = values[EAddExpenseFields.DATE];
+  const categoryValue = values[EAddExpenseFields.CATEGORY_ID];
 
   const currentDate = useMemo(() => {
     if (dateValue instanceof Date && !isNaN(dateValue.getTime())) {
@@ -19,6 +34,12 @@ export default function ExpenseForm() {
     const parsed = new Date(dateValue);
     return isNaN(parsed.getTime()) ? new Date() : parsed;
   }, [dateValue]);
+
+  useEffect(() => {
+    if (!categoryValue && categories.length) {
+      setFieldValue(EAddExpenseFields.CATEGORY_ID, categories[0].id);
+    }
+  }, [categoryValue, categories, setFieldValue]);
 
   return (
     <View style={{gap: 24}}>
@@ -46,6 +67,18 @@ export default function ExpenseForm() {
         <FormikTextInput 
           name={EAddExpenseFields.DESCRIPTION} 
           placeholder="What is this for?" 
+        />
+      </View>
+
+      <View style={styles.fieldSection}>
+        <Text style={styles.sectionLabel}>CATEGORY</Text>
+        <CategorySelector
+          categories={categories}
+          selectedCategoryId={categoryValue}
+          onSelect={id => setFieldValue(EAddExpenseFields.CATEGORY_ID, id)}
+          loading={categoriesLoading}
+          error={categoryError || undefined}
+          onRetry={refreshCategories}
         />
       </View>
 

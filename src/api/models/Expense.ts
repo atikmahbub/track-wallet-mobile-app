@@ -9,6 +9,7 @@ export class NewExpense {
     public date: UnixTimeStampString,
     public amount: number,
     public description: string | null,
+    public categoryId?: string | null,
   ) {}
 }
 
@@ -21,7 +22,9 @@ export class ExpenseModel extends NewExpense {
     date: UnixTimeStampString,
     public updated: UnixTimeStampString,
     public created: UnixTimeStampString,
+    categoryId?: string | null,
+    public categoryName?: string | null,
   ) {
-    super(date, amount, description);
+    super(date, amount, description, categoryId);
   }
 }
