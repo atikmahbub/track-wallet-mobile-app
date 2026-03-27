@@ -22,7 +22,10 @@ export const defaultQuestion: INewExpense = {
 
 export const CreateExpenseSchema = Yup.object().shape({
   [EAddExpenseFields.DATE]: Yup.date().required('Date is required'),
-  [EAddExpenseFields.DESCRIPTION]: Yup.string().required('Purpose is required'),
+  [EAddExpenseFields.DESCRIPTION]: Yup.string()
+    .trim()
+    .max(120, 'Purpose is too long')
+    .optional(),
   [EAddExpenseFields.AMOUNT]: Yup.number()
     .required('Amount is required')
     .positive('Amount must be positive'),

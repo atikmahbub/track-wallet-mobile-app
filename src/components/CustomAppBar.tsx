@@ -2,15 +2,16 @@ import {useAuth} from '@trackingPortal/auth/Auth0ProviderWithHistory';
 import {getGreeting} from '@trackingPortal/utils/utils';
 import dayjs from 'dayjs';
 import React from 'react';
-import {View, StyleSheet, Text} from 'react-native';
+import {View, StyleSheet, Text, TouchableOpacity} from 'react-native';
 import {Avatar} from 'react-native-paper';
 import {colors} from '@trackingPortal/themes/colors';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import {useRouter} from 'expo-router';
 
 const AVATAR_SIZE = 54;
 
 const CustomAppBar: React.FC = () => {
   const {user} = useAuth();
+  const router = useRouter();
 
   const greeting = React.useMemo(() => getGreeting(), []);
   const userName = React.useMemo(
@@ -26,9 +27,24 @@ const CustomAppBar: React.FC = () => {
   }, [userName]);
   const todayLabel = React.useMemo(() => dayjs().format('dddd, MMM D'), []);
 
+  const handleProfilePress = React.useCallback(() => {
+    router.push('/profile');
+  }, [router]);
+
   return (
     <View style={styles.container}>
-      <View style={styles.profileRow}>
+      <View style={styles.textBlock}>
+        <Text style={styles.dateLabel}>{todayLabel}</Text>
+        <Text style={styles.appNameText}>
+          {greeting}, {userName}
+        </Text>
+      </View>
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={handleProfilePress}
+        style={styles.avatarTapArea}
+        accessibilityRole="button"
+        accessibilityLabel="Open profile">
         <View style={styles.avatarWrapper}>
           <View style={styles.avatarGlow} />
           {userPicture ? (
@@ -45,12 +61,7 @@ const CustomAppBar: React.FC = () => {
             </View>
           )}
         </View>
-        <View style={styles.textBlock}>
-          <Text style={styles.appNameText}>
-            {greeting}, {userName}
-          </Text>
-        </View>
-      </View>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -63,12 +74,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
-  profileRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    gap: 14,
-  },
   textBlock: {
     flex: 1,
     paddingLeft: 2,
@@ -79,6 +84,15 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope',
     fontWeight: '700',
     letterSpacing: -0.5,
+  },
+  dateLabel: {
+    color: colors.subText,
+    fontSize: 12,
+    marginBottom: 4,
+    letterSpacing: 0.4,
+  },
+  avatarTapArea: {
+    paddingLeft: 12,
   },
   avatarWrapper: {
     position: 'relative',

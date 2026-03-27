@@ -3,7 +3,7 @@ import React from 'react';
 import {Text} from 'react-native-paper';
 import {GlassCard} from '@trackingPortal/components';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import {getCurrencyAmount} from '@trackingPortal/utils/utils';
+import {formatCurrency} from '@trackingPortal/utils/utils';
 import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
 import {colors} from '@trackingPortal/themes/colors';
 
@@ -23,9 +23,15 @@ const LoanSummary: React.FC<ISummary> = ({
       <Text style={styles.headingLabel}>NET POSITION</Text>
       
       <View style={styles.heroRow}>
-        <Text style={styles.totalValueText}>
-          {getCurrencyAmount(Math.abs(netPosition), currency)}
-        </Text>
+        <View style={styles.totalValueColumn}>
+          <Text
+            style={styles.totalValueText}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.7}>
+            {formatCurrency(Math.abs(netPosition), currency)}
+          </Text>
+        </View>
       </View>
       
       <View style={styles.subHeroRow}>
@@ -55,7 +61,9 @@ const LoanSummary: React.FC<ISummary> = ({
             <MaterialCommunityIcons name="arrow-top-right" size={16} color="#a1faff" />
           </View>
           <Text style={styles.metricLabelCard}>Total Given</Text>
-          <Text style={styles.metricLabelValue}>{getCurrencyAmount(totalGiven, currency)}</Text>
+          <Text style={styles.metricLabelValue}>
+            {formatCurrency(totalGiven, currency)}
+          </Text>
         </View>
         
         <View style={styles.metricSquareCard}>
@@ -63,7 +71,9 @@ const LoanSummary: React.FC<ISummary> = ({
             <MaterialCommunityIcons name="arrow-bottom-left" size={16} color="#ff8e8b" />
           </View>
           <Text style={styles.metricLabelCard}>Total Borrowed</Text>
-          <Text style={styles.metricLabelValue}>{getCurrencyAmount(totalBorrowed, currency)}</Text>
+          <Text style={styles.metricLabelValue}>
+            {formatCurrency(totalBorrowed, currency)}
+          </Text>
         </View>
       </View>
     </View>
@@ -91,6 +101,10 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 8,
   },
+  totalValueColumn: {
+    flex: 1,
+    minWidth: 0,
+  },
   totalValueText: {
     color: colors.text,
     fontSize: 52,
@@ -98,6 +112,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope',
     letterSpacing: -2,
     lineHeight: 60,
+    flexShrink: 1,
+    includeFontPadding: false,
   },
   subHeroRow: {
     flexDirection: 'row',

@@ -7,7 +7,7 @@ import FormModal from '@trackingPortal/components/FormModal';
 import dayjs, {Dayjs} from 'dayjs';
 import {MonthlyLimitModel} from '@trackingPortal/api/models';
 import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
-import {getCurrencyAmount} from '@trackingPortal/utils/utils';
+import {formatCurrency} from '@trackingPortal/utils/utils';
 import {Formik, FormikHelpers} from 'formik';
 import {EMonthlyLimitFields} from '@trackingPortal/screens/ExpenseScreen/ExpenseCreation/ExpenseCreation.constants';
 import Toast from 'react-native-toast-message';
@@ -162,7 +162,7 @@ const ExpenseSummary: React.FC<ISummary> = ({
     }
 
     const direction = trendSnapshot.isLower ? 'less' : 'more';
-    return `${getCurrencyAmount(
+    return `${formatCurrency(
       trendSnapshot.deltaAmount,
       currency,
     )} ${direction} than ${previousMonthLabelFull}.`;
@@ -189,8 +189,8 @@ const ExpenseSummary: React.FC<ISummary> = ({
   const isBudgetOnTrack = remainingBudget >= 0;
   const budgetDeltaText = hasLimit
     ? isBudgetOnTrack
-      ? `${getCurrencyAmount(remainingBudget, currency)} left`
-      : `${getCurrencyAmount(Math.abs(remainingBudget), currency)} over`
+      ? `${formatCurrency(remainingBudget, currency)} left`
+      : `${formatCurrency(Math.abs(remainingBudget), currency)} over`
     : '';
   const statusBackgroundColor = hasLimit
     ? isBudgetOnTrack
@@ -215,12 +215,12 @@ const ExpenseSummary: React.FC<ISummary> = ({
       return `Set a monthly limit to unlock pacing insights.${comparison}`;
     }
     if (isBudgetOnTrack) {
-      return `You're pacing safely with ${getCurrencyAmount(
+      return `You're pacing safely with ${formatCurrency(
         remainingBudget,
         currency,
       )} remaining.${comparison}`;
     }
-    return `You've exceeded the budget by ${getCurrencyAmount(
+    return `You've exceeded the budget by ${formatCurrency(
       Math.abs(remainingBudget),
       currency,
     )}.${comparison}`;
@@ -294,8 +294,12 @@ const ExpenseSummary: React.FC<ISummary> = ({
 
       <View style={styles.heroRow}>
         <View style={styles.totalValueColumn}>
-          <Text style={styles.totalValueText}>
-            {getCurrencyAmount(totalExpense, currency)}
+          <Text
+            style={styles.totalValueText}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.7}>
+            {formatCurrency(totalExpense, currency)}
           </Text>
         </View>
         {hasLimit ? (
@@ -348,21 +352,23 @@ const ExpenseSummary: React.FC<ISummary> = ({
           />
           <Text style={styles.metricLabelCard}>Target Limit</Text>
           <View style={styles.targetValueRow}>
-            <Text style={styles.metricLabelValue}>
+            <Text
+              style={styles.metricLabelValue}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.75}>
               {limitValue
-                ? getCurrencyAmount(Number(limitValue.toFixed(0)), currency)
+                ? formatCurrency(Number(limitValue.toFixed(0)), currency)
                 : 'Set Limit'}
             </Text>
-            <TouchableOpacity
-              style={styles.editPill}
-              onPress={() => withHaptic(() => setIsLimitModalVisible(true))}>
-              <MaterialCommunityIcons
-                name="pencil"
-                size={10}
-                color={colors.primary}
-              />
-            </TouchableOpacity>
           </View>
+          <TouchableOpacity
+            style={styles.editLink}
+            onPress={() => withHaptic(() => setIsLimitModalVisible(true))}>
+            <Text style={styles.editLinkText}>
+              {limitValue ? 'Tap to edit limit' : 'Tap to set limit'}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.metricSquareCard}>
@@ -374,7 +380,7 @@ const ExpenseSummary: React.FC<ISummary> = ({
           />
           <Text style={styles.metricLabelCard}>Daily Avg</Text>
           <Text style={styles.metricLabelValue}>
-            {getCurrencyAmount(
+            {formatCurrency(
               Number((totalExpense / Math.max(dayjs().date(), 1)).toFixed(0)),
               currency,
             )}
@@ -440,6 +446,7 @@ const styles = StyleSheet.create({
   },
   totalValueColumn: {
     flex: 1,
+    minWidth: 0,
   },
   totalValueText: {
     color: colors.text,
@@ -448,6 +455,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope',
     letterSpacing: -2,
     lineHeight: 60,
+    flexShrink: 1,
+    includeFontPadding: false,
   },
   progressWrapper: {
     alignItems: 'center',
@@ -538,14 +547,19 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '400',
     fontFamily: 'Manrope',
+    flex: 1,
+    minWidth: 0,
   },
-  editPill: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: 'rgba(161, 250, 255, 0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
+  editLink: {
+    marginTop: 6,
+    alignSelf: 'flex-start',
+    paddingVertical: 4,
+  },
+  editLinkText: {
+    color: colors.primary,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
   limitForm: {
     gap: 12,

@@ -13,6 +13,7 @@ import CircularProgress from '@trackingPortal/components/CircularProgress';
 import TabScreenContainer, {
   TAB_CONTENT_BOTTOM_PADDING,
 } from '@trackingPortal/components/TabScreenContainer';
+import OnboardingSlide from '@trackingPortal/components/OnboardingSlide';
 
 export {
   CustomAppBar,
@@ -29,4 +30,5 @@ export {
   CircularProgress,
   TabScreenContainer,
   TAB_CONTENT_BOTTOM_PADDING,
+  OnboardingSlide,
 };

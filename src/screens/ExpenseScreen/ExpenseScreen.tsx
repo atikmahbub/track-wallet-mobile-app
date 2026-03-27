@@ -12,14 +12,16 @@ import Toast from 'react-native-toast-message';
 import {AnimatedLoader} from '@trackingPortal/components';
 import notifee from '@notifee/react-native';
 
-import HapticFeedback from 'react-native-haptic-feedback';
 import {withHaptic} from '@trackingPortal/utils/haptic';
 import {colors} from '@trackingPortal/themes/colors';
 import {useExpenseInsights} from '@trackingPortal/screens/ExpenseScreen/hooks/useExpenseInsights';
 import AnalyticsCard from '@trackingPortal/screens/ExpenseScreen/components/AnalyticsCard';
+import {useDailyExpenseReminder} from '@trackingPortal/screens/ExpenseScreen/hooks/useDailyExpenseReminder';
+import {useRecentCategories} from '@trackingPortal/screens/ExpenseScreen/hooks/useRecentCategories';
 
 export default function ExpenseScreen() {
   const {currentUser: user, apiGateway, currency} = useStoreContext();
+  const activeUserId = user.default ? undefined : user.userId;
   const [hideFabIcon, setHideFabIcon] = useState<boolean>(false);
   const [openCreationForm, setOpenCreationModal] = useState<boolean>(false);
   const [expenses, setExpenses] = useState<ExpenseModel[]>([]);
@@ -41,16 +43,25 @@ export default function ExpenseScreen() {
     analyticsError,
     refreshAnalytics,
     categoryLookup,
-  } = useExpenseInsights({userId: user.userId, month: filterMonth});
+  } = useExpenseInsights({userId: activeUserId, month: filterMonth});
+  const {
+    hydrated: recentHydrated,
+    recentCategoryIds,
+    lastUsedCategoryId,
+    recordRecentCategory,
+    initializeFromHistory,
+  } = useRecentCategories();
+
+  useDailyExpenseReminder();
 
   const fetchAnalytics = useCallback(
     (options?: {force?: boolean}) => {
-      if (!user.userId || user.default) {
+      if (!activeUserId) {
         return;
       }
       return refreshAnalytics(options);
     },
-    [refreshAnalytics, user.default, user.userId],
+    [refreshAnalytics, activeUserId],
   );
 
   useEffect(() => {
@@ -58,6 +69,17 @@ export default function ExpenseScreen() {
       loadData();
     }
   }, [user, filterMonth]);
+
+  useEffect(() => {
+    if (!recentHydrated || recentCategoryIds.length || !expenses.length) {
+      return;
+    }
+    const ordered = [...expenses]
+      .sort((a, b) => Number(b.date) - Number(a.date))
+      .map(item => item.categoryId)
+      .filter((id): id is string => Boolean(id));
+    initializeFromHistory(ordered);
+  }, [expenses, initializeFromHistory, recentCategoryIds, recentHydrated]);
 
   useEffect(() => {
     fetchAnalytics();
@@ -163,6 +185,7 @@ export default function ExpenseScreen() {
             />
             <AnalyticsCard
               analytics={analytics}
+              monthlyLimit={monthLimit?.limit}
               categories={categoryLookup}
               loading={analyticsLoading}
               error={analyticsError}
@@ -183,6 +206,8 @@ export default function ExpenseScreen() {
             categoryError={categoryError}
             refreshCategories={() => refreshCategories({force: true})}
             refreshAnalytics={fetchAnalytics}
+            recentCategoryIds={recentCategoryIds}
+            onCategoryUsed={recordRecentCategory}
           />
         }
         refreshControl={
@@ -201,6 +226,9 @@ export default function ExpenseScreen() {
         categoryError={categoryError}
         refreshCategories={() => refreshCategories({force: true})}
         refreshAnalytics={fetchAnalytics}
+        recentCategoryIds={recentCategoryIds}
+        lastUsedCategoryId={lastUsedCategoryId}
+        onCategoryUsed={recordRecentCategory}
       />
       <AnimatedFAB
         extended={false}

@@ -2,7 +2,7 @@ import {View, StyleSheet} from 'react-native';
 import React from 'react';
 import {Text} from 'react-native-paper';
 import {GlassCard} from '@trackingPortal/components';
-import {getCurrencyAmount} from '@trackingPortal/utils/utils';
+import {formatCurrency} from '@trackingPortal/utils/utils';
 import {InvestModel} from '@trackingPortal/api/models';
 import {EInvestStatus} from '@trackingPortal/api/enums';
 import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
@@ -47,12 +47,18 @@ const InvestSummary: React.FC<ISummary> = ({investList, status}) => {
       <Text style={styles.headingLabel}>INVESTMENT SNAPSHOT</Text>
 
       <View style={styles.heroRow}>
-        <Text style={styles.totalValueText}>
-          {getCurrencyAmount(
-            isActive ? totalActiveAmount : totalCompletedAmount,
-            currency,
-          )}
-        </Text>
+        <View style={styles.totalValueColumn}>
+          <Text
+            style={styles.totalValueText}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.7}>
+            {formatCurrency(
+              isActive ? totalActiveAmount : totalCompletedAmount,
+              currency,
+            )}
+          </Text>
+        </View>
       </View>
 
       <View style={styles.subHeroRow}>
@@ -143,6 +149,10 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 8,
   },
+  totalValueColumn: {
+    flex: 1,
+    minWidth: 0,
+  },
   verticalBadge: {
     backgroundColor: '#fff',
     paddingHorizontal: 2,
@@ -168,6 +178,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope',
     letterSpacing: -2,
     lineHeight: 60,
+    flexShrink: 1,
+    includeFontPadding: false,
   },
   subHeroRow: {
     flexDirection: 'row',

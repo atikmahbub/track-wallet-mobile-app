@@ -1,8 +1,8 @@
-import {
-  getDisplayAmountOnCurrency,
-  TCurrencyData,
-} from 'country-currency-utils';
 import dayjs from 'dayjs';
+import {
+  CurrencyPreference,
+  DEFAULT_CURRENCY,
+} from '@trackingPortal/constants/currency';
 
 export const getGreeting = (): string => {
   const currentHour = dayjs().hour();
@@ -36,12 +36,29 @@ export const convertKiloToNumber = (number: string | number): number => {
   return Number(_number);
 };
 
-export const getCurrencyAmount = (value: number, currency: TCurrencyData) => {
-  const amount = getDisplayAmountOnCurrency(value, currency, {
-    isSymbolStandard: true,
-    avoidFixedDecimals: true,
-    avoidRound: true,
-  });
+const resolveCurrency = (currency?: CurrencyPreference) =>
+  currency || DEFAULT_CURRENCY;
 
-  return amount;
+export const formatCurrency = (
+  value: number,
+  currency?: CurrencyPreference,
+  options?: {showCode?: boolean},
+) => {
+  const activeCurrency = resolveCurrency(currency);
+  let absFormatted: string;
+  try {
+    const formatter = new Intl.NumberFormat(activeCurrency.locale, {
+      minimumFractionDigits: activeCurrency.decimals,
+      maximumFractionDigits: activeCurrency.decimals,
+    });
+    absFormatted = formatter.format(Math.abs(value));
+  } catch (error) {
+    absFormatted = Math.abs(value).toFixed(activeCurrency.decimals);
+  }
+  const sign = value < 0 ? '-' : '';
+  const base = `${activeCurrency.symbol}${absFormatted}`;
+  if (options?.showCode) {
+    return `${sign}${base} ${activeCurrency.code}`;
+  }
+  return `${sign}${base}`;
 };

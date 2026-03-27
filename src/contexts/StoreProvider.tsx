@@ -11,16 +11,20 @@ import {
 import Toast from 'react-native-toast-message';
 import {UserModel} from '@trackingPortal/api/models';
 import {IPINFO_TOKEN} from '@env';
+import {getCountryData} from 'country-currency-utils';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-  getCountryData,
-  getCurrencyData,
-  TCurrencyData,
-} from 'country-currency-utils';
+  CurrencyPreference,
+  DEFAULT_CURRENCY,
+  CURRENCY_PREFERENCE_KEY,
+  findCurrencyByCode,
+} from '@trackingPortal/constants/currency';
 
 type StoreContextType = {
   apiGateway: IApiGateWay;
   currentUser: NewUserModel;
-  currency: TCurrencyData;
+  currency: CurrencyPreference;
+  setCurrencyPreference: (currency: CurrencyPreference) => Promise<void>;
 };
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -43,7 +47,8 @@ const defaultUser: NewUserModel = {
 export const StoreProvider = ({children}: {children: React.ReactNode}) => {
   const {token, user: auth0User} = useAuth();
   const [currentUser, setCurrentUser] = useState<NewUserModel>(defaultUser);
-  const [currency, setCurrency] = useState<TCurrencyData>(undefined!);
+  const [currency, setCurrency] =
+    useState<CurrencyPreference>(DEFAULT_CURRENCY);
 
   useEffect(() => {
     if (token) {
@@ -53,10 +58,26 @@ export const StoreProvider = ({children}: {children: React.ReactNode}) => {
   }, [auth0User, token]);
 
   useEffect(() => {
-    getCountryCode();
+    hydrateCurrencyPreference();
   }, []);
 
-  const getCountryCode = async () => {
+  const hydrateCurrencyPreference = async () => {
+    try {
+      const savedCode = await AsyncStorage.getItem(CURRENCY_PREFERENCE_KEY);
+      if (savedCode) {
+        const matched = findCurrencyByCode(savedCode);
+        if (matched) {
+          setCurrency(matched);
+          return;
+        }
+      }
+      await hydrateCurrencyFromLocation();
+    } catch (error) {
+      console.log('Failed to hydrate currency preference', error);
+    }
+  };
+
+  const hydrateCurrencyFromLocation = async () => {
     try {
       const response = await fetch(`https://ipinfo.io?token=${IPINFO_TOKEN}`);
       if (!response.ok) {
@@ -64,10 +85,27 @@ export const StoreProvider = ({children}: {children: React.ReactNode}) => {
       }
       const data = await response.json();
       const countryData = await getCountryData(data.country);
-      const currency = await getCurrencyData(countryData?.currencyCode!);
-      currency && setCurrency(currency);
+      const matched = findCurrencyByCode(countryData?.currencyCode);
+      if (matched) {
+        setCurrency(matched);
+        return;
+      }
+      setCurrency(DEFAULT_CURRENCY);
     } catch (error) {
       console.error('Error fetching country code:', error);
+      setCurrency(DEFAULT_CURRENCY);
+    }
+  };
+
+  const setCurrencyPreference = async (nextCurrency: CurrencyPreference) => {
+    setCurrency(nextCurrency);
+    try {
+      await AsyncStorage.setItem(
+        CURRENCY_PREFERENCE_KEY,
+        nextCurrency.code.toUpperCase(),
+      );
+    } catch (error) {
+      console.log('Failed to persist currency preference', error);
     }
   };
 
@@ -104,6 +142,7 @@ export const StoreProvider = ({children}: {children: React.ReactNode}) => {
     currentUser,
     apiGateway,
     currency,
+    setCurrencyPreference,
   };
 
   return (

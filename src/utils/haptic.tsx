@@ -1,10 +1,25 @@
-import HapticFeedback from 'react-native-haptic-feedback';
+import * as Haptics from 'expo-haptics';
 
-export const withHaptic = (action: () => void): void => {
-  const options = {
-    enableVibrateFallback: true,
-    ignoreAndroidSystemSettings: false,
-  };
-  HapticFeedback.trigger('impactMedium', options);
+const safeImpact = (style = Haptics.ImpactFeedbackStyle.Light) => {
+  Haptics.impactAsync(style).catch(() => undefined);
+};
+
+export const withHaptic = (
+  action: () => void,
+  style = Haptics.ImpactFeedbackStyle.Light,
+): void => {
+  safeImpact(style);
   action();
+};
+
+export const triggerSuccessHaptic = () => {
+  Haptics.notificationAsync(
+    Haptics.NotificationFeedbackType.Success,
+  ).catch(() => undefined);
+};
+
+export const triggerWarningHaptic = () => {
+  Haptics.notificationAsync(
+    Haptics.NotificationFeedbackType.Warning,
+  ).catch(() => undefined);
 };

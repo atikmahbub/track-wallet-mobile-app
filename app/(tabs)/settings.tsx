@@ -1,12 +1,12 @@
 import React from 'react';
 
-import ProfileScreen from '@trackingPortal/screens/ProfileScreen';
+import SettingsScreen from '@trackingPortal/screens/SettingsScreen';
 import {TabScreenContainer} from '@trackingPortal/components';
 
-export default function ProfileRoute() {
+export default function SettingsRoute() {
   return (
     <TabScreenContainer>
-      <ProfileScreen />
+      <SettingsScreen />
     </TabScreenContainer>
   );
 }

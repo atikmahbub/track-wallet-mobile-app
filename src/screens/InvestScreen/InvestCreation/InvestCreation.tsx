@@ -13,6 +13,7 @@ import {makeUnixTimestampString} from '@trackingPortal/api/primitives';
 import Toast from 'react-native-toast-message';
 import {IAddInvestParams} from '@trackingPortal/api/params';
 import InvestForm from '@trackingPortal/screens/InvestScreen/InvestForm';
+import {triggerSuccessHaptic} from '@trackingPortal/utils/haptic';
 
 interface IInvestCreation {
   openCreationModal: boolean;
@@ -44,6 +45,7 @@ const InvestCreation: React.FC<IInvestCreation> = ({
       };
       await apiGateway.investService.addInvest(params);
       await getUserInvestHistory();
+      triggerSuccessHaptic();
       Toast.show({
         type: 'success',
         text1: 'Investment added successfully',

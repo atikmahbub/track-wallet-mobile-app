@@ -1,5 +1,5 @@
 import {View} from 'react-native';
-import React, {SetStateAction, useState} from 'react';
+import React, {SetStateAction, useMemo, useState} from 'react';
 import FormModal from '@trackingPortal/components/FormModal';
 import {Formik} from 'formik';
 
@@ -15,6 +15,7 @@ import {useAuth} from '@trackingPortal/auth/Auth0ProviderWithHistory';
 import {makeUnixTimestampString} from '@trackingPortal/api/primitives';
 import Toast from 'react-native-toast-message';
 import {ExpenseCategoryModel} from '@trackingPortal/api/models';
+import {triggerSuccessHaptic} from '@trackingPortal/utils/haptic';
 
 interface IExpenseCreation {
   openCreationModal: boolean;
@@ -26,6 +27,9 @@ interface IExpenseCreation {
   categoryError?: string | null;
   refreshCategories: () => Promise<void> | void;
   refreshAnalytics: (options?: {force?: boolean}) => Promise<void> | void;
+  recentCategoryIds: string[];
+  lastUsedCategoryId: string | null;
+  onCategoryUsed?: (categoryId: string) => void;
 }
 
 const ExpenseCreation: React.FC<IExpenseCreation> = ({
@@ -38,25 +42,52 @@ const ExpenseCreation: React.FC<IExpenseCreation> = ({
   categoryError,
   refreshCategories,
   refreshAnalytics,
+  recentCategoryIds,
+  lastUsedCategoryId,
+  onCategoryUsed,
 }) => {
   const {apiGateway} = useStoreContext();
   const {user} = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
+  const defaultCategoryId = useMemo(() => {
+    if (!categories.length) {
+      return '';
+    }
+    const hasRecent =
+      lastUsedCategoryId &&
+      categories.some(category => category.id === lastUsedCategoryId);
+    if (hasRecent && lastUsedCategoryId) {
+      return lastUsedCategoryId;
+    }
+    return categories[0]?.id ?? '';
+  }, [categories, lastUsedCategoryId]);
 
   const handleAddExpense = async (values: INewExpense, {resetForm}: any) => {
     try {
       setLoading(true);
+      const trimmedDescription = values.description?.trim();
+      const categoryLabel =
+        categories.find(item => item.id === values.categoryId)?.name;
       const params: IAddExpenseParams = {
         userId: user.sub,
         amount: Number(values.amount),
         date: makeUnixTimestampString(Number(new Date(values.date))),
-        description: values.description,
+        description: trimmedDescription || categoryLabel || 'Quick entry',
         categoryId: values.categoryId,
       };
       await apiGateway.expenseService.addExpense(params);
-      await resetForm();
+      resetForm({
+        values: {
+          [EAddExpenseFields.DATE]: new Date(),
+          [EAddExpenseFields.DESCRIPTION]: '',
+          [EAddExpenseFields.AMOUNT]: '',
+          [EAddExpenseFields.CATEGORY_ID]: params.categoryId,
+        },
+      });
       await getUserExpenses();
       await refreshAnalytics({force: true});
+      triggerSuccessHaptic();
+      onCategoryUsed?.(params.categoryId);
       Toast.show({
         type: 'success',
         text1: 'Expense added successfully',
@@ -79,7 +110,7 @@ const ExpenseCreation: React.FC<IExpenseCreation> = ({
         [EAddExpenseFields.DATE]: new Date(),
         [EAddExpenseFields.DESCRIPTION]: '',
         [EAddExpenseFields.AMOUNT]: '',
-        [EAddExpenseFields.CATEGORY_ID]: categories[0]?.id ?? '',
+        [EAddExpenseFields.CATEGORY_ID]: defaultCategoryId,
       }}
       onSubmit={handleAddExpense}
       validationSchema={CreateExpenseSchema}>
@@ -91,7 +122,14 @@ const ExpenseCreation: React.FC<IExpenseCreation> = ({
               isVisible={openCreationModal}
               onClose={() => {
                 setOpenCreationModal(false);
-                resetForm();
+                resetForm({
+                  values: {
+                    [EAddExpenseFields.DATE]: new Date(),
+                    [EAddExpenseFields.DESCRIPTION]: '',
+                    [EAddExpenseFields.AMOUNT]: '',
+                    [EAddExpenseFields.CATEGORY_ID]: defaultCategoryId,
+                  },
+                });
               }}
               onSave={handleSubmit}
               children={
@@ -100,6 +138,9 @@ const ExpenseCreation: React.FC<IExpenseCreation> = ({
                   categoriesLoading={categoriesLoading}
                   categoryError={categoryError}
                   refreshCategories={refreshCategories}
+                  recentCategoryIds={recentCategoryIds}
+                  defaultCategoryId={defaultCategoryId}
+                  autoFocusAmount={openCreationModal}
                 />
               }
               loading={loading}

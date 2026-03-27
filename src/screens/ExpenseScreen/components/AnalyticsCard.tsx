@@ -12,8 +12,8 @@ import {
 import {ExpenseAnalyticsModel, ExpenseCategoryModel} from '@trackingPortal/api/models';
 import SegmentedProgressBar from '@trackingPortal/screens/ExpenseScreen/components/SegmentedProgressBar';
 import {colors} from '@trackingPortal/themes/colors';
-import {getCurrencyAmount} from '@trackingPortal/utils/utils';
-import {TCurrencyData} from 'country-currency-utils';
+import {formatCurrency} from '@trackingPortal/utils/utils';
+import {CurrencyPreference} from '@trackingPortal/constants/currency';
 
 interface AnalyticsCardProps {
   analytics: ExpenseAnalyticsModel | null;
@@ -21,7 +21,8 @@ interface AnalyticsCardProps {
   loading?: boolean;
   error?: string | null;
   onRetry?: () => void;
-  currency?: TCurrencyData;
+  currency?: CurrencyPreference;
+  monthlyLimit?: number;
 }
 
 const AnalyticsCard: React.FC<AnalyticsCardProps> = ({
@@ -31,6 +32,7 @@ const AnalyticsCard: React.FC<AnalyticsCardProps> = ({
   error,
   onRetry,
   currency,
+  monthlyLimit,
 }) => {
   const [expanded, setExpanded] = useState(false);
 
@@ -48,9 +50,24 @@ const AnalyticsCard: React.FC<AnalyticsCardProps> = ({
   }, [analytics?.categoryBreakdown]);
 
   const formatAmount = useCallback(
-    (value: number) => (currency ? getCurrencyAmount(value, currency) : value),
+    (value: number) => formatCurrency(value, currency),
     [currency],
   );
+
+  const budgetSummary = useMemo(() => {
+    if (!analytics || typeof monthlyLimit !== 'number') {
+      return null;
+    }
+    const delta = monthlyLimit - (analytics.totalExpense || 0);
+    const formatted = formatAmount(Math.abs(delta));
+    return {
+      text:
+        delta >= 0
+          ? `${formatted} left for this month`
+          : `You exceeded by ${formatted}`,
+      isOver: delta < 0,
+    };
+  }, [analytics, monthlyLimit, formatAmount]);
 
   const segments = useMemo(() => {
     if (!analytics?.categoryBreakdown?.length) {
@@ -124,6 +141,22 @@ const AnalyticsCard: React.FC<AnalyticsCardProps> = ({
           </TouchableOpacity>
         ) : null}
       </View>
+
+      {budgetSummary ? (
+        <View
+          style={[
+            styles.budgetPill,
+            budgetSummary.isOver && styles.budgetPillOver,
+          ]}>
+          <Text
+            style={[
+              styles.budgetText,
+              budgetSummary.isOver && styles.budgetTextOver,
+            ]}>
+            {budgetSummary.text}
+          </Text>
+        </View>
+      ) : null}
 
       {loading ? (
         <View style={styles.loadingRow}>
@@ -203,6 +236,27 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 18,
     fontWeight: '700',
+  },
+  budgetPill: {
+    marginBottom: 16,
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+  },
+  budgetPillOver: {
+    borderColor: colors.warning,
+    backgroundColor: 'rgba(255, 170, 0, 0.08)',
+  },
+  budgetText: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  budgetTextOver: {
+    color: colors.warning,
   },
   retryText: {
     color: colors.primary,

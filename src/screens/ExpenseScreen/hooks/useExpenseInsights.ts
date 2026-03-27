@@ -5,7 +5,10 @@ import {
   ExpenseCategoryModel,
 } from '@trackingPortal/api/models';
 import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
-import {FALLBACK_CATEGORIES, normalizeCategoryIcon} from '@trackingPortal/screens/ExpenseScreen/ExpenseScreen.constants';
+import {
+  FALLBACK_CATEGORIES,
+  normalizeCategoryIcon,
+} from '@trackingPortal/screens/ExpenseScreen/ExpenseScreen.constants';
 import {UnixTimeStampString} from '@trackingPortal/api/primitives';
 
 interface RefreshOptions {
@@ -22,9 +25,8 @@ export const useExpenseInsights = ({
   month,
 }: UseExpenseInsightsParams) => {
   const {apiGateway} = useStoreContext();
-  const [categories, setCategories] = useState<ExpenseCategoryModel[]>(
-    FALLBACK_CATEGORIES,
-  );
+  const [categories, setCategories] =
+    useState<ExpenseCategoryModel[]>(FALLBACK_CATEGORIES);
   const [categoryLoading, setCategoryLoading] = useState<boolean>(false);
   const [categoryError, setCategoryError] = useState<string | null>(null);
   const categoriesCache = useRef<ExpenseCategoryModel[] | null>(null);
@@ -36,14 +38,25 @@ export const useExpenseInsights = ({
   const [analyticsError, setAnalyticsError] = useState<string | null>(null);
   const analyticsCache = useRef<Record<string, ExpenseAnalyticsModel>>({});
 
-  const hydrateCategories = useCallback(
-    (payload: ExpenseCategoryModel[]) =>
-      payload.map(category => ({
-        ...category,
-        icon: normalizeCategoryIcon(category.icon),
-      })),
-    [],
-  );
+  const PRIORITY_ORDER = ['Groceries', 'Food', 'Kids', 'Health'];
+
+  const hydrateCategories = useCallback((payload: ExpenseCategoryModel[]) => {
+    const normalized = payload.map(category => ({
+      ...category,
+      icon: normalizeCategoryIcon(category.icon),
+    }));
+
+    return normalized.sort((a, b) => {
+      const indexA = PRIORITY_ORDER.indexOf(a.name);
+      const indexB = PRIORITY_ORDER.indexOf(b.name);
+
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+
+      return 0;
+    });
+  }, []);
 
   const refreshCategories = useCallback(
     async ({force}: RefreshOptions = {}) => {
@@ -79,9 +92,11 @@ export const useExpenseInsights = ({
         return;
       }
 
-      const key = dayjs(month).format('YYYY-MM');
-      if (analyticsCache.current[key] && !force) {
-        setAnalytics(analyticsCache.current[key]);
+      const monthKey = dayjs(month).format('YYYY-MM');
+      const cacheKey = `${userId}-${monthKey}`;
+
+      if (analyticsCache.current[cacheKey] && !force) {
+        setAnalytics(analyticsCache.current[cacheKey]);
         return;
       }
 
@@ -94,13 +109,13 @@ export const useExpenseInsights = ({
             .startOf('month')
             .unix() as unknown as UnixTimeStampString,
         });
-        analyticsCache.current[key] = payload;
+        analyticsCache.current[cacheKey] = payload;
         setAnalytics(payload);
       } catch (error) {
         console.log('Failed to fetch analytics', error);
         setAnalyticsError('Unable to load analytics');
         if (force) {
-          delete analyticsCache.current[dayjs(month).format('YYYY-MM')];
+          delete analyticsCache.current[cacheKey];
         }
       } finally {
         setAnalyticsLoading(false);

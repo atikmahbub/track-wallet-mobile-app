@@ -23,6 +23,10 @@ import {
 } from '@trackingPortal/screens/LoanScreen/LoanScreen.constants';
 import {Formik} from 'formik';
 import LoanForm from '@trackingPortal/screens/LoanScreen/LoanForm';
+import {
+  triggerSuccessHaptic,
+  triggerWarningHaptic,
+} from '@trackingPortal/utils/haptic';
 
 interface ILoanList {
   notifyRowOpen: (value: boolean) => void;
@@ -53,6 +57,7 @@ const LoanList: FC<ILoanList> = ({notifyRowOpen, loans, getUserLoan}) => {
 
       await apiGateway.loanServices.updateLoan(params);
       await getUserLoan();
+      triggerSuccessHaptic();
       Toast.show({
         type: 'success',
         text1: 'Loan updated successfully!',
@@ -76,6 +81,7 @@ const LoanList: FC<ILoanList> = ({notifyRowOpen, loans, getUserLoan}) => {
       setDeleteLoading(true);
       await apiGateway.loanServices.deleteLoan(rowId);
       await getUserLoan();
+      triggerWarningHaptic();
       Toast.show({
         type: 'success',
         text1: 'Deleted Successfully!',

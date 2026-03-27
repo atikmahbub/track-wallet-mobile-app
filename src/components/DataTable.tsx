@@ -1,5 +1,12 @@
 import React, {useRef, useEffect, useCallback} from 'react';
-import {View, Text, StyleSheet, FlatList, TouchableOpacity, Alert} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import Collapsible from 'react-native-collapsible';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -73,28 +80,28 @@ const DataTable: React.FC<DataTableProps> = ({
           <TouchableOpacity
             style={[styles.swipeActionButton, styles.editAction]}
             activeOpacity={0.9}
-          onPress={() => {
-            close();
-            handleEditToggle(id);
-          }}>
-          <View style={[styles.actionIconBadge, styles.editBadge]}>
-            <Icon name="edit" size={18} color={colors.background} />
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.swipeActionButton, styles.deleteAction]}
-          activeOpacity={0.9}
-          onPress={() => {
-            close();
-            handleDelete(id);
-          }}>
-          <View style={[styles.actionIconBadge, styles.deleteBadge]}>
-            <Icon name="delete" size={18} color={colors.text} />
-          </View>
-        </TouchableOpacity>
+            onPress={() => {
+              close();
+              handleEditToggle(id);
+            }}>
+            <View style={[styles.actionIconBadge, styles.editBadge]}>
+              <Icon name="edit" size={18} color={colors.background} />
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.swipeActionButton, styles.deleteAction]}
+            activeOpacity={0.9}
+            onPress={() => {
+              close();
+              handleDelete(id);
+            }}>
+            <View style={[styles.actionIconBadge, styles.deleteBadge]}>
+              <Icon name="delete" size={18} color={colors.text} />
+            </View>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
-  ),
+    ),
     [handleEditToggle, handleDelete],
   );
 
@@ -130,11 +137,17 @@ const DataTable: React.FC<DataTableProps> = ({
             {item.Avatar ? (
               <View style={styles.avatarContainer}>
                 <Image source={{uri: item.Avatar}} style={styles.avatarImage} />
-                <View style={[styles.avatarBadge, item.Type === 'Given' ? styles.badgeGiven : styles.badgeTaken]}>
-                  <MaterialCommunityIcons 
-                    name={item.Type === 'Given' ? 'arrow-up' : 'arrow-down'} 
-                    size={10} 
-                    color={colors.background} 
+                <View
+                  style={[
+                    styles.avatarBadge,
+                    item.Type === 'Given'
+                      ? styles.badgeGiven
+                      : styles.badgeTaken,
+                  ]}>
+                  <MaterialCommunityIcons
+                    name={item.Type === 'Given' ? 'arrow-up' : 'arrow-down'}
+                    size={10}
+                    color={colors.background}
                   />
                 </View>
               </View>
@@ -142,7 +155,10 @@ const DataTable: React.FC<DataTableProps> = ({
               <View
                 style={[
                   styles.iconWrapper,
-                  {backgroundColor: item.IconBackground || tintHex(item.IconColor, 0.12)},
+                  {
+                    backgroundColor:
+                      item.IconBackground || tintHex(item.IconColor, 0.12),
+                  },
                 ]}>
                 <MaterialCommunityIcons
                   name={item.IconName}
@@ -156,16 +172,33 @@ const DataTable: React.FC<DataTableProps> = ({
               </View>
             )}
             <View style={styles.textContainer}>
-              <Text style={styles.purposeText}>{item['Purpose'] || item['Name'] || item[headers[1]] || 'Transaction'}</Text>
+              <Text style={styles.purposeText}>
+                {item['Purpose'] ||
+                  item['Name'] ||
+                  item[headers[1]] ||
+                  'Transaction'}
+              </Text>
               {categoryName ? (
-                <Text style={[styles.categoryLine, {color: categoryColor || colors.subText}]}>
-                  {categoryName}
-                </Text>
+                <View style={styles.categoryLineRow}>
+                  <Text
+                    style={[
+                      styles.categoryLine,
+                      {color: categoryColor || colors.subText},
+                    ]}>
+                    {categoryName}
+                  </Text>
+                </View>
               ) : null}
-              <Text style={styles.dateText}>{item['Date'] || item['Deadline'] || item[headers[0]]}</Text>
+              <Text style={styles.dateText}>
+                {item['Date'] || item['Deadline'] || item[headers[0]]}
+              </Text>
             </View>
             <View style={styles.amountContainer}>
-              <Text style={[styles.amountText, item.Type === 'Taken' && {color: colors.error}]}>
+              <Text
+                style={[
+                  styles.amountText,
+                  item.Type === 'Taken' && {color: colors.error},
+                ]}>
                 {amountText}
               </Text>
               <View
@@ -176,8 +209,8 @@ const DataTable: React.FC<DataTableProps> = ({
                       ? styles.typeBadgeGiven
                       : styles.typeBadgeTaken
                     : categoryColor
-                    ? {backgroundColor: tintHex(categoryColor, 0.12)}
-                    : undefined,
+                      ? {backgroundColor: tintHex(categoryColor, 0.12)}
+                      : undefined,
                 ]}>
                 <Text
                   style={[
@@ -191,8 +224,8 @@ const DataTable: React.FC<DataTableProps> = ({
                       ? 'LENT'
                       : 'BORROWED'
                     : categoryName
-                    ? categoryName.toUpperCase()
-                    : 'EXPENSE'}
+                      ? categoryName.toUpperCase()
+                      : 'EXPENSE'}
                 </Text>
               </View>
             </View>
@@ -241,10 +274,10 @@ const styles = StyleSheet.create({
     display: 'none',
   },
   table: {
-    paddingVertical: 16,
+    paddingVertical: 20,
   },
   rowWrapper: {
-    marginBottom: 16,
+    marginBottom: 20,
     borderWidth: 0,
     borderColor: 'transparent',
     borderRadius: 20,
@@ -285,6 +318,14 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
     marginTop: 2,
     textTransform: 'uppercase',
+  },
+  categoryLineRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  categoryInlineIcon: {
+    marginTop: 1,
   },
   dateText: {
     color: colors.subText,
@@ -369,16 +410,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    paddingVertical: 12,
+    height: '100%',
   },
   swipeActionButton: {
-    width: 72,
+    width: 56,
+    height: 56,
     borderRadius: 18,
     borderWidth: 1,
     borderColor: colors.glassBorder,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 12,
     backgroundColor: colors.surface,
     shadowColor: colors.overlay,
     shadowOpacity: 0.25,

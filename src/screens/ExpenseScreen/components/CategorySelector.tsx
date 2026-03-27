@@ -1,4 +1,4 @@
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {ActivityIndicator, FlatList, StyleSheet, Text, View} from 'react-native';
 import CategoryChip from '@trackingPortal/screens/ExpenseScreen/components/CategoryChip';
 import {ExpenseCategoryModel} from '@trackingPortal/api/models';
@@ -11,6 +11,7 @@ interface CategorySelectorProps {
   loading?: boolean;
   error?: string | null;
   onRetry?: () => void;
+  recentCategoryIds?: string[];
 }
 
 const CategorySelector: React.FC<CategorySelectorProps> = ({
@@ -20,7 +21,25 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
   loading,
   error,
   onRetry,
+  recentCategoryIds,
 }) => {
+  const prioritizedCategories = useMemo(() => {
+    if (!recentCategoryIds?.length) {
+      return categories;
+    }
+    const recentMatches = recentCategoryIds
+      .map(id => categories.find(category => category.id === id))
+      .filter(
+        (category): category is ExpenseCategoryModel => Boolean(category),
+      )
+      .slice(0, 3);
+    const recentIds = new Set(recentMatches.map(category => category.id));
+    const remaining = categories.filter(
+      category => !recentIds.has(category.id),
+    );
+    return [...recentMatches, ...remaining];
+  }, [categories, recentCategoryIds]);
+
   const renderItem = useCallback(
     ({item}: {item: ExpenseCategoryModel}) => (
       <CategoryChip
@@ -56,7 +75,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
   return (
     <View>
       <FlatList
-        data={categories}
+        data={prioritizedCategories}
         horizontal
         showsHorizontalScrollIndicator={false}
         keyExtractor={item => item.id}

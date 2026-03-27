@@ -14,6 +14,7 @@ import {makeUnixTimestampString} from '@trackingPortal/api/primitives';
 import Toast from 'react-native-toast-message';
 import {LoanType} from '@trackingPortal/api/enums';
 import {IAddLoanParams} from '@trackingPortal/api/params';
+import {triggerSuccessHaptic} from '@trackingPortal/utils/haptic';
 
 interface ILoanCreation {
   openCreationModal: boolean;
@@ -46,6 +47,7 @@ const LoanCreation: React.FC<ILoanCreation> = ({
       };
       await apiGateway.loanServices.addLoan(params);
       await getUserLoans();
+      triggerSuccessHaptic();
       Toast.show({
         type: 'success',
         text1: 'Loan added successfully',

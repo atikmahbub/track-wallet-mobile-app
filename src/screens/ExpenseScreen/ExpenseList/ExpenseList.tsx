@@ -35,7 +35,12 @@ import {useStoreContext} from '@trackingPortal/contexts/StoreProvider';
 import {IUpdateExpenseParams} from '@trackingPortal/api/params';
 import Toast from 'react-native-toast-message';
 import {AnimatedLoader, LoadingButton} from '@trackingPortal/components';
-import {getCurrencyAmount} from '@trackingPortal/utils/utils';
+import {formatCurrency} from '@trackingPortal/utils/utils';
+import {
+  triggerSuccessHaptic,
+  triggerWarningHaptic,
+} from '@trackingPortal/utils/haptic';
+import {normalizeCategoryIcon} from '@trackingPortal/screens/ExpenseScreen/ExpenseScreen.constants';
 
 interface IExpenseList {
   notifyRowOpen: (value: boolean) => void;
@@ -48,6 +53,8 @@ interface IExpenseList {
   categoryError?: string | null;
   refreshCategories: () => Promise<void> | void;
   refreshAnalytics: (options?: {force?: boolean}) => Promise<void> | void;
+  recentCategoryIds: string[];
+  onCategoryUsed?: (categoryId: string) => void;
 }
 
 const headers = ['Date', 'Purpose', 'Amount'];
@@ -75,6 +82,8 @@ const ExpenseList: FC<IExpenseList> = ({
   categoryError,
   refreshCategories,
   refreshAnalytics,
+  recentCategoryIds,
+  onCategoryUsed,
 }) => {
   const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
   const [openPicker, setOpenPicker] = useState<boolean>(false);
@@ -110,16 +119,24 @@ const ExpenseList: FC<IExpenseList> = ({
 
     try {
       setLoading(true);
+      const categoryName =
+        (values.categoryId &&
+          categoryLookup[values.categoryId]?.name) ||
+        '';
+      const description =
+        values.description?.trim() || categoryName || 'Quick entry';
       const params: IUpdateExpenseParams = {
         id: id,
         amount: Number(values.amount),
         date: makeUnixTimestampString(Number(new Date(values.date))),
-        description: values.description,
+        description,
         categoryId: values.categoryId,
       };
       await apiGateway.expenseService.updateExpense(params);
       await getUserExpenses();
       await refreshAnalytics({force: true});
+      triggerSuccessHaptic();
+      onCategoryUsed?.(params.categoryId);
       Toast.show({
         type: 'success',
         text1: 'Expense updated successfully!',
@@ -144,6 +161,7 @@ const ExpenseList: FC<IExpenseList> = ({
       await apiGateway.expenseService.deleteExpense(rowId);
       await getUserExpenses();
       await refreshAnalytics({force: true});
+      triggerWarningHaptic();
       Toast.show({
         type: 'success',
         text1: 'Deleted Successfully!',
@@ -189,6 +207,7 @@ const ExpenseList: FC<IExpenseList> = ({
                 categoriesLoading={categoriesLoading}
                 categoryError={categoryError}
                 refreshCategories={refreshCategories}
+                recentCategoryIds={recentCategoryIds}
               />
               <View style={styles.actionRow}>
                 <TouchableOpacity
@@ -214,6 +233,7 @@ const ExpenseList: FC<IExpenseList> = ({
       categoriesLoading,
       categoryError,
       refreshCategories,
+      recentCategoryIds,
     ],
   );
 
@@ -270,10 +290,8 @@ const ExpenseList: FC<IExpenseList> = ({
                 ? categoryLookup[item.categoryId]
                 : undefined;
               const fallbackName = category?.name || 'Uncategorized';
-              const formattedAmount =
-                currency && typeof item.amount === 'number'
-                  ? getCurrencyAmount(item.amount, currency)
-                  : `৳ ${item.amount}`;
+              const normalizedIcon = normalizeCategoryIcon(category?.icon);
+              const formattedAmount = formatCurrency(item.amount, currency);
 
               return {
                 id: item.id,
@@ -285,7 +303,7 @@ const ExpenseList: FC<IExpenseList> = ({
                 DisplayAmount: formattedAmount,
                 CategoryName: fallbackName,
                 CategoryColor: category?.color,
-                IconName: category?.icon,
+                IconName: normalizedIcon,
                 IconColor: category?.color,
                 IconBackground: tintFromHex(category?.color, 0.16),
               };

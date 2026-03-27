@@ -15,7 +15,7 @@ type MaterialCommunityIconName = ComponentProps<
 >['name'];
 
 const TAB_ITEMS: Array<{
-  name: 'expense' | 'loan' | 'investment' | 'profile';
+  name: 'expense' | 'loan' | 'investment' | 'settings';
   label: string;
   icon: MaterialCommunityIconName;
 }> = [
@@ -35,9 +35,9 @@ const TAB_ITEMS: Array<{
     icon: 'chart-line-variant',
   },
   {
-    name: 'profile',
-    label: 'PROFILE',
-    icon: 'account-outline',
+    name: 'settings',
+    label: 'SETTINGS',
+    icon: 'cog-outline',
   },
 ] as const;
 

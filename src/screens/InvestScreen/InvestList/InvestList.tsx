@@ -4,6 +4,7 @@ import React, {
   Fragment,
   SetStateAction,
   useCallback,
+  useMemo,
   useState,
 } from 'react';
 import {Text} from 'react-native-paper';
@@ -19,10 +20,8 @@ import {
   AnimatedLoader,
   LoadingButton,
   TwMenu,
-  GlassCard,
 } from '@trackingPortal/components';
 import dayjs from 'dayjs';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
   InvestId,
   makeUnixTimestampString,
@@ -36,6 +35,11 @@ import {
 import {Formik} from 'formik';
 import InvestForm from '@trackingPortal/screens/InvestScreen/InvestForm';
 import {EInvestStatus} from '@trackingPortal/api/enums';
+import {formatCurrency} from '@trackingPortal/utils/utils';
+import {
+  triggerSuccessHaptic,
+  triggerWarningHaptic,
+} from '@trackingPortal/utils/haptic';
 
 interface IInvestList {
   notifyRowOpen: (value: boolean) => void;
@@ -45,7 +49,16 @@ interface IInvestList {
   setStatus: React.Dispatch<SetStateAction<EInvestStatus>>;
 }
 
-const headers = ['Name', 'Date', 'Amount', 'Profit'];
+const headers = ['Date', 'Purpose', 'Amount'];
+
+const tintFromHex = (hex: string, alpha = 0.12) => {
+  const sanitized = hex.replace('#', '');
+  const bigint = parseInt(sanitized, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
 
 const InvestList: FC<IInvestList> = ({
   notifyRowOpen,
@@ -55,7 +68,7 @@ const InvestList: FC<IInvestList> = ({
   setStatus,
 }) => {
   const [expandedRowId, setExpandedRowId] = useState<InvestId | null>(null);
-  const {currentUser: user, apiGateway} = useStoreContext();
+  const {currentUser: user, apiGateway, currency} = useStoreContext();
   const [loading, setLoading] = useState<boolean>(false);
   const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
 
@@ -80,6 +93,7 @@ const InvestList: FC<IInvestList> = ({
 
       await apiGateway.investService.updateInvest(params);
       await getUserInvestHistory();
+      triggerSuccessHaptic();
       Toast.show({
         type: 'success',
         text1: 'Investment updated successfully!',
@@ -97,12 +111,13 @@ const InvestList: FC<IInvestList> = ({
     }
   };
 
-  const handleDeleteLoan = async (rowId: any) => {
+  const handleDeleteInvestment = async (rowId: any) => {
     if (!rowId) return;
     try {
       setDeleteLoading(true);
       await apiGateway.investService.deleteInvest(rowId);
       await getUserInvestHistory();
+      triggerWarningHaptic();
       Toast.show({
         type: 'success',
         text1: 'Deleted Successfully!',
@@ -179,6 +194,42 @@ const InvestList: FC<IInvestList> = ({
     return `${profitPercentage.toFixed(2)}%`;
   };
 
+  const tableData = useMemo(
+    () =>
+      invests.map(invest => {
+        const profitLabel =
+          invest.status === EInvestStatus.Completed
+            ? getProfit(invest.amount, invest.earned ?? null)
+            : null;
+        const statusLabel =
+          invest.status === EInvestStatus.Completed ? 'MATURED' : 'ACTIVE';
+        const categoryName =
+          profitLabel && profitLabel !== 'N/A'
+            ? `${statusLabel} • ${profitLabel}`
+            : statusLabel;
+        const palette =
+          invest.status === EInvestStatus.Completed
+            ? {color: '#b6f700', icon: 'check-circle-outline'}
+            : {color: '#8cafff', icon: 'timeline-clock-outline'};
+
+        return {
+          id: invest.id,
+          Date: dayjs(
+            makeUnixTimestampToNumber(Number(invest.startDate)),
+          ).format('MMM D, YYYY'),
+          Purpose: invest.name,
+          Amount: invest.amount,
+          DisplayAmount: formatCurrency(invest.amount, currency),
+          CategoryName: categoryName,
+          CategoryColor: palette.color,
+          IconName: palette.icon,
+          IconColor: palette.color,
+          IconBackground: tintFromHex(palette.color, 0.16),
+        };
+      }),
+    [invests, currency],
+  );
+
   if (deleteLoading) {
     return <AnimatedLoader />;
   }
@@ -207,47 +258,15 @@ const InvestList: FC<IInvestList> = ({
         </View>
 
         <View style={styles.tableContainer}>
-          {invests.map((invest, index) => {
-            const isRowOpen = expandedRowId === invest.id;
-            const ICONS = ['file-document-outline', 'chart-line-variant', 'domain'];
-            const ICON_COLORS = ['#fca311', '#a0abff', '#b6f700'];
-            const iconSelection = index % 3;
-            
-            return (
-              <Fragment key={invest.id}>
-                <TouchableOpacity 
-                  activeOpacity={0.8}
-                  onPress={() => setExpandedRowId(isRowOpen ? null : invest.id)}
-                  style={styles.customRow}>
-                  <View style={styles.rowLeft}>
-                    <View style={styles.circleIcon}>
-                      <MaterialCommunityIcons name={ICONS[iconSelection]} size={20} color={ICON_COLORS[iconSelection]} />
-                    </View>
-                    <View>
-                      <Text style={styles.itemName}>{invest.name}</Text>
-                      <Text style={styles.itemSub}>{dayjs(makeUnixTimestampToNumber(Number(invest.startDate))).format('MMM D, YYYY')}</Text>
-                    </View>
-                  </View>
-                  <View style={styles.rowRight}>
-                    <Text style={styles.itemAmount}>
-                      {invest.amount < 0 ? '-' : ''}${Math.abs(invest.amount)}
-                    </Text>
-                    <Text style={[
-                      styles.itemStatus, 
-                      invest.status === EInvestStatus.Completed && styles.itemMatured
-                    ]}>
-                      {invest.status === EInvestStatus.Completed ? 'MATURED' : (index % 2 === 0 ? 'GROWTH' : 'STABLE')}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-                {isRowOpen && (
-                  <View style={styles.expandedContent}>
-                     {renderCollapsibleContent(invest)}
-                  </View>
-                )}
-              </Fragment>
-            );
-          })}
+          <DataTable
+            headers={headers}
+            data={tableData}
+            onDelete={handleDeleteInvestment}
+            isAnyRowOpen={notifyRowOpen}
+            expandedRowId={expandedRowId}
+            setExpandedRowId={setExpandedRowId}
+            renderCollapsibleContent={renderCollapsibleContent}
+          />
         </View>
       </View>
     </View>
@@ -308,70 +327,5 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     color: colors.subText,
     fontWeight: '600',
-  },
-  customRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#16191d',
-    padding: 16,
-    borderRadius: 24,
-    marginBottom: 8,
-  },
-  rowLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
-  circleIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  itemName: {
-    color: colors.text,
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.2,
-  },
-  itemSub: {
-    color: '#8a929a',
-    fontSize: 12,
-    marginTop: 2,
-    fontWeight: '500',
-  },
-  rowRight: {
-    alignItems: 'flex-end',
-  },
-  itemAmount: {
-    color: colors.text,
-    fontSize: 16,
-    fontWeight: '800',
-    fontFamily: 'Manrope',
-    letterSpacing: -0.2,
-  },
-  itemStatus: {
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-    marginTop: 4,
-    textTransform: 'uppercase',
-    color: '#8cafff',  // Growth purple
-  },
-  itemMatured: {
-    color: '#b6f700',  // Matured green
-  },
-  expandedContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    backgroundColor: '#16191d',
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    marginTop: -20,
-    paddingTop: 24,
-    marginBottom: 8,
   },
 });
