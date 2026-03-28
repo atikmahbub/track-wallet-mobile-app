@@ -17,7 +17,6 @@ interface ExpenseFormProps {
   refreshCategories?: () => Promise<void> | void;
   recentCategoryIds?: string[];
   defaultCategoryId?: string;
-  autoFocusAmount?: boolean;
 }
 
 export default function ExpenseForm({
@@ -27,7 +26,6 @@ export default function ExpenseForm({
   refreshCategories,
   recentCategoryIds,
   defaultCategoryId,
-  autoFocusAmount,
 }: ExpenseFormProps) {
   const {values, setFieldValue} = useFormikContext<any>();
   const [pickerVisible, setPickerVisible] = useState(false);
@@ -62,12 +60,6 @@ export default function ExpenseForm({
     }
   }, [categoryValue, categories, defaultCategoryId, setFieldValue]);
 
-  useEffect(() => {
-    if (autoFocusAmount && amountInputRef.current) {
-      amountInputRef.current.focus();
-    }
-  }, [autoFocusAmount]);
-
   return (
     <View style={{gap: 24}}>
       <View style={styles.amountContainer}>
@@ -78,7 +70,6 @@ export default function ExpenseForm({
           onChangeText={text => setFieldValue(EAddExpenseFields.AMOUNT, text)}
           keyboardType="numeric"
           ref={amountInputRef}
-          autoFocus={autoFocusAmount}
           style={styles.amountInput}
           placeholder="0.00"
           placeholderTextColor="#666"

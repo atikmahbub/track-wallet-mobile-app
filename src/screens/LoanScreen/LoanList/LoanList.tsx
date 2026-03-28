@@ -152,9 +152,6 @@ const LoanList: FC<ILoanList> = ({notifyRowOpen, loans, getUserLoan}) => {
       <View style={styles.listCard}>
         <View style={styles.headerRow}>
           <Text style={styles.title}>Loan History</Text>
-          <TouchableOpacity>
-            <Text style={styles.viewAllText}>VIEW ALL</Text>
-          </TouchableOpacity>
         </View>
         <View style={styles.tableContainer}>
           <DataTable

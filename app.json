@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Aether",
+    "name": "Aether – Expense Tracker",
     "slug": "aether",
     "scheme": "aether",
     "version": "1.0.0",
@@ -10,7 +10,7 @@
 
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "org.reactjs.native.example.aether",
+      "bundleIdentifier": "com.atik.aether",
       "infoPlist": {
         "CFBundleDisplayName": "Aether",
         "UIStatusBarStyle": "UIStatusBarStyleLightContent",
@@ -19,13 +19,22 @@
     },
 
     "android": {
+      "package": "com.atik.aether",
+      "newArchEnabled": false,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0a0f13"
-      },
-      "package": "org.reactjs.native.example.aether"
+      }
     },
 
-    "plugins": ["expo-font", "expo-router"]
+    "plugins": ["expo-font", "expo-router"],
+
+    "extra": {
+      "auth0Domain": "dev-pm0712stgt281lme.us.auth0.com",
+      "auth0Scheme": "com.atik.aether",
+      "eas": {
+        "projectId": "f6321d98-7753-456b-b4c8-61857344a854"
+      }
+    }
   }
 }

@@ -9,7 +9,10 @@ import {
   UIManager,
   View,
 } from 'react-native';
-import {ExpenseAnalyticsModel, ExpenseCategoryModel} from '@trackingPortal/api/models';
+import {
+  ExpenseAnalyticsModel,
+  ExpenseCategoryModel,
+} from '@trackingPortal/api/models';
 import SegmentedProgressBar from '@trackingPortal/screens/ExpenseScreen/components/SegmentedProgressBar';
 import {colors} from '@trackingPortal/themes/colors';
 import {formatCurrency} from '@trackingPortal/utils/utils';
@@ -110,10 +113,16 @@ const AnalyticsCard: React.FC<AnalyticsCardProps> = ({
     }
     const palette = categories[analytics.topCategory.categoryId];
     return (
-      <View style={[styles.topCategoryCard, palette && {borderColor: palette.color}]}> 
+      <View
+        style={[
+          styles.topCategoryCard,
+          palette && {borderColor: palette.color},
+        ]}>
         <View>
           <Text style={styles.topCategoryLabel}>Top category</Text>
-          <Text style={styles.topCategoryName}>{analytics.topCategory.categoryName}</Text>
+          <Text style={styles.topCategoryName}>
+            {analytics.topCategory.categoryName}
+          </Text>
         </View>
         <View>
           <Text style={styles.topCategoryAmount}>
@@ -171,7 +180,9 @@ const AnalyticsCard: React.FC<AnalyticsCardProps> = ({
           {segments.length ? (
             <View style={styles.progressBlock}>
               <SegmentedProgressBar segments={segments} height={14} />
-              <Text style={styles.progressHint}>Share of spend by category</Text>
+              <Text style={styles.progressHint}>
+                Share of spend by category
+              </Text>
             </View>
           ) : (
             renderEmpty('No breakdown yet')
@@ -188,7 +199,9 @@ const AnalyticsCard: React.FC<AnalyticsCardProps> = ({
                   <View key={item.categoryId} style={styles.listRow}>
                     <View style={[styles.bullet, {backgroundColor: color}]} />
                     <View style={styles.listLabelColumn}>
-                      <Text style={styles.categoryName}>{item.categoryName}</Text>
+                      <Text style={styles.categoryName}>
+                        {item.categoryName}
+                      </Text>
                       <Text style={styles.categorySecondary}>
                         {item.percentage.toFixed(1)}%
                       </Text>
@@ -204,7 +217,7 @@ const AnalyticsCard: React.FC<AnalyticsCardProps> = ({
                   onPress={handleToggle}
                   style={styles.toggleButton}>
                   <Text style={styles.toggleText}>
-                    {expanded ? 'Show Less' : 'Show All'}
+                    {expanded ? 'Show Less' : 'Show All \u2192'}
                   </Text>
                 </TouchableOpacity>
               ) : null}
@@ -220,9 +233,10 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
     borderRadius: 28,
-    padding: 20,
+    padding: 22,
     marginHorizontal: 20,
-    marginTop: 24,
+    marginTop: 20,
+    marginBottom: 16,
     borderWidth: 1,
     borderColor: colors.glassBorder,
   },

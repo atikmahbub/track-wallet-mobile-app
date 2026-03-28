@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   rowWrapper: {
-    marginBottom: 20,
+    marginBottom: 14,
     borderWidth: 0,
     borderColor: 'transparent',
     borderRadius: 20,

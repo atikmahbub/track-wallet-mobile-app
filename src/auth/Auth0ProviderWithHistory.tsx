@@ -34,7 +34,8 @@ export const Auth0ProviderWithHistory = ({
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const redirectUrl = 'com.track-wallet://auth';
+  const redirectUrl =
+    'aether://dev-pm0712stgt281lme.us.auth0.com/android/com.atik.aether/callback';
 
   useEffect(() => {
     const initializeAuth = async () => {

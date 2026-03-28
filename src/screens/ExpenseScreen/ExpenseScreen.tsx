@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import ExpenseSummary from '@trackingPortal/screens/ExpenseScreen/ExpenseSummary';
 import {AnimatedFAB} from 'react-native-paper';
 import {FlatList, StyleSheet, RefreshControl, View} from 'react-native';
@@ -33,6 +33,9 @@ export default function ExpenseScreen() {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [limitLoading, setLimitLoading] = useState<boolean>(false);
+  const [creationCooldown, setCreationCooldown] = useState(false);
+  const cooldownTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevCreationOpen = useRef(openCreationForm);
   const {
     categories,
     categoryLoading,
@@ -84,6 +87,29 @@ export default function ExpenseScreen() {
   useEffect(() => {
     fetchAnalytics();
   }, [fetchAnalytics]);
+
+  useEffect(() => {
+    if (prevCreationOpen.current && !openCreationForm) {
+      setCreationCooldown(true);
+      if (cooldownTimeoutRef.current) {
+        clearTimeout(cooldownTimeoutRef.current);
+      }
+      cooldownTimeoutRef.current = setTimeout(() => {
+        setCreationCooldown(false);
+        cooldownTimeoutRef.current = null;
+      }, 350);
+    }
+    prevCreationOpen.current = openCreationForm;
+  }, [openCreationForm]);
+
+  useEffect(
+    () => () => {
+      if (cooldownTimeoutRef.current) {
+        clearTimeout(cooldownTimeoutRef.current);
+      }
+    },
+    [],
+  );
 
   const loadData = async () => {
     try {
@@ -232,18 +258,21 @@ export default function ExpenseScreen() {
       />
       <AnimatedFAB
         extended={false}
-        visible={!hideFabIcon}
+        visible={!hideFabIcon && !openCreationForm}
         icon={'plus'}
         animateFrom={'right'}
         iconMode={'static'}
         label="Add New"
         color={colors.background}
         style={styles.fabStyle}
-        onPress={() =>
+        onPress={() => {
+          if (openCreationForm || creationCooldown) {
+            return;
+          }
           withHaptic(() => {
             setOpenCreationModal(true);
-          })
-        }
+          });
+        }}
       />
     </View>
   );

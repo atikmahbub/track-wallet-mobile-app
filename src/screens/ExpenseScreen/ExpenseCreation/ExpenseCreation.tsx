@@ -133,15 +133,14 @@ const ExpenseCreation: React.FC<IExpenseCreation> = ({
               }}
               onSave={handleSubmit}
               children={
-                <ExpenseForm
-                  categories={categories}
-                  categoriesLoading={categoriesLoading}
-                  categoryError={categoryError}
-                  refreshCategories={refreshCategories}
-                  recentCategoryIds={recentCategoryIds}
-                  defaultCategoryId={defaultCategoryId}
-                  autoFocusAmount={openCreationModal}
-                />
+              <ExpenseForm
+                categories={categories}
+                categoriesLoading={categoriesLoading}
+                categoryError={categoryError}
+                refreshCategories={refreshCategories}
+                recentCategoryIds={recentCategoryIds}
+                defaultCategoryId={defaultCategoryId}
+              />
               }
               loading={loading}
             />

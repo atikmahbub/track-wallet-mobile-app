@@ -120,9 +120,7 @@ const ExpenseList: FC<IExpenseList> = ({
     try {
       setLoading(true);
       const categoryName =
-        (values.categoryId &&
-          categoryLookup[values.categoryId]?.name) ||
-        '';
+        (values.categoryId && categoryLookup[values.categoryId]?.name) || '';
       const description =
         values.description?.trim() || categoryName || 'Quick entry';
       const params: IUpdateExpenseParams = {

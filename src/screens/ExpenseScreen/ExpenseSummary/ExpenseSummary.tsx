@@ -195,7 +195,7 @@ const ExpenseSummary: React.FC<ISummary> = ({
   const statusBackgroundColor = hasLimit
     ? isBudgetOnTrack
       ? 'rgba(161, 250, 255, 0.15)'
-      : 'rgba(255, 64, 85, 0.18)'
+      : 'rgba(255, 107, 107, 0.14)'
     : 'rgba(255, 255, 255, 0.08)';
   const statusColor = hasLimit
     ? isBudgetOnTrack
@@ -307,8 +307,8 @@ const ExpenseSummary: React.FC<ISummary> = ({
             <CircularProgress
               progress={clampedProgress}
               progressColor={progressColor}
-              size={72}
-              strokeWidth={6}
+              size={60}
+              strokeWidth={5}
               trackColor="rgba(255,255,255,0.08)"
               label={progressLabel}
             />
@@ -428,6 +428,7 @@ const styles = StyleSheet.create({
   mainContainer: {
     paddingHorizontal: 20,
     paddingTop: 32,
+    marginBottom: 16,
   },
   headingLabel: {
     color: colors.primary,

@@ -1,4 +1,4 @@
-package org.reactjs.native.example.aether
+package com.atik.aether
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

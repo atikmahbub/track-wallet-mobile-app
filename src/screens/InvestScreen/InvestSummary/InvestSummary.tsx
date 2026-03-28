@@ -106,7 +106,7 @@ const InvestSummary: React.FC<ISummary> = ({investList, status}) => {
           </View>
           <Text style={styles.metricLabelCard}>Annualized Return</Text>
           <Text style={styles.metricLabelValue}>
-            {!isActive ? averageReturn.toFixed(1) : '12.4'}%
+            {!isActive ? averageReturn.toFixed(1) : '0.0'}%
           </Text>
         </GlassCard>
 
